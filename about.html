@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>About — MIYO Global</title>
+<meta name="description" content="MIYO Global: enterprise staffing and digital delivery from India and the UAE, led by veteran operators with a compliance-backed engagement model.">
+<meta name="theme-color" content="#FFFFFF">
+<link rel="canonical" href="https://miyoglobal.com/about.html">
+<meta property="og:title" content="About — MIYO Global">
+<meta property="og:description" content="MIYO Global: enterprise staffing and digital delivery from India and the UAE, led by veteran operators with a compliance-backed engagement model.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://miyoglobal.com/about.html">
+<meta property="og:site_name" content="MIYO Global">
+<meta name="twitter:card" content="summary">
+<link rel="icon" href='data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" fill="%23E0B458"/><text x="32" y="43" font-family="Arial,Helvetica,sans-serif" font-size="34" font-weight="800" text-anchor="middle" fill="%230B192F">M</text></svg>'>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#FFFFFF; --bg2:#F7F8FB; --card:#FFFFFF; --tint:#F3F5F9;
+    --ink:#0B192F; --muted:#5B6B82; --soft:#66758C; --border:#E4E8F0;
+    --gold:#E0B458; --gold-deep:#8F6B14; --navy:#0B192F; --navy2:#10233F;
+    --maxw:1200px; --r:18px;
+    --shadow:0 10px 30px rgba(11,25,47,.08);
+    --shadow-lg:0 24px 60px rgba(11,25,47,.12);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+  body{font-family:'Outfit',system-ui,sans-serif;background:var(--bg);color:var(--ink);line-height:1.55;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 28px}
+  a{color:inherit;text-decoration:none}
+  h1,h2,h3,h4{line-height:1.1;letter-spacing:-.02em;font-weight:800;color:var(--ink)}
+  .g{color:var(--gold-deep)}
+  .muted{color:var(--muted)}
+  .eyebrow{font-size:.72rem;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:var(--gold-deep);display:inline-flex;gap:.55em;align-items:center;margin-bottom:16px}
+  .eyebrow::before{content:"#"}
+  .sec{padding:100px 0;position:relative}
+  .sec.tight{padding:72px 0}
+  .sec h2{font-size:clamp(2rem,4.1vw,3.3rem);margin-bottom:14px;letter-spacing:-.026em}
+  .lead{color:var(--muted);font-size:1.08rem;max-width:62ch}
+  .center{text-align:center}.center .lead{margin:0 auto}
+  .alt{background:var(--bg2)}
+  section[id]{scroll-margin-top:86px}
+  .skip{position:absolute;left:-9999px;top:0;background:var(--gold);color:var(--ink);font-weight:700;padding:12px 18px;border-radius:0 0 12px 0;z-index:100}
+  .skip:focus{left:0}
+  :focus-visible{outline:2px solid var(--gold-deep);outline-offset:3px;border-radius:5px}
+
+  .btn{display:inline-flex;align-items:center;gap:.5em;font-weight:600;font-size:.94rem;padding:.74em 1.35em;border-radius:11px;transition:transform .15s,box-shadow .2s,background .2s,border-color .2s;cursor:pointer}
+  .btn-gold{background:var(--gold);color:var(--ink);box-shadow:0 10px 26px rgba(224,180,88,.35)}
+  .btn-gold:hover{transform:translateY(-2px);box-shadow:0 14px 34px rgba(224,180,88,.45)}
+  .btn-navy{background:var(--navy);color:#fff}
+  .btn-navy:hover{transform:translateY(-2px);box-shadow:0 12px 30px rgba(11,25,47,.28)}
+  .btn-ghost{border:1.5px solid var(--border);color:var(--ink)}
+  .btn-ghost:hover{border-color:var(--gold-deep);color:var(--gold-deep)}
+
+  header{position:sticky;top:0;z-index:60;background:rgba(255,255,255,.85);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);transition:box-shadow .3s,background .3s}
+  header.scrolled{background:rgba(255,255,255,.97);box-shadow:0 8px 26px rgba(11,25,47,.08)}
+  .nav{display:flex;align-items:center;justify-content:space-between;height:74px}
+  .brand{font-weight:800;font-size:1.2rem;padding:10px 0}
+  .brand .g{color:var(--gold-deep)}
+  .nav-links{display:flex;gap:28px;align-items:center}
+  .nav-links a{font-size:.93rem;color:var(--muted);font-weight:500;transition:color .2s;padding:10px 2px}
+  .nav-links a:hover,.nav-links a.active{color:var(--ink)}
+  .nav-links a.active{font-weight:700}
+  .menu-btn{display:none;background:none;border:1.5px solid var(--border);color:var(--ink);border-radius:9px;padding:.45em .65em;font-size:1.1rem;cursor:pointer}
+
+  /* graphic / image panel */
+  .gfx{position:relative;border-radius:var(--r);overflow:hidden;border:1px solid var(--border);background:
+      radial-gradient(120% 120% at 82% 8%, #FDF6E7 0%, var(--bg2) 55%, #EEF1F7 100%);
+    min-height:340px;display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow)}
+  .gfx::before{content:"";position:absolute;inset:0;background-image:radial-gradient(rgba(11,25,47,.07) 1px, transparent 1px);background-size:22px 22px;opacity:.5}
+  .gfx::after{content:"";position:absolute;inset:0;z-index:2;pointer-events:none;border-radius:inherit;background:linear-gradient(180deg,transparent 55%,rgba(11,25,47,.45))}
+  .gfx img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1;border-radius:inherit}
+  .gfx .ring{position:absolute;border:1.5px solid var(--gold);border-radius:50%;opacity:.35}
+  .gfx .ring.a{width:340px;height:340px;right:-90px;top:-70px}
+  .gfx .ring.b{width:210px;height:210px;right:-30px;top:14px;opacity:.22}
+  .gfx .glyph{width:76px;height:76px;border-radius:20px;background:var(--gold);display:flex;align-items:center;justify-content:center;position:relative;z-index:0;box-shadow:0 14px 34px rgba(224,180,88,.4)}
+  .gfx .glyph svg{width:38px;height:38px;stroke:var(--ink);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+  .gfx .cap{position:absolute;bottom:16px;left:16px;z-index:3;background:#fff;border:1px solid var(--border);border-radius:999px;padding:.5em .95em;font-size:.7rem;letter-spacing:.13em;text-transform:uppercase;color:var(--ink);font-weight:700;box-shadow:var(--shadow)}
+  .gfx .badge{position:absolute;z-index:4;bottom:16px;right:16px;background:#fff;border:1px solid var(--border);border-radius:14px;padding:13px 17px;box-shadow:var(--shadow-lg)}
+  .gfx .badge .bn{font-size:1.4rem;font-weight:800;color:var(--gold-deep);line-height:1}
+  .gfx .badge .bl{font-size:.72rem;color:var(--muted);font-weight:600;margin-top:3px}
+
+  /* hero */
+  .hero{padding:86px 0 42px;position:relative;background:
+    radial-gradient(900px 480px at 88% -10%, #FBF3E2 0%, transparent 60%), var(--bg)}
+  .hero-grid{display:grid;grid-template-columns:1.12fr .88fr;gap:52px;align-items:center}
+  .hero h1{font-size:clamp(2.6rem,5.8vw,4.4rem);margin:20px 0 20px;letter-spacing:-.032em}
+  .hero .sub{font-size:clamp(1.05rem,1.6vw,1.26rem);color:var(--muted);max-width:52ch}
+  .hero-cta{display:flex;gap:14px;flex-wrap:wrap;margin-top:32px}
+  .hero .gfx{min-height:420px}
+  .counters{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;margin-top:60px;border-top:1px solid var(--border);padding-top:32px}
+  .counters .c .n{font-size:clamp(1.8rem,3vw,2.5rem);font-weight:800;color:var(--gold-deep);line-height:1}
+  .counters .c .l{color:var(--muted);font-size:.9rem;font-weight:500;margin-top:6px}
+
+  /* marquee */
+  .marquee-sec{padding:30px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border);background:var(--bg2)}
+  .mq-label{text-align:center;color:var(--soft);font-size:.76rem;letter-spacing:.16em;text-transform:uppercase;margin-bottom:16px;font-weight:700}
+  .marquee{overflow:hidden;-webkit-mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent);mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent)}
+  .mq-track{display:flex;gap:12px;width:max-content;animation:scroll 34s linear infinite}
+  @keyframes scroll{to{transform:translateX(-50%)}}
+  @media (prefers-reduced-motion:reduce){.mq-track{animation:none;flex-wrap:wrap;justify-content:center}}
+  .pill{border:1px solid var(--border);background:#fff;border-radius:999px;padding:.58em 1.15em;font-size:.9rem;color:var(--ink);white-space:nowrap;font-weight:500;box-shadow:0 4px 14px rgba(11,25,47,.05)}
+  .pill b{color:var(--gold-deep)}
+
+  .grid{display:grid;gap:22px}
+  .g2{grid-template-columns:repeat(2,1fr)}
+  .g3{grid-template-columns:repeat(3,1fr)}
+  .g4{grid-template-columns:repeat(4,1fr)}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:56px;align-items:center}
+  ul.checks{list-style:none;display:grid;grid-template-columns:1fr 1fr;gap:12px 24px;margin-top:22px}
+  ul.checks li{display:flex;gap:.6em;align-items:center;color:var(--ink);font-size:.96rem;font-weight:500}
+  ul.checks li::before{content:"";width:20px;height:20px;border-radius:50%;background:rgba(224,180,88,.22);background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238F6B14' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E");background-size:12px;background-repeat:no-repeat;background-position:center;flex:none}
+
+  .card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:28px;transition:transform .2s,box-shadow .25s,border-color .2s;box-shadow:0 4px 16px rgba(11,25,47,.05)}
+  .card:hover{transform:translateY(-5px);box-shadow:var(--shadow-lg);border-color:rgba(224,180,88,.6)}
+  .ic{width:52px;height:52px;border-radius:14px;background:var(--gold);display:flex;align-items:center;justify-content:center;margin-bottom:20px;box-shadow:0 10px 24px rgba(224,180,88,.35)}
+  .ic svg{width:26px;height:26px;stroke:var(--ink);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+  .card h3{font-size:1.2rem;margin-bottom:8px}
+  .card p{color:var(--muted);font-size:.95rem}
+  .roles{list-style:none;margin-top:16px;display:grid;grid-template-columns:1fr 1fr;gap:9px 18px}
+  .roles li{font-size:.92rem;color:var(--ink);display:flex;gap:.55em;align-items:flex-start}
+  .roles li::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--gold);margin-top:.55em;flex:none}
+
+  .frow{display:grid;grid-template-columns:1fr 1fr;gap:56px;align-items:center;margin-top:36px}
+  .frow.rev .fx{order:2}
+  .frow .tag{font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--gold-deep);font-weight:700}
+  .frow h3{font-size:1.7rem;margin:10px 0 12px}
+  .frow p{color:var(--muted);font-size:1.02rem}
+
+  .steps{display:grid;gap:16px}
+  .step{display:flex;gap:20px;padding:22px;border:1px solid var(--border);border-radius:14px;background:#fff;transition:box-shadow .2s,border-color .2s;box-shadow:0 4px 14px rgba(11,25,47,.04)}
+  .step:hover{border-color:rgba(224,180,88,.6);box-shadow:var(--shadow)}
+  .step .num{font-weight:800;color:var(--ink);background:var(--gold);width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex:none;font-size:1.05rem}
+  .step h4{font-size:1.12rem;margin-bottom:4px}
+  .step p{color:var(--muted);font-size:.93rem}
+  .proc{display:grid;grid-template-columns:1fr 1fr;gap:56px;align-items:center;margin-top:34px}
+
+  .case{background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:28px;box-shadow:0 4px 16px rgba(11,25,47,.05)}
+  .case .tag{font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--gold-deep);font-weight:700;display:flex;gap:.7em;align-items:center;margin-bottom:14px}
+  .case .tag .mini{width:34px;height:34px;border-radius:9px;background:var(--gold);display:flex;align-items:center;justify-content:center;flex:none}
+  .case .tag .mini svg{width:18px;height:18px;stroke:var(--ink);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+  .case p{color:var(--ink);font-size:.97rem}
+  .metrics{display:flex;gap:26px;margin-top:22px;flex-wrap:wrap}
+  .metrics .num{font-size:1.7rem;font-weight:800;color:var(--gold-deep);line-height:1}
+  .metrics .lab{font-size:.76rem;color:var(--muted);font-weight:600;margin-top:5px}
+  .note{margin-top:20px;color:var(--soft);font-size:.9rem;font-style:italic;text-align:center}
+
+  .strip{margin-top:24px;background:var(--tint);border:1px solid var(--border);border-radius:14px;padding:20px 26px;display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+  .strip .ic{width:44px;height:44px;margin:0;flex:none}
+  .strip b{color:var(--ink)} .strip span{color:var(--muted)}
+  .strip a{display:inline-block;padding:8px 2px}
+
+  .person{background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:26px;box-shadow:0 4px 16px rgba(11,25,47,.05)}
+  .person .top{display:flex;gap:16px;align-items:center;margin-bottom:14px}
+  .mono{width:62px;height:62px;border-radius:50%;border:2px solid var(--gold);background:var(--tint);display:flex;align-items:center;justify-content:center;font-weight:800;color:var(--gold-deep);font-size:1.15rem;flex:none}
+  .person .nm{font-weight:700;font-size:1.1rem}
+  .person .rl{color:var(--gold-deep);font-size:.85rem;font-weight:600}
+  .person p{color:var(--muted);font-size:.92rem}
+  .subhead{font-size:.76rem;letter-spacing:.18em;text-transform:uppercase;color:var(--soft);font-weight:700;margin:40px 0 16px}
+
+  /* dark navy CTA band — the one deliberate blue moment */
+  .navy-band{background:linear-gradient(120deg,var(--navy) 0%,var(--navy2) 100%);color:#fff;border-radius:24px;padding:56px;position:relative;overflow:hidden;box-shadow:var(--shadow-lg)}
+  .navy-band h2{color:#fff;font-size:clamp(1.9rem,3.6vw,2.9rem);margin-bottom:10px}
+  .navy-band p{color:#B9C4D6;max-width:52ch}
+  .navy-band .ring{position:absolute;border:1px solid var(--gold);border-radius:50%;opacity:.2;width:340px;height:340px;right:-90px;top:-100px}
+  .navy-band .row{display:flex;justify-content:space-between;gap:30px;align-items:center;flex-wrap:wrap;position:relative}
+
+  .slider{position:relative;max-width:900px;margin:36px auto 0}
+  .slides{position:relative;min-height:170px}
+  .slide{opacity:0;visibility:hidden;transition:opacity .7s ease,transform .7s ease;transform:translateY(10px);position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+  .slide.active{opacity:1;visibility:visible;position:relative;transform:none}
+  .slide .q{font-size:clamp(1.3rem,2.6vw,1.9rem);font-weight:700;line-height:1.3;max-width:28ch;color:var(--ink)}
+  .slide .a{margin-top:14px;color:var(--gold-deep);font-weight:700;font-size:.82rem;letter-spacing:.12em;text-transform:uppercase}
+  .dots{display:flex;gap:6px;justify-content:center;margin-top:22px}
+  .dots button{width:40px;height:40px;border:none;background:transparent;cursor:pointer;padding:0;position:relative}
+  .dots button::before{content:"";position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:9px;height:9px;border-radius:6px;background:#CBD4E2;transition:background .25s,width .25s}
+  .dots button.on::before{background:var(--gold-deep);width:26px}
+
+  .phero{padding:70px 0 46px;border-bottom:1px solid var(--border);position:relative;overflow:hidden;
+    background:radial-gradient(760px 380px at 90% -20%, #FBF3E2 0%, transparent 60%), var(--bg)}
+  .phero .rbg{position:absolute;right:-150px;top:-90px;width:460px;height:460px;border:1.5px solid var(--gold);border-radius:50%;opacity:.28}
+  .phero .rbg.two{right:-40px;top:30px;width:290px;height:290px;opacity:.18}
+  .phero .crumb{color:var(--soft);font-size:.85rem}
+  .phero .crumb a{display:inline-block;padding:11px 2px}
+  .phero .crumb a:hover{color:var(--gold-deep)}
+  .phero h1{font-size:clamp(2.3rem,5vw,3.6rem);letter-spacing:-.03em;margin:12px 0 12px}
+  .phero p{color:var(--muted);font-size:1.12rem;max-width:62ch}
+
+  .contact-2{display:grid;grid-template-columns:1.05fr .95fr;gap:48px;align-items:start;margin-top:8px}
+  .cform{display:grid;grid-template-columns:1fr 1fr;gap:18px;background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:30px;box-shadow:var(--shadow)}
+  .cform .field{display:flex;flex-direction:column;gap:7px}
+  .cform .field.full{grid-column:1/-1}
+  .cform label{font-size:.82rem;color:var(--muted);font-weight:700}
+  .cform input,.cform textarea{background:var(--bg2);border:1.5px solid var(--border);border-radius:11px;padding:13px 15px;color:var(--ink);font:inherit;font-size:.95rem;transition:border-color .2s}
+  .cform input:focus,.cform textarea:focus{outline:none;border-color:var(--gold-deep)}
+  .cform textarea{resize:vertical;min-height:120px}
+  .cform .btn{grid-column:1/-1;justify-self:start;margin-top:4px}
+  .cform .hp{position:absolute;left:-9999px;width:1px;height:1px;opacity:0}
+  .form-note{grid-column:1/-1;font-size:.92rem;min-height:1.2em;margin-top:2px}
+  .form-note.ok{color:#1D7A46}.form-note.err{color:#B4231F}
+  .office{background:#fff;border:1px solid var(--border);border-radius:14px;padding:24px;box-shadow:0 4px 16px rgba(11,25,47,.05)}
+  .office .loc{display:flex;gap:12px;align-items:center;margin-bottom:12px}
+  .office .loc .ic{width:40px;height:40px;margin:0}
+  .office .region{font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--gold-deep);font-weight:700}
+  .office .city{font-weight:700;font-size:1.15rem}
+  .office .city a{padding:6px 0;display:inline-block}
+  .office address{font-style:normal;color:var(--muted);font-size:.92rem;line-height:1.5}
+  .cinfo .office{margin-bottom:16px}
+
+  footer{background:var(--navy);color:#fff;padding:64px 0 32px;margin-top:8px}
+  .fcols{display:grid;grid-template-columns:1.6fr 1fr 1fr;gap:40px}
+  .fbrand{font-weight:800;font-size:1.3rem;margin-bottom:14px;color:#fff}
+  .fbrand .g{color:var(--gold)}
+  .fdesc{color:#94A3B8;font-size:.94rem;max-width:42ch}
+  .fsoc{display:flex;gap:12px;margin-top:20px}
+  .fsoc a{width:40px;height:40px;border:1px solid #24344F;border-radius:10px;display:flex;align-items:center;justify-content:center;transition:border-color .2s,background .2s}
+  .fsoc a:hover{border-color:var(--gold);background:#112240}
+  .fsoc svg{width:18px;height:18px;stroke:#94A3B8;fill:none;stroke-width:2}
+  .fcol h5{font-size:.75rem;letter-spacing:.14em;text-transform:uppercase;color:#7A8CA6;margin-bottom:16px;font-weight:700}
+  .fcol a{display:block;color:#94A3B8;font-size:.93rem;padding:9px 0}
+  .fcol p{display:block;color:#94A3B8;font-size:.93rem;margin-bottom:11px}
+  .fcol a:hover{color:var(--gold)}
+  .fnote{margin-top:34px;padding:16px 20px;border:1px solid #24344F;border-radius:12px;color:#94A3B8;font-size:.83rem;line-height:1.55}
+  .fnote b{color:#E7ECF4}
+  .fbot{border-top:1px solid #24344F;margin-top:44px;padding-top:24px;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;color:#7A8CA6;font-size:.82rem}
+  .fbot .ent{max-width:60ch}
+
+  .legal h3{font-size:1.15rem;margin:30px 0 8px}
+  .legal p{color:var(--muted);margin-bottom:6px;font-size:.98rem;line-height:1.65}
+  .legal a{color:var(--gold-deep);font-weight:600;text-decoration:underline;display:inline-block;padding:7px 2px}
+  .cookiebar{position:fixed;left:16px;right:16px;bottom:16px;z-index:120;background:#0B192F;color:#E7ECF4;
+    border:1px solid #24344F;border-radius:14px;padding:16px 20px;display:none;gap:16px;align-items:center;flex-wrap:wrap;
+    box-shadow:0 20px 50px rgba(11,25,47,.35);max-width:720px;margin:0 auto}
+  .cookiebar.show{display:flex}
+  .cookiebar p{font-size:.88rem;color:#AEBBD1;flex:1;min-width:220px;margin:0}
+  .cookiebar a{color:#E0B458;text-decoration:underline;display:inline-block;padding:8px 2px}
+  .cookiebar .btn{padding:.55em 1.1em;font-size:.88rem}
+  .reveal{opacity:0;transform:translateY(20px);transition:opacity .7s ease,transform .7s ease}
+  .reveal.in{opacity:1;transform:none}
+  @media (prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none;transition:none}}
+  @keyframes heroUp{from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:none}}
+  @keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-9px)}}
+  @keyframes pulse{0%,100%{opacity:.3}50%{opacity:.55}}
+  @media (prefers-reduced-motion:no-preference){
+    .hero .eyebrow{animation:heroUp .7s .05s both}
+    .hero h1{animation:heroUp .75s .16s both}
+    .hero .sub{animation:heroUp .75s .30s both}
+    .hero .hero-cta{animation:heroUp .75s .44s both}
+    .hero .gfx{animation:heroUp .9s .28s both}
+    .gfx .glyph{animation:floaty 5.5s ease-in-out infinite}
+    .gfx .ring.a{animation:pulse 6s ease-in-out infinite}
+    .gfx .ring.b{animation:pulse 6s ease-in-out infinite .8s}
+  }
+
+  @media (max-width:980px){
+    .hero-grid,.two,.frow,.frow.rev .fx,.proc,.contact-2{grid-template-columns:1fr;gap:34px}
+    .frow.rev .fx{order:0}
+    .g4,.g3{grid-template-columns:repeat(2,1fr)}
+    .fcols{grid-template-columns:1fr 1fr}
+    .counters{grid-template-columns:repeat(2,1fr);gap:26px}
+  }
+  @media (max-width:640px){
+    .nav-links{display:none}
+    .nav-links.open{display:flex;position:absolute;top:74px;left:0;right:0;flex-direction:column;background:#fff;border-bottom:1px solid var(--border);padding:8px 0;box-shadow:var(--shadow-lg)}
+    .nav-links.open a{padding:14px 28px}.nav-links.open .btn{margin:10px 28px}
+    .menu-btn{display:inline-flex}
+    .g2,.g3,.g4,.contact-2,ul.checks,.roles,.fcols,.cform{grid-template-columns:1fr}
+    .sec{padding:64px 0}.hero{padding:54px 0 20px}
+    .navy-band{padding:34px 24px}
+    .cform input,.cform textarea{font-size:16px}
+  }
+</style>
+</head>
+<body id="top">
+<a class="skip" href="#main">Skip to content</a>
+<header>
+  <div class="wrap nav">
+    <a class="brand" href="index.html"><img src="images/logo.png" alt="MIYO Global" height="32" style="display:block;"></a>
+    <nav class="nav-links" id="menu"><a href="index.html">Home</a><a href="staffing-solutions.html">Staffing Solutions</a><a href="digital-solutions.html">Digital Solutions</a><a href="case-studies.html">Case Studies</a><a href="about.html" class="active" aria-current="page">About</a>
+      <a class="btn btn-gold" href="contact.html">Let's Talk</a>
+    </nav>
+    <button class="menu-btn" id="menuBtn" aria-label="Menu" aria-expanded="false">☰</button>
+  </div>
+</header>
+<main id="main"><section class="phero"><span class="rbg"></span><span class="rbg two"></span>
+      <div class="wrap"><div class="crumb"><a href="index.html">Home</a> / About</div>
+      <span class="eyebrow" style="margin-top:10px"># Who we are</span>
+      <h1>Operators who have <span class="g">lived it at scale</span></h1><p>MIYO Global is an enterprise staffing and digital delivery company founded by veteran operators. We know the process because we have run it in leading organisations.</p></div></section>
+<section class="sec"><div class="wrap two">
+  <div class="gfx reveal"><img src="images/about.jpg" alt="MIYO Global team" loading="lazy" onerror="this.remove()"><span class="ring a"></span><span class="ring b"></span>
+    <div class="glyph"><svg viewBox="0 0 24 24"><path d="M20 7 9 18l-5-5"/></svg></div>
+    <span class="cap">Sourced · Vetted · Managed</span>
+    <div class="badge"><div class="bn">India &amp; UAE</div><div class="bl">Delivery hubs</div></div></div>
+  <div class="reveal"><span class="eyebrow">Our approach</span><h2>We carry the <span class="g">delivery</span></h2>
+    <p class="lead">Enterprises and staffing partners hand us their hardest roles and their digital operations. We find the right people, prove them out, and put them to work inside your process. You keep the client and the brand.</p>
+    <ul class="checks"><li>Vetted, domain-tested specialists</li><li>Deployed in about two weeks</li><li>Human-in-the-loop QA</li><li>Named delivery ownership</li><li>White-label by design</li><li>Compliance-backed engagement</li></ul></div>
+</div></section>
+<section class="sec alt"><div class="wrap"><div class="center reveal"><span class="eyebrow" style="justify-content:center"># Our presence</span><h2>Two delivery hubs, <span class="g">global reach</span></h2></div>
+  <div class="grid g2" style="margin-top:36px">
+    <div class="office"><div class="loc"><span class="ic"><svg viewBox="0 0 24 24"><path d="M12 21s-7-6-7-11a7 7 0 0 1 14 0c0 5-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg></span><div><div class="region">India · Operations HQ</div><div class="city">Hyderabad</div></div></div><address>MIYO Global Office (Trendz Trinity), Plot No. 21, Madhapur, Gafoornagar, Hyderabad, Telangana 500081. Delivery across Bangalore, Pune, Noida, and Chennai.</address></div>
+    <div class="office"><div class="loc"><span class="ic"><svg viewBox="0 0 24 24"><path d="M12 21s-7-6-7-11a7 7 0 0 1 14 0c0 5-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg></span><div><div class="region">UAE</div><div class="city">Ras Al Khaimah</div></div></div><address>Prime Assets Education &amp; Training Ltd., Office A, RAK DAO Business Centre, Al Riffa, Sheikh Mohammed Bin Zayed Road.</address></div>
+  </div></div></section>
+<section class="sec"><div class="wrap"><div class="center reveal"><span class="eyebrow" style="justify-content:center"># Leadership</span><h2>The people accountable for <span class="g">delivery</span></h2></div>
+  <div class="grid g3" style="margin-top:34px">
+    <div class="person"><div class="top"><div class="mono">PR</div><div><div class="nm">Prudvidhar Reddy</div><div class="rl">Managing Director</div></div></div><p>Runs enterprise strategy and day-to-day operations across MIYO Global and allied businesses in India and the UAE. Owns P&amp;L and operational governance.</p></div>
+    <div class="person"><div class="top"><div class="mono">SR</div><div><div class="nm">Sudheer Reddy</div><div class="rl">Chief Executive Officer</div></div></div><p>Veteran operator who has built and led delivery at scale. Sets the bar for real outcomes and the standards for people, process, and quality.</p></div>
+    <div class="person"><div class="top"><div class="mono">BS</div><div><div class="nm">Biswajit Sircar</div><div class="rl">Senior Director, HR</div></div></div><p>Talent-acquisition leader with over two decades building scalable hiring engines across cloud, AI, BFSI, and telecom, at volume across EMEA, APAC, and China.</p></div>
+  </div>
+  <div class="subhead reveal">Domain advisors</div>
+  <div class="grid g2 reveal">
+    <div class="person"><div class="top"><div class="mono">KR</div><div><div class="nm">Kalyan Reddy</div><div class="rl">Consultant · Digital Solutions</div></div></div><p>Over 16 years across top LSPs including Keywords Studios, Pactera EDGE, Centific, and Localsoft. Large-scale multilingual delivery and AI data operations.</p></div>
+    <div class="person"><div class="top"><div class="mono">SR</div><div><div class="nm">Sushanth Reddy, MBBS</div><div class="rl">Consultant · Healthcare &amp; Life Sciences</div></div></div><p>MBBS-qualified, with deep expertise in clinical workflows, medical content review, and healthcare AI data operations.</p></div>
+  </div></div></section>
+<section class="sec alt tight"><div class="wrap"><div class="strip reveal" style="margin-top:0"><div class="ic"><svg viewBox="0 0 24 24"><path d="M12 3 4 6v5c0 5 3.5 8 8 10 4.5-2 8-5 8-10V6z"/><path d="m9 12 2 2 4-4"/></svg></div>
+  <div><b>Full compliance shield.</b> <span>Contract Labour (R&amp;A) Act, EPF / ESI, Shop &amp; Establishment. India: Miyo Global Private Limited. UAE: Prime Assets Education &amp; Training Ltd., operating as Prime Learning.</span></div></div></div></section>
+<section class="sec tight"><div class="wrap reveal"><div class="navy-band"><span class="ring"></span>
+  <div class="row"><div><h2>Ready to build your team?</h2>
+  <p>Start with a pilot role, a managed pod, or a GCC conversation. We come back with a plan and ramp-up timelines, fast.</p></div>
+  <a class="btn btn-gold" href="contact.html">Let's Talk</a></div></div></div></section></main><footer>
+  <div class="wrap">
+    <div class="fcols">
+      <div>
+        <div class="fbrand">MIYO <span class="g">GLOBAL</span></div>
+        <p class="fdesc">Enterprise staffing and digital delivery from India and the UAE. GCC build-outs, technology talent, and managed digital services, under your brand.</p>
+        <div class="fsoc">
+          <a href="https://www.linkedin.com/company/prime-learning-ae" target="_blank" rel="noopener" aria-label="LinkedIn"><svg viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="3"/><path d="M7 10v7M7 7v.01M11 17v-4a2 2 0 0 1 4 0v4M11 17v-7"/></svg></a>
+          <a href="mailto:staffing@miyoglobal.com" aria-label="Email"><svg viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m3 6 9 7 9-7"/></svg></a>
+        </div>
+      </div>
+      <div class="fcol"><h5>Company</h5>
+        <a href="staffing-solutions.html">Staffing Solutions</a><a href="digital-solutions.html">Digital Solutions</a><a href="case-studies.html">Case studies</a><a href="about.html">About us</a><a href="contact.html">Contact</a><a href="privacy-policy.html">Privacy &amp; Cookies</a>
+      </div>
+      <div class="fcol"><h5>Get in touch</h5>
+        <a href="mailto:staffing@miyoglobal.com">staffing@miyoglobal.com</a>
+        <a href="https://primelearning.ae" target="_blank" rel="noopener">Prime Learning</a>
+        <a href="https://primelearning.ae/staffing" target="_blank" rel="noopener">PL Staff Augmentation</a>
+        <p>Hyderabad, India</p><p>Ras Al Khaimah, UAE</p>
+      </div>
+    </div>
+    <div class="fnote"><b>Recruitment notice:</b> MIYO Global never asks candidates for money, original documents, or cheques at any stage of hiring. If anyone requests these in our name, report it to staffing@miyoglobal.com.</div>
+    <div class="fbot">
+      <span>© <span id="yr"></span> MIYO Global. All rights reserved.</span>
+      <span class="ent">Miyo Global Private Limited (India) · Prime Assets Education &amp; Training Ltd. (UAE), operating as Prime Learning.</span>
+    </div>
+  </div>
+</footer>
+<div class="cookiebar" id="cookiebar" role="dialog" aria-label="Cookie notice">
+  <p>We use essential functionality only, no tracking or advertising cookies. Fonts load from Google Fonts. See our <a href="privacy-policy.html">Privacy &amp; Cookie Policy</a>.</p>
+  <button class="btn btn-gold" id="cookieok" type="button">Got it</button>
+</div>
+<script>
+  const btn=document.getElementById('menuBtn'), menu=document.getElementById('menu');
+  btn.addEventListener('click',()=>{const o=menu.classList.toggle('open');btn.setAttribute('aria-expanded',o)});
+  menu.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>{menu.classList.remove('open');btn.setAttribute('aria-expanded',false)}));
+  document.getElementById('yr').textContent=new Date().getFullYear();
+  addEventListener('keydown',e=>{if(e.key==='Escape'&&menu.classList.contains('open')){menu.classList.remove('open');btn.setAttribute('aria-expanded',false);btn.focus();}});
+  const reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const mq=document.getElementById('mq'); if(mq){mq.innerHTML+=mq.innerHTML;}
+  const hdr=document.querySelector('header');
+  addEventListener('scroll',()=>hdr.classList.toggle('scrolled',scrollY>12),{passive:true});
+  document.querySelectorAll('.grid,.steps,.counters').forEach(g=>{[...g.children].forEach((c,i)=>{c.classList.add('reveal');c.style.transitionDelay=(i*0.08)+'s';});});
+  const io=new IntersectionObserver((es)=>{es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');
+    e.target.querySelectorAll&&e.target.querySelectorAll('[data-count]').forEach(runCount);io.unobserve(e.target);}})},{threshold:.14,rootMargin:'0px 0px -8% 0px'});
+  document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+  function runCount(el){if(el.dataset.done)return;el.dataset.done=1;
+    const target=+el.dataset.count,suf=el.dataset.suffix||'';
+    if(reduce){el.textContent=target+suf;return;}
+    const dur=1200,t0=performance.now();
+    (function tick(t){const p=Math.min((t-t0)/dur,1);el.textContent=Math.round((1-Math.pow(1-p,3))*target)+suf;if(p<1)requestAnimationFrame(tick);})(t0);}
+  const rings=document.querySelectorAll('.hero .gfx .ring');
+  if(!reduce&&rings.length){addEventListener('scroll',()=>{const y=scrollY*0.06;rings.forEach((r,i)=>r.style.translate='0 '+(y*(i?1.6:1))+'px');},{passive:true});}
+  const slides=[...document.querySelectorAll('#slides .slide')], dots=document.getElementById('dots');
+  if(slides.length&&dots){let si=0,timer;
+    slides.forEach((s,i)=>{const b=document.createElement('button');b.className=i?'':'on';b.setAttribute('role','tab');b.setAttribute('aria-label','Highlight '+(i+1));b.onclick=()=>{go(i);restart();};dots.appendChild(b);});
+    const d=[...dots.children];
+    function go(i){slides[si].classList.remove('active');d[si].classList.remove('on');si=i;slides[si].classList.add('active');d[si].classList.add('on');}
+    function next(){go((si+1)%slides.length);}
+    function start(){if(!reduce)timer=setInterval(next,4500);}
+    function restart(){clearInterval(timer);start();}
+    const sl=document.querySelector('.slider');
+    sl.addEventListener('mouseenter',()=>clearInterval(timer)); sl.addEventListener('mouseleave',start); start();}
+  // cookie consent (essential-only site; records acknowledgement)
+  try{
+    const cb=document.getElementById('cookiebar');
+    if(cb && !localStorage.getItem('miyo-consent')){
+      cb.classList.add('show');
+      document.getElementById('cookieok').addEventListener('click',()=>{try{localStorage.setItem('miyo-consent','1');}catch(_){}cb.classList.remove('show');});
+    }
+  }catch(_){}
+  const cf=document.getElementById('cform');
+  if(cf){const note=document.getElementById('fnote');
+    cf.addEventListener('submit',async(e)=>{e.preventDefault();
+      const nv=cf.name.value.trim(), ev=cf.email.value.trim(), mv=cf.message.value.trim();
+      const okE=/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(ev);
+      if(!nv||!okE||!mv){note.textContent=!nv?'Please add your name.':!okE?'Please use a valid work email.':'Please tell us what you need.';
+        note.className='form-note err';(!nv?cf.name:!okE?cf.email:cf.message).focus();return;}
+      note.textContent='Sending\u2026'; note.className='form-note';
+      try{const r=await fetch(cf.action,{method:'POST',body:new FormData(cf),headers:{'X-Requested-With':'fetch'}});
+        let j={};try{j=await r.json();}catch(_){}
+        if(r.ok&&j.ok){note.textContent='Thanks \u2014 we will be in touch shortly.';note.className='form-note ok';cf.reset();}
+        else{note.textContent=(j&&j.error)||'Something went wrong. Please email staffing@miyoglobal.com.';note.className='form-note err';}
+      }catch(err){note.textContent='Network error. Please email staffing@miyoglobal.com directly.';note.className='form-note err';}});}
+</script>
+</body>
+</html>
