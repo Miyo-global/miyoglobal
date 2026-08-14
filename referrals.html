@@ -3,14 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Digital Solutions — MIYO Global</title>
-<meta name="description" content="Managed digital delivery: AI data services, localization in 120+ languages, trust and safety operations, and enterprise training.">
+<title>Referrals — MIYO Global</title>
+<meta name="description" content="Refer a candidate for an open MIYO Global mandate. When they are hired and onboarded, you earn a ₹15,000 referral reward.">
 <meta name="theme-color" content="#FFFFFF">
-<link rel="canonical" href="https://miyoglobal.com/digital-solutions.html">
-<meta property="og:title" content="Digital Solutions — MIYO Global">
-<meta property="og:description" content="Managed digital delivery: AI data services, localization in 120+ languages, trust and safety operations, and enterprise training.">
+<link rel="canonical" href="https://miyoglobal.com/referrals.html">
+<meta property="og:title" content="Referrals — MIYO Global">
+<meta property="og:description" content="Refer talent for open MIYO Global mandates and earn a ₹15,000 referral reward.">
 <meta property="og:type" content="website">
-<meta property="og:url" content="https://miyoglobal.com/digital-solutions.html">
+<meta property="og:url" content="https://miyoglobal.com/referrals.html">
 <meta property="og:site_name" content="MIYO Global">
 <meta name="twitter:card" content="summary">
 <link rel="icon" href='data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" fill="%23E0B458"/><text x="32" y="43" font-family="Arial,Helvetica,sans-serif" font-size="34" font-weight="800" text-anchor="middle" fill="%230B192F">M</text></svg>'>
@@ -277,6 +277,76 @@
     .navy-band{padding:34px 24px}
     .cform input,.cform textarea{font-size:16px}
   }
+
+  /* ── Referrals page only ───────────────────────────────────────────── */
+  /* .btn sets display:inline-flex, which beats the UA rule for [hidden]. */
+  [hidden]{display:none!important}
+  /* <button class="btn"> otherwise falls back to the system UI face. */
+  .btn{font-family:inherit}
+  .narrow{max-width:960px}
+  .pol{border:1px solid var(--border);border-radius:var(--r);background:#fff;overflow:hidden;box-shadow:var(--shadow);margin-top:30px}
+  .pol .ph{background:var(--navy);color:#fff;font-weight:700;font-size:.98rem;padding:15px 26px;border-bottom:3px solid var(--gold)}
+  .pol .pr{display:grid;grid-template-columns:.9fr 1.1fr;gap:4px 26px;padding:15px 26px}
+  .pol .pr+.pr{border-top:1px solid var(--border)}
+  .pol .pr:nth-of-type(even){background:var(--bg2)}
+  .pol dt{font-weight:700;color:var(--ink);font-size:.95rem}
+  .pol dd{color:var(--gold-deep);font-weight:600;font-size:.95rem}
+
+  .rcard{background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:28px;margin-top:22px;box-shadow:0 4px 16px rgba(11,25,47,.05)}
+  .rcard>h3{font-size:1.18rem;margin-bottom:6px}
+  .rcard>.hint{color:var(--muted);font-size:.94rem}
+  .rgrid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:22px}
+  .rgrid .full{grid-column:1/-1}
+  .rf{display:flex;flex-direction:column;gap:7px}
+  .rf label{font-size:.82rem;color:var(--muted);font-weight:700}
+  .rf input,.rf select{width:100%;background-color:var(--bg2);border:1.5px solid var(--border);border-radius:11px;padding:13px 15px;color:var(--ink);font:inherit;font-size:.95rem;transition:border-color .2s}
+  .rf input:focus,.rf select:focus{outline:none;border-color:var(--gold-deep)}
+  .rf select{appearance:none;-webkit-appearance:none;padding-right:44px;cursor:pointer;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%235B6B82' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat:no-repeat;background-position:right 15px center;background-size:15px}
+  .rf select:disabled{color:var(--soft);cursor:not-allowed}
+  .rf input[type=file]{padding:9px 14px;cursor:pointer}
+  .rf input[type=file]::file-selector-button{margin-right:14px;border:0;border-radius:999px;background:var(--gold);color:var(--ink);font:inherit;font-weight:600;font-size:.88rem;padding:.6em 1.2em;cursor:pointer;transition:background .2s}
+  .rf input[type=file]::file-selector-button:hover{background:#EFC97A}
+  .rf .sub{font-size:.83rem;color:var(--soft)}
+
+  .ack{display:flex;gap:13px;align-items:flex-start;cursor:pointer}
+  .ack input{width:20px;height:20px;flex:none;margin-top:2px;accent-color:var(--gold-deep);cursor:pointer}
+  .ack span{color:var(--muted);font-size:.96rem}
+  .linkbtn{background:none;border:0;padding:0;font:inherit;font-weight:700;color:var(--gold-deep);text-decoration:underline;text-underline-offset:2px;cursor:pointer}
+
+  .jstatus{margin-top:13px;font-size:.9rem;color:var(--muted);display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+  .jstatus.err{color:#B4231F}
+  .jstatus .btn{padding:.5em 1em;font-size:.85rem}
+  .jobcard{margin-top:18px;border-left:3px solid var(--gold);background:var(--tint);border-radius:0 12px 12px 0;padding:17px 20px}
+  .jobcard .jr{font-weight:700;color:var(--ink);font-size:1.02rem}
+  .jobcard p{color:var(--muted);font-size:.92rem;margin-top:5px}
+  .jobcard .k{color:var(--soft);font-weight:600}
+
+  .rbanner{margin-top:22px;border:1.5px solid var(--border);border-radius:12px;padding:15px 18px;font-size:.94rem;color:var(--muted);background:var(--bg2)}
+  .rbanner.ok{border-color:#9BD3B4;background:#EDF8F2;color:#1D7A46}
+  .rbanner.err{border-color:#F0B4B2;background:#FDF0EF;color:#B4231F}
+  .ract{display:flex;gap:14px;margin-top:24px;flex-wrap:wrap}
+  .ract .btn{flex:1;min-width:200px;justify-content:center}
+  .btn[disabled]{opacity:.5;cursor:not-allowed;transform:none;box-shadow:none}
+
+  .modal{position:fixed;inset:0;z-index:130;background:rgba(11,25,47,.72);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;padding:20px}
+  .modal.show{display:flex}
+  .modal .sheet{background:#fff;border-radius:18px;width:min(1020px,100%);height:min(92vh,900px);display:flex;flex-direction:column;overflow:hidden;box-shadow:var(--shadow-lg)}
+  .modal .mh{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:16px 22px;border-bottom:1px solid var(--border)}
+  .modal .mh h2{font-size:1.1rem}
+  .modal .x{background:none;border:0;font-size:1.7rem;line-height:1;color:var(--soft);cursor:pointer;padding:2px 11px;border-radius:9px}
+  .modal .x:hover{color:var(--ink);background:var(--tint)}
+  .modal iframe{flex:1;min-height:0;width:100%;border:0;background:var(--bg2)}
+  .modal .mf{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;padding:14px 22px;border-top:1px solid var(--border)}
+  .modal .mf a{color:var(--gold-deep);font-weight:600;text-decoration:underline;text-underline-offset:2px;display:inline-block;padding:8px 2px}
+  body.locked{overflow:hidden}
+  @media (max-width:640px){
+    .rgrid,.pol .pr{grid-template-columns:1fr}
+    .ract .btn{flex:1 1 100%}
+    .rcard{padding:22px}
+    .rf input,.rf select{font-size:16px}
+  }
 </style>
 </head>
 <body id="top">
@@ -284,56 +354,108 @@
 <header>
   <div class="wrap nav">
     <a class="brand" href="index.html"><img src="images/logo.png" alt="MIYO Global" height="32" style="display:block;"></a>
-    <nav class="nav-links" id="menu"><a href="index.html">Home</a><a href="staffing-solutions.html">Staffing Solutions</a><a href="digital-solutions.html" class="active" aria-current="page">Digital Solutions</a><a href="case-studies.html">Case Studies</a><a href="referrals.html">Referrals</a><a href="about.html">About</a>
+    <nav class="nav-links" id="menu"><a href="index.html">Home</a><a href="staffing-solutions.html">Staffing Solutions</a><a href="digital-solutions.html">Digital Solutions</a><a href="case-studies.html">Case Studies</a><a href="referrals.html" class="active" aria-current="page">Referrals</a><a href="about.html">About</a>
       <a class="btn btn-gold" href="contact.html">Let's Talk</a>
     </nav>
     <button class="menu-btn" id="menuBtn" aria-label="Menu" aria-expanded="false">☰</button>
   </div>
 </header>
 <main id="main"><section class="phero"><span class="rbg"></span><span class="rbg two"></span>
-      <div class="wrap"><div class="crumb"><a href="index.html">Home</a> / Digital Solutions</div>
-      <span class="eyebrow" style="margin-top:10px"># Digital Solutions</span>
-      <h1>Managed delivery for your <span class="g">digital operations</span></h1><p>Beyond seats, we deliver the work: AI data operations, multilingual localization, trust &amp; safety, and enterprise training, run as managed services with measurable quality.</p></div></section>
-<section class="sec"><div class="wrap">
-  <div class="frow reveal">
-    <div class="fx gfx"><img src="images/ai-data.jpg" alt="AI data operations" loading="lazy" onerror="this.remove()"><span class="ring a"></span><span class="ring b"></span>
-      <div class="glyph"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M9 9h6v6H9z"/></svg></div>
-      <span class="cap">Model-ready data</span></div>
-    <div><div class="tag">AI Data Services</div>
-      <h3>Data your models can learn from</h3>
-      <p>Native speakers and trained annotators collect, label, and validate multilingual training data inside your platform, held to strict accuracy with daily checks.</p>
-      <ul class="roles"><li>Data labeling &amp; annotation</li><li>Multilingual data collection</li><li>Prompt &amp; response evaluation</li><li>RLHF / preference rating</li><li>Red-teaming &amp; safety review</li><li>Data operations leads</li></ul></div>
+      <div class="wrap"><div class="crumb"><a href="index.html">Home</a> / Referrals</div>
+      <span class="eyebrow" style="margin-top:10px"># Referral program</span>
+      <h1>Refer talent. Earn <span class="g">₹15,000</span>.</h1><p>Know someone great? Refer a candidate for an open MIYO Global mandate. When they are hired and onboarded, you earn a referral reward.</p>
+      <div class="hero-cta"><button class="btn btn-navy" type="button" data-policy>Read full policy</button><a class="btn btn-ghost" href="#referral-form">Start a referral</a></div></div></section>
+
+<section class="sec"><div class="wrap narrow">
+  <span class="eyebrow">Referral Policy 2026</span>
+  <h2>Clear terms, <span class="g">no small print</span></h2>
+  <p class="lead">Every referral runs on the same published policy. These are the numbers that matter.</p>
+  <dl class="pol reveal">
+    <div class="ph">Policy at a glance</div>
+    <div class="pr"><dt>Reward amount</dt><dd>₹15,000 (subject to TDS)</dd></div>
+    <div class="pr"><dt>Profile validity</dt><dd>90 days from submission</dd></div>
+    <div class="pr"><dt>Payout timeline</dt><dd>45 days from onboarding</dd></div>
+    <div class="pr"><dt>Payment mode</dt><dd>NEFT / IMPS bank transfer</dd></div>
+    <div class="pr"><dt>Manager approval</dt><dd>Required before payout</dd></div>
+  </dl>
+
+  <h3 class="subhead">How it works</h3>
+  <div class="steps">
+    <div class="step"><div class="num">1</div><div><h4>Submit</h4><p>Send us your details, the candidate's details, and their resume against an open mandate.</p></div></div>
+    <div class="step"><div class="num">2</div><div><h4>Screen</h4><p>The candidate goes through our standard evaluation. Being referred does not skip a step or guarantee selection.</p></div></div>
+    <div class="step"><div class="num">3</div><div><h4>Onboard</h4><p>Your candidate is hired and joins the team. The hiring manager signs off on the referral payout.</p></div></div>
+    <div class="step"><div class="num">4</div><div><h4>Get paid</h4><p>₹15,000 by NEFT or IMPS within 45 days of onboarding, subject to TDS.</p></div></div>
   </div>
-  <div class="frow rev reveal">
-    <div class="fx gfx"><img src="images/localization.jpg" alt="Localization delivery" loading="lazy" onerror="this.remove()"><span class="ring a"></span><span class="ring b"></span>
-      <div class="glyph"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 0 20 15 15 0 0 1 0-20"/></svg></div>
-      <span class="cap">120+ languages</span></div>
-    <div><div class="tag">Localization &amp; Multilingual</div>
-      <h3>Products that read native in every market</h3>
-      <p>Full localization pipelines across 120+ languages, translation, review, LQA, terminology, and subtitling, with human review at every step and consistency built in.</p>
-      <ul class="roles"><li>Translation &amp; transcreation</li><li>Review &amp; proofreading</li><li>Localization QA (LQA)</li><li>Terminology management</li><li>Subtitling &amp; OST / OCR</li><li>Localization program management</li></ul></div>
-  </div>
-  <div class="frow reveal">
-    <div class="fx gfx"><img src="images/healthcare.jpg" alt="Clinical review" loading="lazy" onerror="this.remove()"><span class="ring a"></span><span class="ring b"></span>
-      <div class="glyph"><svg viewBox="0 0 24 24"><path d="M3 12h4l2 5 4-10 2 5h6"/></svg></div>
-      <span class="cap">Clinician-led</span></div>
-    <div><div class="tag">Healthcare AI &amp; Trust & Safety</div>
-      <h3>High-stakes content, expertly reviewed</h3>
-      <p>Licensed clinicians review AI health output for safety and accuracy, and trained analysts run trust &amp; safety operations across languages with clear policy playbooks.</p>
-      <ul class="roles"><li>Medical AI review &amp; safety checks</li><li>Health data structuring &amp; QA</li><li>Policy &amp; content moderation</li><li>Escalation workflows &amp; reporting</li></ul></div>
-  </div>
+  <p class="note">Referrals must be submitted within 30 days of the candidate coming under consideration. <button class="linkbtn" type="button" data-policy>Read the full Referral Policy 2026</button>.</p>
 </div></section>
-<section class="sec alt"><div class="wrap reveal">
-  <div class="navy-band"><span class="ring"></span><div class="row">
-    <div><span class="eyebrow" style="color:#F2D184">Corporate Training · Prime Learning</span>
-      <h2 style="margin-top:8px">Upskill the teams behind the work</h2>
-      <p>Outcomes-driven, expert-led cohort programmes in AI, data, cloud, and leadership, delivered by Prime Learning across India, the UAE, and global markets.</p></div>
-    <a class="btn btn-gold" href="https://primelearning.ae" target="_blank" rel="noopener">Visit Prime Learning →</a>
-  </div></div>
+
+<section class="sec alt" id="referral-form"><div class="wrap narrow">
+  <span class="eyebrow">Submit a referral</span>
+  <h2>Refer a <span class="g">candidate</span></h2>
+  <p class="lead">Positions are pulled live from our open mandates. All fields are required.</p>
+
+  <form id="rform" novalidate>
+    <div class="rcard">
+      <label class="ack"><input type="checkbox" id="ackPolicy">
+        <span>I acknowledge and agree to the <button class="linkbtn" type="button" data-policy>Referral Policy 2026</button>.</span></label>
+    </div>
+
+    <div class="rcard">
+      <h3>Your details</h3>
+      <p class="hint">This is your information, as the person making the referral.</p>
+      <div class="rgrid">
+        <div class="rf full"><label for="refName">Name</label><input id="refName" name="refName" type="text" autocomplete="name"></div>
+        <div class="rf"><label for="refEmail">Email</label><input id="refEmail" name="refEmail" type="email" autocomplete="email"></div>
+        <div class="rf"><label for="refPhone">Phone (10 digits)</label><input id="refPhone" name="refPhone" type="tel" inputmode="numeric" autocomplete="tel" placeholder="10-digit mobile number"></div>
+      </div>
+    </div>
+
+    <div class="rcard">
+      <h3>Candidate details</h3>
+      <p class="hint">Information about the candidate you are referring.</p>
+      <div class="rgrid">
+        <div class="rf full"><label for="candName">Candidate name</label><input id="candName" name="candName" type="text"></div>
+        <div class="rf"><label for="candEmail">Candidate email</label><input id="candEmail" name="candEmail" type="email"></div>
+        <div class="rf"><label for="candPhone">Candidate phone (10 digits)</label><input id="candPhone" name="candPhone" type="tel" inputmode="numeric" placeholder="10-digit mobile number"></div>
+      </div>
+    </div>
+
+    <div class="rcard">
+      <h3>Position</h3>
+      <p class="hint">Select the open mandate you are referring the candidate for.</p>
+      <div class="rgrid">
+        <div class="rf full"><label for="jobSelect">Select position</label>
+          <select id="jobSelect" disabled><option value="">Loading positions…</option></select>
+        </div>
+      </div>
+      <p class="jstatus" id="jobStatus" role="status" aria-live="polite">Fetching open positions…
+        <button class="btn btn-ghost" type="button" id="jobRetry" hidden>Retry</button></p>
+      <div class="jobcard" id="jobDetail" hidden></div>
+    </div>
+
+    <div class="rcard">
+      <h3>Resume</h3>
+      <p class="hint">Upload the candidate's resume. PDF or DOCX, max 10MB.</p>
+      <div class="rgrid">
+        <div class="rf full"><label for="resumeFile">Resume file</label>
+          <input id="resumeFile" name="resumeFile" type="file" accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document">
+          <span class="sub">Supported formats: PDF, DOCX · Max size: 10MB</span>
+        </div>
+      </div>
+    </div>
+
+    <p class="rbanner" id="rbanner" role="status" aria-live="polite" hidden></p>
+
+    <div class="ract">
+      <button class="btn btn-ghost" type="button" id="rclear">Clear form</button>
+      <button class="btn btn-navy" type="submit" id="rsubmit" disabled>Submit referral</button>
+    </div>
+  </form>
 </div></section>
+
 <section class="sec tight"><div class="wrap reveal"><div class="navy-band"><span class="ring"></span>
-  <div class="row"><div><h2>Ready to build your team?</h2>
-  <p>Start with a pilot role, a managed pod, or a GCC conversation. We come back with a plan and ramp-up timelines, fast.</p></div>
+  <div class="row"><div><h2>Hiring for your own team?</h2>
+  <p>We build teams the same way we reward referrals: sourced, vetted, deployed, and managed, with one named delivery lead.</p></div>
   <a class="btn btn-gold" href="contact.html">Let's Talk</a></div></div></div></section></main><footer>
   <div class="wrap">
     <div class="fcols">
@@ -362,6 +484,22 @@
     </div>
   </div>
 </footer>
+<div class="modal" id="policyModal" role="dialog" aria-modal="true" aria-labelledby="policyTitle">
+  <div class="sheet">
+    <div class="mh"><h2 id="policyTitle">Referral Policy 2026</h2>
+      <button class="x" type="button" id="policyClose" aria-label="Close">×</button></div>
+    <!-- tabindex=-1: once focus enters the PDF viewer its own document swallows
+         keydown, so the dialog can no longer contain Tab. Keyboard users reach the
+         document itself through the two links below. -->
+    <iframe id="policyFrame" title="MIYO Global Referral Policy 2026" tabindex="-1"></iframe>
+    <div class="mf">
+      <div><a href="documents/MIYO_Global_Referral_Policy_2026.pdf" download>Download the PDF</a>
+        &nbsp;·&nbsp;
+        <a href="documents/MIYO_Global_Referral_Policy_2026.pdf" target="_blank" rel="noopener">Open in new tab</a></div>
+      <button class="btn btn-navy" type="button" data-policy-close>Close</button>
+    </div>
+  </div>
+</div>
 <div class="cookiebar" id="cookiebar" role="dialog" aria-label="Cookie notice">
   <p>We use essential functionality only, no tracking or advertising cookies. Fonts load from Google Fonts. See our <a href="privacy-policy.html">Privacy &amp; Cookie Policy</a>.</p>
   <button class="btn btn-gold" id="cookieok" type="button">Got it</button>
@@ -385,18 +523,6 @@
     if(reduce){el.textContent=target+suf;return;}
     const dur=1200,t0=performance.now();
     (function tick(t){const p=Math.min((t-t0)/dur,1);el.textContent=Math.round((1-Math.pow(1-p,3))*target)+suf;if(p<1)requestAnimationFrame(tick);})(t0);}
-  const rings=document.querySelectorAll('.hero .gfx .ring');
-  if(!reduce&&rings.length){addEventListener('scroll',()=>{const y=scrollY*0.06;rings.forEach((r,i)=>r.style.translate='0 '+(y*(i?1.6:1))+'px');},{passive:true});}
-  const slides=[...document.querySelectorAll('#slides .slide')], dots=document.getElementById('dots');
-  if(slides.length&&dots){let si=0,timer;
-    slides.forEach((s,i)=>{const b=document.createElement('button');b.className=i?'':'on';b.setAttribute('role','tab');b.setAttribute('aria-label','Highlight '+(i+1));b.onclick=()=>{go(i);restart();};dots.appendChild(b);});
-    const d=[...dots.children];
-    function go(i){slides[si].classList.remove('active');d[si].classList.remove('on');si=i;slides[si].classList.add('active');d[si].classList.add('on');}
-    function next(){go((si+1)%slides.length);}
-    function start(){if(!reduce)timer=setInterval(next,4500);}
-    function restart(){clearInterval(timer);start();}
-    const sl=document.querySelector('.slider');
-    sl.addEventListener('mouseenter',()=>clearInterval(timer)); sl.addEventListener('mouseleave',start); start();}
   // cookie consent (essential-only site; records acknowledgement)
   try{
     const cb=document.getElementById('cookiebar');
@@ -405,19 +531,210 @@
       document.getElementById('cookieok').addEventListener('click',()=>{try{localStorage.setItem('miyo-consent','1');}catch(_){}cb.classList.remove('show');});
     }
   }catch(_){}
-  const cf=document.getElementById('cform');
-  if(cf){const note=document.getElementById('fnote');
-    cf.addEventListener('submit',async(e)=>{e.preventDefault();
-      const nv=cf.name.value.trim(), ev=cf.email.value.trim(), mv=cf.message.value.trim();
-      const okE=/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(ev);
-      if(!nv||!okE||!mv){note.textContent=!nv?'Please add your name.':!okE?'Please use a valid work email.':'Please tell us what you need.';
-        note.className='form-note err';(!nv?cf.name:!okE?cf.email:cf.message).focus();return;}
-      note.textContent='Sending\u2026'; note.className='form-note';
-      try{const r=await fetch(cf.action,{method:'POST',body:new FormData(cf),headers:{'X-Requested-With':'fetch'}});
-        let j={};try{j=await r.json();}catch(_){}
-        if(r.ok&&j.ok){note.textContent='Thanks \u2014 we will be in touch shortly.';note.className='form-note ok';cf.reset();}
-        else{note.textContent=(j&&j.error)||'Something went wrong. Please email staffing@miyoglobal.com.';note.className='form-note err';}
-      }catch(err){note.textContent='Network error. Please email staffing@miyoglobal.com directly.';note.className='form-note err';}});}
+
+  /* ── Referral policy modal ─────────────────────────────────────────── */
+  const POLICY_PDF='documents/MIYO_Global_Referral_Policy_2026.pdf';
+  const modal=document.getElementById('policyModal'), frame=document.getElementById('policyFrame'),
+        closeBtn=document.getElementById('policyClose');
+  let lastFocus=null;
+  function openPolicy(){
+    lastFocus=document.activeElement;
+    // Load the PDF on first open so it is not fetched on every page view.
+    // navpanes/toolbar hide the built-in PDF chrome in Chrome, Edge and Safari.
+    if(!frame.src) frame.src=POLICY_PDF+'#navpanes=0&toolbar=0&view=FitH';
+    modal.classList.add('show'); document.body.classList.add('locked'); closeBtn.focus();
+  }
+  function closePolicy(){
+    modal.classList.remove('show'); document.body.classList.remove('locked');
+    if(lastFocus&&lastFocus.focus) lastFocus.focus();
+  }
+  document.querySelectorAll('[data-policy]').forEach(b=>b.addEventListener('click',openPolicy));
+  document.querySelectorAll('[data-policy-close]').forEach(b=>b.addEventListener('click',closePolicy));
+  closeBtn.addEventListener('click',closePolicy);
+  modal.addEventListener('click',e=>{if(e.target===modal)closePolicy();});
+  const MODAL_FOCUSABLE='a[href],button:not([disabled]),iframe,[tabindex]:not([tabindex="-1"])';
+  addEventListener('keydown',e=>{
+    if(!modal.classList.contains('show')) return;
+    if(e.key==='Escape'){closePolicy();return;}
+    if(e.key!=='Tab') return;
+    // The dialog declares aria-modal="true", so keep Tab inside it.
+    const items=[...modal.querySelectorAll(MODAL_FOCUSABLE)];
+    if(!items.length) return;
+    const first=items[0], last=items[items.length-1], active=document.activeElement;
+    if(e.shiftKey ? (active===first||!modal.contains(active)) : active===last){
+      e.preventDefault(); (e.shiftKey?last:first).focus();
+    }
+  });
+
+  /* ── Referral form ─────────────────────────────────────────────────── */
+  // Open positions and referral submissions are handled by a Google Apps Script
+  // web app. The URL must end in /exec (not /usercontent) for the GET (jobs) and
+  // POST (submission) calls to work. Swapping backends is a one-line change here.
+  const REFERRAL_ENDPOINT='https://script.google.com/macros/s/AKfycbwicD4imd-odXbCAF1Wtyw802_pSx9GHumZfslYjdu3js1OEghIBEBmkk3pvX79fSu1/exec';
+  const MAX_RESUME_MB=10, MAX_RESUME_BYTES=MAX_RESUME_MB*1024*1024;
+  const ALLOWED_RESUME=['.pdf','.docx'];
+
+  const rform=document.getElementById('rform');
+  const sel=document.getElementById('jobSelect'), jstat=document.getElementById('jobStatus'),
+        jretry=document.getElementById('jobRetry'), jbox=document.getElementById('jobDetail'),
+        ack=document.getElementById('ackPolicy'), resume=document.getElementById('resumeFile'),
+        banner=document.getElementById('rbanner'), submitBtn=document.getElementById('rsubmit'),
+        clearBtn=document.getElementById('rclear');
+  const F=id=>document.getElementById(id);
+  let jobs=[], submitting=false;
+
+  function showBanner(tone,text){
+    banner.hidden=false; banner.textContent=text; banner.className='rbanner'+(tone?' '+tone:'');
+    requestAnimationFrame(()=>banner.scrollIntoView({behavior:reduce?'auto':'smooth',block:'center'}));
+  }
+  function hideBanner(){banner.hidden=true;banner.textContent='';banner.className='rbanner';}
+  function setJobStatus(text,isErr){
+    jstat.firstChild.nodeValue=text+' ';
+    jstat.className='jstatus'+(isErr?' err':''); jretry.hidden=!isErr;
+  }
+  function syncSubmit(){submitBtn.disabled=submitting||!ack.checked;}
+  ack.addEventListener('change',syncSubmit);
+
+  function renderJob(job){
+    jbox.textContent='';
+    if(!job){jbox.hidden=true;return;}
+    const row=(k,v)=>{const p=document.createElement('p');
+      const s=document.createElement('span'); s.className='k'; s.textContent=k+': ';
+      p.appendChild(s); p.appendChild(document.createTextNode(v)); return p;};
+    const t=document.createElement('div'); t.className='jr'; t.textContent=job.role||'';
+    jbox.appendChild(t);
+    if(job.location) jbox.appendChild(row('Location',job.location));
+    if(job.priority) jbox.appendChild(row('Priority',job.priority));
+    if(job.description) jbox.appendChild(row('Description',job.description));
+    if(job.jobId) jbox.appendChild(row('Job ID',job.jobId));
+    jbox.hidden=false;
+  }
+  sel.addEventListener('change',()=>renderJob(jobs.find(j=>j.jobId===sel.value)));
+
+  // Same Apps Script endpoint Prime Learning uses (primelearning.ae/referral).
+  // /exec 302s to script.googleusercontent.com — both hosts must be in CSP connect-src
+  // (see vercel.json and .htaccess) or the browser reports "Failed to fetch".
+  async function fetchJobsOnce(signal){
+    const r=await fetch(REFERRAL_ENDPOINT+'?action=getJobs',{method:'GET',mode:'cors',credentials:'omit',signal});
+    if(!r.ok) throw new Error('network response was not OK ('+r.status+')');
+    const d=await r.json();
+    if(d.status!=='success'||!Array.isArray(d.jobs)) throw new Error(d.message||'unexpected response from server');
+    return d.jobs;
+  }
+
+  async function loadJobs(){
+    sel.disabled=true; sel.textContent=''; sel.add(new Option('Loading positions…',''));
+    renderJob(null); setJobStatus('Fetching open positions…',false);
+    const attempts=3;
+    let lastErr=null;
+    for(let i=0;i<attempts;i++){
+      const ctrl=typeof AbortController!=='undefined'?new AbortController():null;
+      const timer=ctrl?setTimeout(()=>ctrl.abort(),25000):null;
+      try{
+        if(i>0) setJobStatus('Still fetching open positions (attempt '+(i+1)+' of '+attempts+')…',false);
+        jobs=await fetchJobsOnce(ctrl?ctrl.signal:undefined);
+        if(timer) clearTimeout(timer);
+        if(!jobs.length){
+          sel.textContent=''; sel.add(new Option('No open positions',''));
+          setJobStatus('No open positions right now. Please check back later.',true); return;
+        }
+        sel.textContent=''; sel.add(new Option('Select a position',''));
+        // new Option() sets textContent, so remote job text can never inject markup.
+        jobs.forEach(j=>sel.add(new Option(j.role+', '+j.location,j.jobId)));
+        sel.disabled=false;
+        setJobStatus(jobs.length+' open position'+(jobs.length===1?'':'s')+' loaded.',false);
+        return;
+      }catch(e){
+        if(timer) clearTimeout(timer);
+        lastErr=e;
+        // Brief backoff before retry — Apps Script cold starts are often transient.
+        if(i<attempts-1) await new Promise(r=>setTimeout(r,800*(i+1)));
+      }
+    }
+    const msg=(lastErr&&lastErr.name==='AbortError')?'request timed out':(lastErr&&lastErr.message)||'unknown error';
+    jobs=[]; sel.textContent=''; sel.add(new Option('Could not load positions','')); sel.disabled=true;
+    setJobStatus('Could not load positions: '+msg+'. Use retry, or email staffing@miyoglobal.com.',true);
+  }
+  jretry.addEventListener('click',loadJobs);
+  loadJobs();
+
+  const digits=s=>s.replace(/\D/g,'');
+  const okEmail=s=>/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s);
+
+  function validate(){
+    const file=resume.files&&resume.files[0];
+    if(!F('refName').value.trim()) return [F('refName'),'Please enter your name.'];
+    if(!okEmail(F('refEmail').value.trim())) return [F('refEmail'),'Please enter a valid referrer email.'];
+    if(digits(F('refPhone').value).length!==10) return [F('refPhone'),'Referrer phone must be exactly 10 digits.'];
+    if(!F('candName').value.trim()) return [F('candName'),'Please enter the candidate name.'];
+    if(!okEmail(F('candEmail').value.trim())) return [F('candEmail'),'Please enter a valid candidate email.'];
+    if(digits(F('candPhone').value).length!==10) return [F('candPhone'),'Candidate phone must be exactly 10 digits.'];
+    if(!sel.value) return [sel,'Please select a position.'];
+    if(!file) return [resume,"Please upload the candidate's resume."];
+    if(!ALLOWED_RESUME.some(ext=>file.name.toLowerCase().endsWith(ext)))
+      return [resume,'Resume must be a PDF or DOCX file.'];
+    if(file.size>MAX_RESUME_BYTES) return [resume,'Resume must be less than '+MAX_RESUME_MB+'MB.'];
+    if(!ack.checked) return [ack,'Please acknowledge the referral policy.'];
+    return null;
+  }
+
+  function clearForm(){
+    rform.reset(); renderJob(null); hideBanner(); syncSubmit();
+  }
+  clearBtn.addEventListener('click',clearForm);
+
+  rform.addEventListener('submit',e=>{
+    e.preventDefault();
+    if(submitting) return;
+    const bad=validate();
+    if(bad){showBanner('err',bad[1]); bad[0].focus(); return;}
+
+    const file=resume.files[0];
+    const job=jobs.find(j=>j.jobId===sel.value)||{};
+    submitting=true; submitBtn.disabled=true; submitBtn.textContent='Submitting…';
+    showBanner('',"Uploading the resume and submitting the referral, please wait…");
+
+    const reader=new FileReader();
+    reader.onerror=()=>{
+      showBanner('err','Could not read the resume file. Please try again.');
+      submitting=false; submitBtn.textContent='Submit referral'; syncSubmit();
+    };
+    reader.onload=async ev=>{
+      // FileReader gives "data:application/pdf;base64,XXXX…" — strip the prefix.
+      const base64=String(ev.target.result||'').split(',')[1]||'';
+      const payload={
+        referrerName:F('refName').value.trim(),
+        referrerContact:F('refEmail').value.trim(),
+        referrerPhone:digits(F('refPhone').value),
+        candidateName:F('candName').value.trim(),
+        candidateEmail:F('candEmail').value.trim(),
+        candidatePhone:digits(F('candPhone').value),
+        jobApplied:job.role||'',
+        jobId:job.jobId||'',
+        jobDescription:job.description||'',
+        hmEmail:job.hmEmail||'',
+        resumeBase64:base64,
+        resumeMimeType:file.type,
+        resumeFileName:file.name
+      };
+      try{
+        // No Content-Type header on purpose: setting application/json triggers a CORS
+        // preflight (OPTIONS) that Apps Script silently drops. Without it the browser
+        // sends a simple request and Apps Script still reads e.postData.contents.
+        const r=await fetch(REFERRAL_ENDPOINT,{method:'POST',body:JSON.stringify(payload)});
+        if(!r.ok) throw new Error('server returned status '+r.status);
+        const d=await r.json();
+        if(d.status!=='success') throw new Error(d.message||'unknown server error');
+        showBanner('ok','Referral submitted. '+file.name+' has been saved, the referral log is updated, and the hiring team has been notified.');
+        setTimeout(clearForm,6000);
+      }catch(err){
+        showBanner('err','Submission failed: '+err.message+'. Please try again, or email staffing@miyoglobal.com.');
+      }finally{
+        submitting=false; submitBtn.textContent='Submit referral'; syncSubmit();
+      }
+    };
+    reader.readAsDataURL(file);
+  });
 </script>
 </body>
 </html>

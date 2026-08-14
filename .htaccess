@@ -5,7 +5,10 @@ ErrorDocument 404 /404.html
   Header always set X-Frame-Options "SAMEORIGIN"
   Header always set Referrer-Policy "strict-origin-when-cross-origin"
   Header always set Permissions-Policy "camera=(), microphone=(), geolocation=()"
-  Header always set Content-Security-Policy "default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; script-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; frame-ancestors 'self'; base-uri 'self'; form-action 'self'"
+  # connect-src also allows script.google.com: the Referrals page reads open positions
+  # from, and posts referrals to, a Google Apps Script web app. /exec answers with a 302
+  # to script.googleusercontent.com, so both hosts have to be listed or the fetch fails.
+  Header always set Content-Security-Policy "default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; script-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' https://script.google.com https://script.googleusercontent.com; frame-ancestors 'self'; base-uri 'self'; form-action 'self'"
   # Enable HSTS only once HTTPS is confirmed working:
   # Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
 </IfModule>
