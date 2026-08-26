@@ -678,7 +678,7 @@
     if(e&&e.name==='AbortError')
       return 'The positions service did not answer in time. That is usually a slow connection or a cold start, and trying again normally works.';
     if(e instanceof TypeError)
-      return 'Your browser could not reach the positions service. An ad blocker, privacy extension, VPN or office firewall will cause this — try another network, or allow script.google.com and script.googleusercontent.com for this site.';
+      return 'Your browser could not reach miyoglobal.com to load positions. An ad blocker, privacy extension, VPN or office firewall may be blocking this site — try another network or browser, or email us directly.';
     return (e&&e.message)?e.message:'Something went wrong while loading positions.';
   }
   function showFail(bad,title,why,raw){
@@ -792,11 +792,15 @@
     e.preventDefault(); pickTile(list[n]); list[n].focus();
   });
 
-  // Same Apps Script endpoint Prime Learning uses (primelearning.ae/referral).
-  // /exec 302s to script.googleusercontent.com — both hosts must be in CSP connect-src
-  // (see vercel.json and .htaccess) or the browser reports "Failed to fetch".
+  // The open-positions GET goes through our own /api/jobs (see api/jobs.js),
+  // which proxies to Apps Script server-side. That keeps this request same-origin
+  // so an ad blocker, VPN or office firewall that singles out script.google.com
+  // can't silently drop it the way it could when we called Apps Script directly —
+  // that used to leave referrers stuck on "Fetching open positions…" forever.
+  // Submitting a referral (below) still posts straight to Apps Script, since the
+  // resume upload is too large for a same-origin function proxy to relay.
   async function fetchJobsOnce(signal){
-    const r=await fetch(REFERRAL_ENDPOINT+'?action=getJobs',{method:'GET',mode:'cors',credentials:'omit',signal});
+    const r=await fetch('/api/jobs',{method:'GET',signal});
     if(!r.ok) throw new Error('network response was not OK ('+r.status+')');
     const d=await r.json();
     if(d.status!=='success'||!Array.isArray(d.jobs)) throw new Error(d.message||'unexpected response from server');
