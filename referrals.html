@@ -311,9 +311,7 @@
   .ack span{color:var(--muted);font-size:.96rem}
   .linkbtn{background:none;border:0;padding:0;font:inherit;font-weight:700;color:var(--gold-deep);text-decoration:underline;text-underline-offset:2px;cursor:pointer}
 
-  .jstatus{margin-top:13px;font-size:.9rem;color:var(--muted);display:flex;gap:14px;align-items:center;flex-wrap:wrap}
-  .jstatus.err{color:#B4231F}
-  .jstatus .btn{padding:.5em 1em;font-size:.85rem}
+  .jstatus{margin-top:13px;font-size:.9rem;color:var(--muted)}
 
   /* 76 live mandates is too many to scan, so the grid is searchable and capped. */
   .jtsearch{position:relative;margin-top:18px}
@@ -330,6 +328,21 @@
   .jtpicked .lb{font-size:.72rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--gold-deep)}
   .jtfoot{display:flex;justify-content:center;margin-top:16px}
   .jtfoot .btn{padding:.62em 1.3em;font-size:.9rem}
+  .jtfail{display:flex;gap:16px;align-items:flex-start;margin-top:18px;padding:20px 22px;
+    border:1.5px solid var(--border);background:var(--bg2);border-radius:15px}
+  .jtfail.bad{border-color:#F0C9C7;background:#FDF4F3}
+  .jtfail .jf-ic{width:38px;height:38px;border-radius:11px;flex:none;display:flex;align-items:center;justify-content:center;
+    background:var(--tint);border:1px solid var(--border)}
+  .jtfail.bad .jf-ic{background:#FBE3E1;border-color:#F0C9C7}
+  .jtfail .jf-ic svg{width:19px;height:19px;stroke:var(--soft);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+  .jtfail.bad .jf-ic svg{stroke:#B4231F}
+  .jtfail .jf-t{font-weight:700;font-size:1.02rem;color:var(--ink)}
+  .jtfail .jf-w{color:var(--muted);font-size:.93rem;margin-top:5px;max-width:64ch}
+  .jtfail .jf-raw{display:inline-block;margin-top:9px;font-size:.78rem;color:var(--soft);
+    background:var(--tint);border:1px solid var(--border);border-radius:7px;padding:.28em .6em;
+    font-family:ui-monospace,SFMono-Regular,Menlo,monospace;word-break:break-word}
+  .jtfail .jf-act{display:flex;gap:10px;flex-wrap:wrap;margin-top:15px}
+  .jtfail .jf-act .btn{padding:.58em 1.15em;font-size:.89rem}
 
   /* Open positions render as a selectable tile grid, not a dropdown. */
   .jobtiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(266px,1fr));gap:14px;margin-top:18px}
@@ -475,8 +488,19 @@
       <div class="jtsearch" id="jobSearchWrap" hidden>
         <input id="jobSearch" type="search" autocomplete="off" placeholder="Search by role, location or job ID" aria-label="Search open positions">
       </div>
-      <p class="jstatus" id="jobStatus" role="status" aria-live="polite">Fetching open positions…
-        <button class="btn btn-ghost" type="button" id="jobRetry" hidden>Retry</button></p>
+      <p class="jstatus" id="jobStatus" role="status" aria-live="polite">Fetching open positions…</p>
+      <div class="jtfail" id="jobFail" role="alert" hidden>
+        <span class="jf-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16v.01"/></svg></span>
+        <div>
+          <div class="jf-t" id="jobFailTitle"></div>
+          <p class="jf-w" id="jobFailWhy"></p>
+          <code class="jf-raw" id="jobFailRaw" hidden></code>
+          <div class="jf-act">
+            <button class="btn btn-navy" type="button" id="jobRetry">Try again</button>
+            <a class="btn btn-ghost" href="mailto:staffing@miyoglobal.com?subject=Referral%20-%20positions%20will%20not%20load">Email staffing@miyoglobal.com</a>
+          </div>
+        </div>
+      </div>
       <p class="jtpicked" id="jobPicked" hidden></p>
       <div class="jobtiles" id="jobTiles" role="radiogroup" aria-label="Open positions" tabindex="-1"></div>
       <div class="jtfoot"><button class="btn btn-ghost" type="button" id="jobMore" hidden></button></div>
@@ -627,6 +651,8 @@
   const tiles=document.getElementById('jobTiles'), jstat=document.getElementById('jobStatus'),
         jretry=document.getElementById('jobRetry'), jsearch=document.getElementById('jobSearch'),
         jsearchWrap=document.getElementById('jobSearchWrap'), jmore=document.getElementById('jobMore'),
+        jfail=document.getElementById('jobFail'), jfailTitle=document.getElementById('jobFailTitle'),
+        jfailWhy=document.getElementById('jobFailWhy'), jfailRaw=document.getElementById('jobFailRaw'),
         jpicked=document.getElementById('jobPicked'),
         ack=document.getElementById('ackPolicy'), resume=document.getElementById('resumeFile'),
         banner=document.getElementById('rbanner'), submitBtn=document.getElementById('rsubmit'),
@@ -641,9 +667,25 @@
     requestAnimationFrame(()=>banner.scrollIntoView({behavior:reduce?'auto':'smooth',block:'center'}));
   }
   function hideBanner(){banner.hidden=true;banner.textContent='';banner.className='rbanner';}
-  function setJobStatus(text,isErr){
-    jstat.firstChild.nodeValue=text+' ';
-    jstat.className='jstatus'+(isErr?' err':''); jretry.hidden=!isErr;
+  function setJobStatus(text){
+    jstat.textContent=text||''; jstat.hidden=!text; jstat.className='jstatus';
+  }
+  function hideFail(){jfail.hidden=true;}
+  // Distinguish the two failures a referrer can actually act on: a request the
+  // browser never got to send (blocker / VPN / firewall) versus one that was
+  // sent and never came back in time.
+  function failWhy(e){
+    if(e&&e.name==='AbortError')
+      return 'The positions service did not answer in time. That is usually a slow connection or a cold start, and trying again normally works.';
+    if(e instanceof TypeError)
+      return 'Your browser could not reach the positions service. An ad blocker, privacy extension, VPN or office firewall will cause this — try another network, or allow script.google.com and script.googleusercontent.com for this site.';
+    return (e&&e.message)?e.message:'Something went wrong while loading positions.';
+  }
+  function showFail(bad,title,why,raw){
+    jfail.className='jtfail'+(bad?' bad':'');
+    jfailTitle.textContent=title; jfailWhy.textContent=why;
+    jfailRaw.textContent=raw||''; jfailRaw.hidden=!raw;
+    jfail.hidden=false;
   }
   function syncSubmit(){submitBtn.disabled=submitting||!ack.checked;}
   ack.addEventListener('change',syncSubmit);
@@ -716,10 +758,10 @@
     jmore.hidden=rest<=0;
     if(rest>0) jmore.textContent='Show all '+hits.length+' positions';
     if(!jobs.length) return;
-    if(!hits.length) setJobStatus('No positions match that search. Try a different role or location.',false);
-    else if(jobQuery) setJobStatus(hits.length+' of '+jobs.length+' positions match'+(rest>0?', showing '+shown.length:'')+'.',false);
+    if(!hits.length) setJobStatus('No positions match that search. Try a different role or location.');
+    else if(jobQuery) setJobStatus(hits.length+' of '+jobs.length+' positions match'+(rest>0?', showing '+shown.length:'')+'.');
     else setJobStatus(jobs.length+' open position'+(jobs.length===1?'':'s')+'. '+
-      (rest>0?'Showing the first '+shown.length+' — search or show all to see the rest.':'Select one below.'),false);
+      (rest>0?'Showing the first '+shown.length+' — search or show all to see the rest.':'Select one below.'));
   }
   function pickTile(tile){
     pickedJobId=tile?tile.dataset.id:'';
@@ -761,22 +803,27 @@
     return d.jobs;
   }
 
+  // 20s per try: the board is ~40KB behind an Apps Script /exec redirect, and a
+  // cold start alone can spend several seconds before a byte is sent.
+  const JOBS_TIMEOUT_MS=20000, JOBS_ATTEMPTS=3;
+
   async function loadJobs(){
-    showSkeletons(3); pickedJobId=''; renderPicked();
+    showSkeletons(3); pickedJobId=''; renderPicked(); hideFail();
     jobQuery=''; showAllJobs=false; jsearch.value=''; jsearchWrap.hidden=true; jmore.hidden=true;
-    setJobStatus('Fetching open positions…',false);
-    const attempts=3;
+    setJobStatus('Fetching open positions…');
     let lastErr=null;
-    for(let i=0;i<attempts;i++){
+    for(let i=0;i<JOBS_ATTEMPTS;i++){
       const ctrl=typeof AbortController!=='undefined'?new AbortController():null;
-      const timer=ctrl?setTimeout(()=>ctrl.abort(),12000):null;
+      const timer=ctrl?setTimeout(()=>ctrl.abort(),JOBS_TIMEOUT_MS):null;
       try{
-        if(i>0) setJobStatus('Still fetching open positions (attempt '+(i+1)+' of '+attempts+')…',false);
+        if(i>0) setJobStatus('Still fetching open positions (attempt '+(i+1)+' of '+JOBS_ATTEMPTS+')…');
         jobs=await fetchJobsOnce(ctrl?ctrl.signal:undefined);
         if(timer) clearTimeout(timer);
         if(!jobs.length){
-          tiles.textContent='';
-          setJobStatus('No open positions right now. Please check back later.',true); return;
+          tiles.textContent=''; setJobStatus('');
+          showFail(false,'No open positions right now',
+            'There are no live mandates on the board today. Please check back soon, or email us and we will tell you when something opens.');
+          return;
         }
         jsearchWrap.hidden=jobs.length<=TILE_CAP;
         renderTiles();
@@ -785,13 +832,13 @@
         if(timer) clearTimeout(timer);
         lastErr=e;
         // Brief backoff before retry — Apps Script cold starts are often transient.
-        if(i<attempts-1) await new Promise(r=>setTimeout(r,800*(i+1)));
+        if(i<JOBS_ATTEMPTS-1) await new Promise(r=>setTimeout(r,800*(i+1)));
       }
     }
-    const msg=(lastErr&&lastErr.name==='AbortError')?'request timed out':(lastErr&&lastErr.message)||'unknown error';
     jobs=[]; tiles.textContent=''; pickedJobId=''; renderPicked();
-    jsearchWrap.hidden=true; jmore.hidden=true;
-    setJobStatus('Could not load positions: '+msg+'. Use retry, or email staffing@miyoglobal.com.',true);
+    jsearchWrap.hidden=true; jmore.hidden=true; setJobStatus('');
+    showFail(true,'Could not load open positions',failWhy(lastErr),
+      (lastErr&&(lastErr.name+': '+lastErr.message))||'');
   }
   jretry.addEventListener('click',loadJobs);
   loadJobs();
