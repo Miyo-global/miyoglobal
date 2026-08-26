@@ -299,12 +299,8 @@
   .rgrid .full{grid-column:1/-1}
   .rf{display:flex;flex-direction:column;gap:7px}
   .rf label{font-size:.82rem;color:var(--muted);font-weight:700}
-  .rf input,.rf select{width:100%;background-color:var(--bg2);border:1.5px solid var(--border);border-radius:11px;padding:13px 15px;color:var(--ink);font:inherit;font-size:.95rem;transition:border-color .2s}
-  .rf input:focus,.rf select:focus{outline:none;border-color:var(--gold-deep)}
-  .rf select{appearance:none;-webkit-appearance:none;padding-right:44px;cursor:pointer;
-    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%235B6B82' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
-    background-repeat:no-repeat;background-position:right 15px center;background-size:15px}
-  .rf select:disabled{color:var(--soft);cursor:not-allowed}
+  .rf input{width:100%;background-color:var(--bg2);border:1.5px solid var(--border);border-radius:11px;padding:13px 15px;color:var(--ink);font:inherit;font-size:.95rem;transition:border-color .2s}
+  .rf input:focus{outline:none;border-color:var(--gold-deep)}
   .rf input[type=file]{padding:9px 14px;cursor:pointer}
   .rf input[type=file]::file-selector-button{margin-right:14px;border:0;border-radius:999px;background:var(--gold);color:var(--ink);font:inherit;font-weight:600;font-size:.88rem;padding:.6em 1.2em;cursor:pointer;transition:background .2s}
   .rf input[type=file]::file-selector-button:hover{background:#EFC97A}
@@ -319,6 +315,22 @@
   .jstatus.err{color:#B4231F}
   .jstatus .btn{padding:.5em 1em;font-size:.85rem}
 
+  /* 76 live mandates is too many to scan, so the grid is searchable and capped. */
+  .jtsearch{position:relative;margin-top:18px}
+  .jtsearch input{width:100%;background-color:var(--bg2);border:1.5px solid var(--border);border-radius:11px;
+    padding:13px 15px 13px 43px;color:var(--ink);font:inherit;font-size:.95rem;transition:border-color .2s}
+  .jtsearch input:focus{outline:none;border-color:var(--gold-deep)}
+  .jtsearch input::-webkit-search-cancel-button{cursor:pointer}
+  .jtsearch::before{content:"";position:absolute;left:16px;top:50%;margin-top:-8px;width:16px;height:16px;pointer-events:none;opacity:.5;
+    background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%235B6B82' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='m20 20-3.5-3.5'/%3E%3C/svg%3E") no-repeat center/16px}
+  .jtpicked{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:14px;
+    border:1.5px solid rgba(224,180,88,.55);background:rgba(224,180,88,.12);border-radius:12px;padding:11px 15px;
+    font-size:.9rem;color:var(--ink)}
+  .jtpicked b{font-weight:700}
+  .jtpicked .lb{font-size:.72rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--gold-deep)}
+  .jtfoot{display:flex;justify-content:center;margin-top:16px}
+  .jtfoot .btn{padding:.62em 1.3em;font-size:.9rem}
+
   /* Open positions render as a selectable tile grid, not a dropdown. */
   .jobtiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(266px,1fr));gap:14px;margin-top:18px}
   .jobtiles:empty{display:none}
@@ -330,14 +342,17 @@
   .jobtile:hover{transform:translateY(-3px);border-color:rgba(224,180,88,.7);box-shadow:var(--shadow)}
   .jobtile[aria-checked="true"]{border-color:var(--gold);background:linear-gradient(180deg,#FFFCF4 0%,#fff 62%);
     box-shadow:0 14px 32px rgba(224,180,88,.24)}
-  .jobtile .jt-role{font-weight:700;font-size:1.05rem;line-height:1.28;letter-spacing:-.015em;padding-right:34px}
+  /* Titles and blurbs are clamped to a fixed number of lines so every tile in a
+     row lines up: real role names run from 8 to 61 characters. */
+  .jobtile .jt-role{font-weight:700;font-size:1rem;line-height:1.3;letter-spacing:-.015em;padding-right:34px;
+    display:-webkit-box;-webkit-line-clamp:3;line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
   .jobtile .jt-tags{display:flex;flex-wrap:wrap;gap:7px}
   .jt-tag{display:inline-flex;align-items:center;gap:.42em;font-size:.75rem;font-weight:600;color:var(--muted);
-    background:var(--tint);border:1px solid var(--border);border-radius:999px;padding:.32em .75em;line-height:1.35}
-  .jt-tag.pri{color:var(--gold-deep);background:rgba(224,180,88,.15);border-color:rgba(224,180,88,.45)}
+    background:var(--tint);border:1px solid var(--border);border-radius:999px;padding:.32em .75em;line-height:1.35;
+    max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .jt-tag svg{width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
-  .jt-desc{color:var(--muted);font-size:.89rem;line-height:1.5;
-    display:-webkit-box;-webkit-line-clamp:3;line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+  .jt-desc{color:var(--muted);font-size:.88rem;line-height:1.5;
+    display:-webkit-box;-webkit-line-clamp:2;line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:2.64em}
   .jt-id{margin-top:auto;padding-top:2px;font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--soft)}
   .jt-check{position:absolute;top:17px;right:17px;width:21px;height:21px;border-radius:50%;flex:none;
     border:1.5px solid var(--border);background:#fff;transition:border-color .2s,background .2s}
@@ -379,7 +394,7 @@
     .rgrid,.pol .pr{grid-template-columns:1fr}
     .ract .btn{flex:1 1 100%}
     .rcard{padding:22px}
-    .rf input,.rf select{font-size:16px}
+    .rf input{font-size:16px}
   }
 </style>
 </head>
@@ -457,9 +472,14 @@
     <div class="rcard">
       <h3>Position</h3>
       <p class="hint">Pick the open mandate you are referring the candidate for.</p>
+      <div class="jtsearch" id="jobSearchWrap" hidden>
+        <input id="jobSearch" type="search" autocomplete="off" placeholder="Search by role, location or job ID" aria-label="Search open positions">
+      </div>
       <p class="jstatus" id="jobStatus" role="status" aria-live="polite">Fetching open positions…
         <button class="btn btn-ghost" type="button" id="jobRetry" hidden>Retry</button></p>
+      <p class="jtpicked" id="jobPicked" hidden></p>
       <div class="jobtiles" id="jobTiles" role="radiogroup" aria-label="Open positions" tabindex="-1"></div>
+      <div class="jtfoot"><button class="btn btn-ghost" type="button" id="jobMore" hidden></button></div>
     </div>
 
     <div class="rcard">
@@ -605,12 +625,16 @@
 
   const rform=document.getElementById('rform');
   const tiles=document.getElementById('jobTiles'), jstat=document.getElementById('jobStatus'),
-        jretry=document.getElementById('jobRetry'),
+        jretry=document.getElementById('jobRetry'), jsearch=document.getElementById('jobSearch'),
+        jsearchWrap=document.getElementById('jobSearchWrap'), jmore=document.getElementById('jobMore'),
+        jpicked=document.getElementById('jobPicked'),
         ack=document.getElementById('ackPolicy'), resume=document.getElementById('resumeFile'),
         banner=document.getElementById('rbanner'), submitBtn=document.getElementById('rsubmit'),
         clearBtn=document.getElementById('rclear');
   const F=id=>document.getElementById(id);
-  let jobs=[], submitting=false, pickedJobId='';
+  // TILE_CAP keeps the first paint short; "Show all" and the search box open it up.
+  const TILE_CAP=12;
+  let jobs=[], submitting=false, pickedJobId='', jobQuery='', showAllJobs=false;
 
   function showBanner(tone,text){
     banner.hidden=false; banner.textContent=text; banner.className='rbanner'+(tone?' '+tone:'');
@@ -628,12 +652,11 @@
      textContent, so remote job text can never inject markup; the only innerHTML
      used is the two hard-coded icons. */
   const ICON_LOC='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>';
-  const ICON_PRI='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 2 4.5 13.5H11l-1 8.5L18.5 10.5H12Z"/></svg>';
   const realTiles=()=>[...tiles.querySelectorAll('.jobtile:not(.skel)')];
 
-  function jtTag(text,pri){
-    const t=document.createElement('span'); t.className='jt-tag'+(pri?' pri':'');
-    t.innerHTML=pri?ICON_PRI:ICON_LOC;
+  function jtTag(text){
+    const t=document.createElement('span'); t.className='jt-tag';
+    t.innerHTML=ICON_LOC;
     t.appendChild(document.createTextNode(text)); return t;
   }
   function jtLine(cls,text){
@@ -648,6 +671,56 @@
       tiles.appendChild(d);
     }
   }
+  function jobMatches(j){
+    if(!jobQuery) return true;
+    return ((j.role||'')+' '+(j.location||'')+' '+(j.jobId||'')+' '+(j.description||''))
+      .toLowerCase().indexOf(jobQuery)>-1;
+  }
+  function buildTile(j,i){
+    const b=document.createElement('button');
+    b.type='button'; b.className='jobtile'; b.dataset.id=j.jobId||'';
+    b.setAttribute('role','radio');
+    const on=!!pickedJobId&&j.jobId===pickedJobId;
+    b.setAttribute('aria-checked',on?'true':'false');
+    b.tabIndex=on?0:-1;
+    const chk=document.createElement('span'); chk.className='jt-check'; b.appendChild(chk);
+    b.appendChild(jtLine('jt-role',j.role||'Open position'));
+    if(j.location){
+      const tags=document.createElement('span'); tags.className='jt-tags';
+      tags.appendChild(jtTag(j.location));
+      b.appendChild(tags);
+    }
+    if(j.description) b.appendChild(jtLine('jt-desc',j.description));
+    if(j.jobId) b.appendChild(jtLine('jt-id','ID '+j.jobId));
+    return b;
+  }
+  function renderPicked(){
+    jpicked.textContent='';
+    const j=jobs.find(x=>x.jobId===pickedJobId);
+    if(!j){jpicked.hidden=true;return;}
+    jpicked.appendChild(jtLine('lb','Selected'));
+    const b=document.createElement('b'); b.textContent=j.role||'Open position';
+    jpicked.appendChild(b);
+    jpicked.appendChild(document.createTextNode(
+      (j.location?' · '+j.location:'')+(j.jobId?' · '+j.jobId:'')));
+    jpicked.hidden=false;
+  }
+  function renderTiles(){
+    const hits=jobs.filter(jobMatches);
+    const shown=showAllJobs?hits:hits.slice(0,TILE_CAP);
+    tiles.textContent='';
+    shown.forEach((j,i)=>tiles.appendChild(buildTile(j,i)));
+    // Roving tabindex needs exactly one tab stop when nothing here is picked.
+    if(shown.length&&!tiles.querySelector('.jobtile[aria-checked="true"]')) tiles.firstChild.tabIndex=0;
+    const rest=hits.length-shown.length;
+    jmore.hidden=rest<=0;
+    if(rest>0) jmore.textContent='Show all '+hits.length+' positions';
+    if(!jobs.length) return;
+    if(!hits.length) setJobStatus('No positions match that search. Try a different role or location.',false);
+    else if(jobQuery) setJobStatus(hits.length+' of '+jobs.length+' positions match'+(rest>0?', showing '+shown.length:'')+'.',false);
+    else setJobStatus(jobs.length+' open position'+(jobs.length===1?'':'s')+'. '+
+      (rest>0?'Showing the first '+shown.length+' — search or show all to see the rest.':'Select one below.'),false);
+  }
   function pickTile(tile){
     pickedJobId=tile?tile.dataset.id:'';
     const list=realTiles();
@@ -656,29 +729,14 @@
       t.setAttribute('aria-checked',on?'true':'false');
       t.tabIndex=on?0:-1;
     });
-    // Roving tabindex: with nothing picked the first tile is the group's tab stop.
     if(!tile&&list.length) list[0].tabIndex=0;
+    renderPicked();
   }
-  function renderJobs(list){
-    tiles.textContent=''; pickedJobId='';
-    list.forEach((j,i)=>{
-      const b=document.createElement('button');
-      b.type='button'; b.className='jobtile'; b.dataset.id=j.jobId||'';
-      b.setAttribute('role','radio'); b.setAttribute('aria-checked','false');
-      b.tabIndex=i?-1:0;
-      const chk=document.createElement('span'); chk.className='jt-check'; b.appendChild(chk);
-      b.appendChild(jtLine('jt-role',j.role||'Open position'));
-      if(j.location||j.priority){
-        const tags=document.createElement('span'); tags.className='jt-tags';
-        if(j.location) tags.appendChild(jtTag(j.location,false));
-        if(j.priority) tags.appendChild(jtTag(j.priority,true));
-        b.appendChild(tags);
-      }
-      if(j.description) b.appendChild(jtLine('jt-desc',j.description));
-      if(j.jobId) b.appendChild(jtLine('jt-id','ID '+j.jobId));
-      tiles.appendChild(b);
-    });
-  }
+  jsearch.addEventListener('input',()=>{
+    jobQuery=jsearch.value.trim().toLowerCase();
+    showAllJobs=false; renderTiles();
+  });
+  jmore.addEventListener('click',()=>{showAllJobs=true; renderTiles(); const t=realTiles()[TILE_CAP]; if(t) t.focus();});
   tiles.addEventListener('click',e=>{
     const t=e.target.closest('.jobtile');
     if(t&&!t.classList.contains('skel')) pickTile(t);
@@ -704,7 +762,9 @@
   }
 
   async function loadJobs(){
-    showSkeletons(3); pickedJobId=''; setJobStatus('Fetching open positions…',false);
+    showSkeletons(3); pickedJobId=''; renderPicked();
+    jobQuery=''; showAllJobs=false; jsearch.value=''; jsearchWrap.hidden=true; jmore.hidden=true;
+    setJobStatus('Fetching open positions…',false);
     const attempts=3;
     let lastErr=null;
     for(let i=0;i<attempts;i++){
@@ -718,8 +778,8 @@
           tiles.textContent='';
           setJobStatus('No open positions right now. Please check back later.',true); return;
         }
-        renderJobs(jobs);
-        setJobStatus(jobs.length+' open position'+(jobs.length===1?'':'s')+' loaded. Select one below.',false);
+        jsearchWrap.hidden=jobs.length<=TILE_CAP;
+        renderTiles();
         return;
       }catch(e){
         if(timer) clearTimeout(timer);
@@ -729,7 +789,8 @@
       }
     }
     const msg=(lastErr&&lastErr.name==='AbortError')?'request timed out':(lastErr&&lastErr.message)||'unknown error';
-    jobs=[]; tiles.textContent=''; pickedJobId='';
+    jobs=[]; tiles.textContent=''; pickedJobId=''; renderPicked();
+    jsearchWrap.hidden=true; jmore.hidden=true;
     setJobStatus('Could not load positions: '+msg+'. Use retry, or email staffing@miyoglobal.com.',true);
   }
   jretry.addEventListener('click',loadJobs);
@@ -746,7 +807,7 @@
     if(!F('candName').value.trim()) return [F('candName'),'Please enter the candidate name.'];
     if(!okEmail(F('candEmail').value.trim())) return [F('candEmail'),'Please enter a valid candidate email.'];
     if(digits(F('candPhone').value).length!==10) return [F('candPhone'),'Candidate phone must be exactly 10 digits.'];
-    if(!pickedJobId) return [realTiles()[0]||tiles,'Please select a position.'];
+    if(!pickedJobId) return [realTiles()[0]||jsearch,'Please select a position.'];
     if(!file) return [resume,"Please upload the candidate's resume."];
     if(!ALLOWED_RESUME.some(ext=>file.name.toLowerCase().endsWith(ext)))
       return [resume,'Resume must be a PDF or DOCX file.'];
@@ -756,7 +817,9 @@
   }
 
   function clearForm(){
-    rform.reset(); pickTile(null); hideBanner(); syncSubmit();
+    rform.reset(); pickTile(null); jobQuery=''; showAllJobs=false; jsearch.value='';
+    if(jobs.length) renderTiles();
+    hideBanner(); syncSubmit();
   }
   clearBtn.addEventListener('click',clearForm);
 
