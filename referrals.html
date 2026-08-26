@@ -362,7 +362,7 @@
 </header>
 <main id="main"><section class="phero"><span class="rbg"></span><span class="rbg two"></span>
       <div class="wrap"><div class="crumb"><a href="index.html">Home</a> / Referrals</div>
-      <span class="eyebrow" style="margin-top:10px"># Referral program</span>
+      <span class="eyebrow" style="margin-top:10px">Referral program</span>
       <h1>Refer talent. Earn <span class="g">₹15,000</span>.</h1><p>Know someone great? Refer a candidate for an open MIYO Global mandate. When they are hired and onboarded, you earn a referral reward.</p>
       <div class="hero-cta"><button class="btn btn-navy" type="button" data-policy>Read full policy</button><a class="btn btn-ghost" href="#referral-form">Start a referral</a></div></div></section>
 
@@ -629,7 +629,7 @@
     let lastErr=null;
     for(let i=0;i<attempts;i++){
       const ctrl=typeof AbortController!=='undefined'?new AbortController():null;
-      const timer=ctrl?setTimeout(()=>ctrl.abort(),25000):null;
+      const timer=ctrl?setTimeout(()=>ctrl.abort(),12000):null;
       try{
         if(i>0) setJobStatus('Still fetching open positions (attempt '+(i+1)+' of '+attempts+')…',false);
         jobs=await fetchJobsOnce(ctrl?ctrl.signal:undefined);
