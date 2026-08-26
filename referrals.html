@@ -318,10 +318,44 @@
   .jstatus{margin-top:13px;font-size:.9rem;color:var(--muted);display:flex;gap:14px;align-items:center;flex-wrap:wrap}
   .jstatus.err{color:#B4231F}
   .jstatus .btn{padding:.5em 1em;font-size:.85rem}
-  .jobcard{margin-top:18px;border-left:3px solid var(--gold);background:var(--tint);border-radius:0 12px 12px 0;padding:17px 20px}
-  .jobcard .jr{font-weight:700;color:var(--ink);font-size:1.02rem}
-  .jobcard p{color:var(--muted);font-size:.92rem;margin-top:5px}
-  .jobcard .k{color:var(--soft);font-weight:600}
+
+  /* Open positions render as a selectable tile grid, not a dropdown. */
+  .jobtiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(266px,1fr));gap:14px;margin-top:18px}
+  .jobtiles:empty{display:none}
+  .jobtile{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:10px;
+    text-align:left;font:inherit;color:var(--ink);background:#fff;border:1.5px solid var(--border);
+    border-radius:15px;padding:19px 19px 17px;cursor:pointer;
+    box-shadow:0 4px 14px rgba(11,25,47,.04);
+    transition:transform .18s,box-shadow .22s,border-color .2s,background .2s}
+  .jobtile:hover{transform:translateY(-3px);border-color:rgba(224,180,88,.7);box-shadow:var(--shadow)}
+  .jobtile[aria-checked="true"]{border-color:var(--gold);background:linear-gradient(180deg,#FFFCF4 0%,#fff 62%);
+    box-shadow:0 14px 32px rgba(224,180,88,.24)}
+  .jobtile .jt-role{font-weight:700;font-size:1.05rem;line-height:1.28;letter-spacing:-.015em;padding-right:34px}
+  .jobtile .jt-tags{display:flex;flex-wrap:wrap;gap:7px}
+  .jt-tag{display:inline-flex;align-items:center;gap:.42em;font-size:.75rem;font-weight:600;color:var(--muted);
+    background:var(--tint);border:1px solid var(--border);border-radius:999px;padding:.32em .75em;line-height:1.35}
+  .jt-tag.pri{color:var(--gold-deep);background:rgba(224,180,88,.15);border-color:rgba(224,180,88,.45)}
+  .jt-tag svg{width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
+  .jt-desc{color:var(--muted);font-size:.89rem;line-height:1.5;
+    display:-webkit-box;-webkit-line-clamp:3;line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+  .jt-id{margin-top:auto;padding-top:2px;font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--soft)}
+  .jt-check{position:absolute;top:17px;right:17px;width:21px;height:21px;border-radius:50%;flex:none;
+    border:1.5px solid var(--border);background:#fff;transition:border-color .2s,background .2s}
+  .jobtile[aria-checked="true"] .jt-check{border-color:var(--gold-deep);
+    background:var(--gold) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230B192F' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E") no-repeat center/12px}
+  .jobtile.skel{cursor:default;pointer-events:none;gap:12px}
+  .jobtile.skel .sk{display:block;border-radius:7px;
+    background:linear-gradient(90deg,var(--tint) 25%,#EBEFF6 37%,var(--tint) 63%);background-size:400% 100%;
+    animation:shimmer 1.4s ease infinite}
+  .jobtile.skel .sk-a{height:16px;width:66%}
+  .jobtile.skel .sk-b{height:12px;width:44%}
+  .jobtile.skel .sk-c{height:38px;width:100%}
+  @keyframes shimmer{from{background-position:100% 0}to{background-position:0 0}}
+  @media (prefers-reduced-motion:reduce){
+    .jobtile{transition:none}
+    .jobtile:hover{transform:none}
+    .jobtile.skel .sk{animation:none}
+  }
 
   .rbanner{margin-top:22px;border:1.5px solid var(--border);border-radius:12px;padding:15px 18px;font-size:.94rem;color:var(--muted);background:var(--bg2)}
   .rbanner.ok{border-color:#9BD3B4;background:#EDF8F2;color:#1D7A46}
@@ -422,15 +456,10 @@
 
     <div class="rcard">
       <h3>Position</h3>
-      <p class="hint">Select the open mandate you are referring the candidate for.</p>
-      <div class="rgrid">
-        <div class="rf full"><label for="jobSelect">Select position</label>
-          <select id="jobSelect" disabled><option value="">Loading positions…</option></select>
-        </div>
-      </div>
+      <p class="hint">Pick the open mandate you are referring the candidate for.</p>
       <p class="jstatus" id="jobStatus" role="status" aria-live="polite">Fetching open positions…
         <button class="btn btn-ghost" type="button" id="jobRetry" hidden>Retry</button></p>
-      <div class="jobcard" id="jobDetail" hidden></div>
+      <div class="jobtiles" id="jobTiles" role="radiogroup" aria-label="Open positions" tabindex="-1"></div>
     </div>
 
     <div class="rcard">
@@ -575,13 +604,13 @@
   const ALLOWED_RESUME=['.pdf','.docx'];
 
   const rform=document.getElementById('rform');
-  const sel=document.getElementById('jobSelect'), jstat=document.getElementById('jobStatus'),
-        jretry=document.getElementById('jobRetry'), jbox=document.getElementById('jobDetail'),
+  const tiles=document.getElementById('jobTiles'), jstat=document.getElementById('jobStatus'),
+        jretry=document.getElementById('jobRetry'),
         ack=document.getElementById('ackPolicy'), resume=document.getElementById('resumeFile'),
         banner=document.getElementById('rbanner'), submitBtn=document.getElementById('rsubmit'),
         clearBtn=document.getElementById('rclear');
   const F=id=>document.getElementById(id);
-  let jobs=[], submitting=false;
+  let jobs=[], submitting=false, pickedJobId='';
 
   function showBanner(tone,text){
     banner.hidden=false; banner.textContent=text; banner.className='rbanner'+(tone?' '+tone:'');
@@ -595,21 +624,73 @@
   function syncSubmit(){submitBtn.disabled=submitting||!ack.checked;}
   ack.addEventListener('change',syncSubmit);
 
-  function renderJob(job){
-    jbox.textContent='';
-    if(!job){jbox.hidden=true;return;}
-    const row=(k,v)=>{const p=document.createElement('p');
-      const s=document.createElement('span'); s.className='k'; s.textContent=k+': ';
-      p.appendChild(s); p.appendChild(document.createTextNode(v)); return p;};
-    const t=document.createElement('div'); t.className='jr'; t.textContent=job.role||'';
-    jbox.appendChild(t);
-    if(job.location) jbox.appendChild(row('Location',job.location));
-    if(job.priority) jbox.appendChild(row('Priority',job.priority));
-    if(job.description) jbox.appendChild(row('Description',job.description));
-    if(job.jobId) jbox.appendChild(row('Job ID',job.jobId));
-    jbox.hidden=false;
+  /* Positions render as a radiogroup of tiles. Every value below is written with
+     textContent, so remote job text can never inject markup; the only innerHTML
+     used is the two hard-coded icons. */
+  const ICON_LOC='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>';
+  const ICON_PRI='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 2 4.5 13.5H11l-1 8.5L18.5 10.5H12Z"/></svg>';
+  const realTiles=()=>[...tiles.querySelectorAll('.jobtile:not(.skel)')];
+
+  function jtTag(text,pri){
+    const t=document.createElement('span'); t.className='jt-tag'+(pri?' pri':'');
+    t.innerHTML=pri?ICON_PRI:ICON_LOC;
+    t.appendChild(document.createTextNode(text)); return t;
   }
-  sel.addEventListener('change',()=>renderJob(jobs.find(j=>j.jobId===sel.value)));
+  function jtLine(cls,text){
+    const el=document.createElement('span'); el.className=cls; el.textContent=text; return el;
+  }
+  function showSkeletons(n){
+    tiles.textContent='';
+    for(let i=0;i<n;i++){
+      const d=document.createElement('div');
+      d.className='jobtile skel'; d.setAttribute('aria-hidden','true');
+      d.innerHTML='<span class="sk sk-a"></span><span class="sk sk-b"></span><span class="sk sk-c"></span>';
+      tiles.appendChild(d);
+    }
+  }
+  function pickTile(tile){
+    pickedJobId=tile?tile.dataset.id:'';
+    const list=realTiles();
+    list.forEach(t=>{
+      const on=t===tile;
+      t.setAttribute('aria-checked',on?'true':'false');
+      t.tabIndex=on?0:-1;
+    });
+    // Roving tabindex: with nothing picked the first tile is the group's tab stop.
+    if(!tile&&list.length) list[0].tabIndex=0;
+  }
+  function renderJobs(list){
+    tiles.textContent=''; pickedJobId='';
+    list.forEach((j,i)=>{
+      const b=document.createElement('button');
+      b.type='button'; b.className='jobtile'; b.dataset.id=j.jobId||'';
+      b.setAttribute('role','radio'); b.setAttribute('aria-checked','false');
+      b.tabIndex=i?-1:0;
+      const chk=document.createElement('span'); chk.className='jt-check'; b.appendChild(chk);
+      b.appendChild(jtLine('jt-role',j.role||'Open position'));
+      if(j.location||j.priority){
+        const tags=document.createElement('span'); tags.className='jt-tags';
+        if(j.location) tags.appendChild(jtTag(j.location,false));
+        if(j.priority) tags.appendChild(jtTag(j.priority,true));
+        b.appendChild(tags);
+      }
+      if(j.description) b.appendChild(jtLine('jt-desc',j.description));
+      if(j.jobId) b.appendChild(jtLine('jt-id','ID '+j.jobId));
+      tiles.appendChild(b);
+    });
+  }
+  tiles.addEventListener('click',e=>{
+    const t=e.target.closest('.jobtile');
+    if(t&&!t.classList.contains('skel')) pickTile(t);
+  });
+  tiles.addEventListener('keydown',e=>{
+    const list=realTiles(); if(!list.length) return;
+    const i=list.indexOf(document.activeElement); let n;
+    if(e.key==='ArrowRight'||e.key==='ArrowDown') n=(i+1)%list.length;
+    else if(e.key==='ArrowLeft'||e.key==='ArrowUp') n=(i<=0?list.length:i)-1;
+    else return;
+    e.preventDefault(); pickTile(list[n]); list[n].focus();
+  });
 
   // Same Apps Script endpoint Prime Learning uses (primelearning.ae/referral).
   // /exec 302s to script.googleusercontent.com — both hosts must be in CSP connect-src
@@ -623,8 +704,7 @@
   }
 
   async function loadJobs(){
-    sel.disabled=true; sel.textContent=''; sel.add(new Option('Loading positions…',''));
-    renderJob(null); setJobStatus('Fetching open positions…',false);
+    showSkeletons(3); pickedJobId=''; setJobStatus('Fetching open positions…',false);
     const attempts=3;
     let lastErr=null;
     for(let i=0;i<attempts;i++){
@@ -635,14 +715,11 @@
         jobs=await fetchJobsOnce(ctrl?ctrl.signal:undefined);
         if(timer) clearTimeout(timer);
         if(!jobs.length){
-          sel.textContent=''; sel.add(new Option('No open positions',''));
+          tiles.textContent='';
           setJobStatus('No open positions right now. Please check back later.',true); return;
         }
-        sel.textContent=''; sel.add(new Option('Select a position',''));
-        // new Option() sets textContent, so remote job text can never inject markup.
-        jobs.forEach(j=>sel.add(new Option(j.role+', '+j.location,j.jobId)));
-        sel.disabled=false;
-        setJobStatus(jobs.length+' open position'+(jobs.length===1?'':'s')+' loaded.',false);
+        renderJobs(jobs);
+        setJobStatus(jobs.length+' open position'+(jobs.length===1?'':'s')+' loaded. Select one below.',false);
         return;
       }catch(e){
         if(timer) clearTimeout(timer);
@@ -652,7 +729,7 @@
       }
     }
     const msg=(lastErr&&lastErr.name==='AbortError')?'request timed out':(lastErr&&lastErr.message)||'unknown error';
-    jobs=[]; sel.textContent=''; sel.add(new Option('Could not load positions','')); sel.disabled=true;
+    jobs=[]; tiles.textContent=''; pickedJobId='';
     setJobStatus('Could not load positions: '+msg+'. Use retry, or email staffing@miyoglobal.com.',true);
   }
   jretry.addEventListener('click',loadJobs);
@@ -669,7 +746,7 @@
     if(!F('candName').value.trim()) return [F('candName'),'Please enter the candidate name.'];
     if(!okEmail(F('candEmail').value.trim())) return [F('candEmail'),'Please enter a valid candidate email.'];
     if(digits(F('candPhone').value).length!==10) return [F('candPhone'),'Candidate phone must be exactly 10 digits.'];
-    if(!sel.value) return [sel,'Please select a position.'];
+    if(!pickedJobId) return [realTiles()[0]||tiles,'Please select a position.'];
     if(!file) return [resume,"Please upload the candidate's resume."];
     if(!ALLOWED_RESUME.some(ext=>file.name.toLowerCase().endsWith(ext)))
       return [resume,'Resume must be a PDF or DOCX file.'];
@@ -679,7 +756,7 @@
   }
 
   function clearForm(){
-    rform.reset(); renderJob(null); hideBanner(); syncSubmit();
+    rform.reset(); pickTile(null); hideBanner(); syncSubmit();
   }
   clearBtn.addEventListener('click',clearForm);
 
@@ -690,7 +767,7 @@
     if(bad){showBanner('err',bad[1]); bad[0].focus(); return;}
 
     const file=resume.files[0];
-    const job=jobs.find(j=>j.jobId===sel.value)||{};
+    const job=jobs.find(j=>j.jobId===pickedJobId)||{};
     submitting=true; submitBtn.disabled=true; submitBtn.textContent='Submitting…';
     showBanner('',"Uploading the resume and submitting the referral, please wait…");
 
