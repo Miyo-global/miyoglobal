@@ -371,6 +371,9 @@
   .jt-tag svg{width:12px;height:12px;margin-top:.15em;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
   .jt-desc{color:var(--muted);font-size:.88rem;line-height:1.5;
     display:-webkit-box;-webkit-line-clamp:2;line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:2.64em}
+  /* The tile only ever shows a 2-line clamp of the description — this hint tells
+     people the full text is one click away instead of just looking cut off. */
+  .jt-more{font-size:.78rem;font-weight:700;color:var(--gold-deep)}
   .jt-id{margin-top:auto;padding-top:2px;font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--soft)}
   .jt-check{position:absolute;top:17px;right:17px;width:21px;height:21px;border-radius:50%;flex:none;
     border:1.5px solid var(--border);background:#fff;transition:border-color .2s,background .2s}
@@ -407,6 +410,15 @@
   .modal iframe{flex:1;min-height:0;width:100%;border:0;background:var(--bg2)}
   .modal .mf{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;padding:14px 22px;border-top:1px solid var(--border)}
   .modal .mf a{color:var(--gold-deep);font-weight:600;text-decoration:underline;text-underline-offset:2px;display:inline-block;padding:8px 2px}
+  .modal .mf .jd-note{color:var(--muted);font-size:.88rem}
+  /* Job-description modal: same .modal/.sheet shell as the policy PDF viewer,
+     but sized to its text content instead of forced to near-full viewport height. */
+  .jd-sheet{height:auto;max-height:min(88vh,760px)}
+  .jd-body{padding:22px 26px 6px;overflow-y:auto;flex:1;min-height:0}
+  .jd-tags{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px}
+  .jd-desc{color:var(--ink);font-size:1rem;line-height:1.65;white-space:pre-line}
+  .jd-id{margin:22px 0 18px;padding-top:16px;border-top:1px solid var(--border);
+    font-size:.76rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--soft)}
   body.locked{overflow:hidden}
   @media (max-width:640px){
     .rgrid,.pol .pr{grid-template-columns:1fr}
@@ -578,6 +590,17 @@
     </div>
   </div>
 </div>
+<div class="modal" id="jobModal" role="dialog" aria-modal="true" aria-labelledby="jobModalTitle">
+  <div class="sheet jd-sheet">
+    <div class="mh"><h2 id="jobModalTitle">Job description</h2>
+      <button class="x" type="button" id="jobModalClose" aria-label="Close">×</button></div>
+    <div class="jd-body" id="jobModalBody"></div>
+    <div class="mf">
+      <span class="jd-note">Selected for your referral — close this and continue the form below.</span>
+      <button class="btn btn-navy" type="button" data-jobmodal-close>Close</button>
+    </div>
+  </div>
+</div>
 <div class="cookiebar" id="cookiebar" role="dialog" aria-label="Cookie notice">
   <p>We use essential functionality only, no tracking or advertising cookies. Fonts load from Google Fonts. See our <a href="privacy-policy.html">Privacy &amp; Cookie Policy</a>.</p>
   <button class="btn btn-gold" id="cookieok" type="button">Got it</button>
@@ -640,6 +663,53 @@
     if(!items.length) return;
     const first=items[0], last=items[items.length-1], active=document.activeElement;
     if(e.shiftKey ? (active===first||!modal.contains(active)) : active===last){
+      e.preventDefault(); (e.shiftKey?last:first).focus();
+    }
+  });
+
+  /* ── Job description modal ───────────────────────────────────────────
+     Clicking a tile both picks it (see pickTile below) and opens this dialog
+     with the full, un-clamped JD — the tile itself only ever shows a 2-line
+     preview. jtTag/jobs are defined further down in the referral-form script;
+     that is fine, this only runs on click, long after the whole script has
+     parsed and every function below has been hoisted/defined. */
+  const jobModal=document.getElementById('jobModal'), jobModalBody=document.getElementById('jobModalBody'),
+        jobModalClose=document.getElementById('jobModalClose'), jobModalTitle=document.getElementById('jobModalTitle');
+  let jobModalLastFocus=null;
+  function renderJobModal(j){
+    jobModalTitle.textContent=j.role||'Open position';
+    jobModalBody.textContent='';
+    const tags=document.createElement('div'); tags.className='jd-tags';
+    if(j.location) tags.appendChild(jtTag(j.location));
+    if(j.priority){const p=document.createElement('span'); p.className='jt-tag'; p.textContent=j.priority; tags.appendChild(p);}
+    if(tags.children.length) jobModalBody.appendChild(tags);
+    const desc=document.createElement('p'); desc.className='jd-desc';
+    desc.textContent=j.description||'No further description was provided for this position.';
+    jobModalBody.appendChild(desc);
+    if(j.jobId){const id=document.createElement('p'); id.className='jd-id'; id.textContent='Job ID '+j.jobId; jobModalBody.appendChild(id);}
+  }
+  function openJobModal(jobId){
+    const j=jobs.find(x=>x.jobId===jobId);
+    if(!j) return;
+    renderJobModal(j);
+    jobModalLastFocus=document.activeElement;
+    jobModal.classList.add('show'); document.body.classList.add('locked'); jobModalClose.focus();
+  }
+  function closeJobModal(){
+    jobModal.classList.remove('show'); document.body.classList.remove('locked');
+    if(jobModalLastFocus&&jobModalLastFocus.focus) jobModalLastFocus.focus();
+  }
+  jobModalClose.addEventListener('click',closeJobModal);
+  jobModal.querySelectorAll('[data-jobmodal-close]').forEach(b=>b.addEventListener('click',closeJobModal));
+  jobModal.addEventListener('click',e=>{if(e.target===jobModal) closeJobModal();});
+  addEventListener('keydown',e=>{
+    if(!jobModal.classList.contains('show')) return;
+    if(e.key==='Escape'){closeJobModal();return;}
+    if(e.key!=='Tab') return;
+    const items=[...jobModal.querySelectorAll(MODAL_FOCUSABLE)];
+    if(!items.length) return;
+    const first=items[0], last=items[items.length-1], active=document.activeElement;
+    if(e.shiftKey ? (active===first||!jobModal.contains(active)) : active===last){
       e.preventDefault(); (e.shiftKey?last:first).focus();
     }
   });
@@ -737,7 +807,10 @@
       tags.appendChild(jtTag(j.location));
       b.appendChild(tags);
     }
-    if(j.description) b.appendChild(jtLine('jt-desc',j.description));
+    if(j.description){
+      b.appendChild(jtLine('jt-desc',j.description));
+      b.appendChild(jtLine('jt-more','View full description →'));
+    }
     if(j.jobId) b.appendChild(jtLine('jt-id','ID '+j.jobId));
     return b;
   }
@@ -786,7 +859,7 @@
   jmore.addEventListener('click',()=>{showAllJobs=true; renderTiles(); const t=realTiles()[TILE_CAP]; if(t) t.focus();});
   tiles.addEventListener('click',e=>{
     const t=e.target.closest('.jobtile');
-    if(t&&!t.classList.contains('skel')) pickTile(t);
+    if(t&&!t.classList.contains('skel')){ pickTile(t); openJobModal(t.dataset.id); }
   });
   tiles.addEventListener('keydown',e=>{
     const list=realTiles(); if(!list.length) return;
