@@ -419,6 +419,13 @@
   .jd-desc{color:var(--ink);font-size:1rem;line-height:1.65;white-space:pre-line}
   .jd-id{margin:22px 0 18px;padding-top:16px;border-top:1px solid var(--border);
     font-size:.76rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--soft)}
+  .jd-mfbtns{display:flex;gap:10px;flex-wrap:wrap}
+  /* Fallback for browsers/contexts where clipboard copy is blocked: reveal the
+     link as selectable text instead of silently failing. flex-basis:100% drops
+     it onto its own row under the note + buttons, which already fill the row. */
+  .jd-sharelink{flex:1 1 100%;font-size:.78rem;color:var(--soft);background:var(--tint);
+    border:1px solid var(--border);border-radius:7px;padding:.45em .7em;
+    font-family:ui-monospace,SFMono-Regular,Menlo,monospace;word-break:break-all;user-select:all}
   body.locked{overflow:hidden}
   @media (max-width:640px){
     .rgrid,.pol .pr{grid-template-columns:1fr}
@@ -597,7 +604,14 @@
     <div class="jd-body" id="jobModalBody"></div>
     <div class="mf">
       <span class="jd-note">Selected for your referral — close this and continue the form below.</span>
-      <button class="btn btn-navy" type="button" data-jobmodal-close>Close</button>
+      <div class="jd-mfbtns">
+        <button class="btn btn-ghost" type="button" id="jobModalShare">
+          <svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 10.5 15.4 6.5M8.6 13.5l6.8 4"/></svg>
+          <span id="jobModalShareLabel">Share this position</span>
+        </button>
+        <button class="btn btn-navy" type="button" data-jobmodal-close>Close</button>
+      </div>
+      <code class="jd-sharelink" id="jobModalShareLink" hidden></code>
     </div>
   </div>
 </div>
@@ -674,8 +688,10 @@
      that is fine, this only runs on click, long after the whole script has
      parsed and every function below has been hoisted/defined. */
   const jobModal=document.getElementById('jobModal'), jobModalBody=document.getElementById('jobModalBody'),
-        jobModalClose=document.getElementById('jobModalClose'), jobModalTitle=document.getElementById('jobModalTitle');
-  let jobModalLastFocus=null;
+        jobModalClose=document.getElementById('jobModalClose'), jobModalTitle=document.getElementById('jobModalTitle'),
+        jobModalShare=document.getElementById('jobModalShare'), jobModalShareLabel=document.getElementById('jobModalShareLabel'),
+        jobModalShareLink=document.getElementById('jobModalShareLink');
+  let jobModalLastFocus=null, shareResetTimer=null;
   function renderJobModal(j){
     jobModalTitle.textContent=j.role||'Open position';
     jobModalBody.textContent='';
@@ -688,10 +704,24 @@
     jobModalBody.appendChild(desc);
     if(j.jobId){const id=document.createElement('p'); id.className='jd-id'; id.textContent='Job ID '+j.jobId; jobModalBody.appendChild(id);}
   }
+  // A link to one specific position: ?job=<id> on this same page, plus the
+  // form-section anchor so it also scrolls straight there on a fresh load.
+  function jobShareUrl(jobId){
+    const url=new URL(location.href);
+    url.search=''; url.hash='';
+    url.searchParams.set('job',jobId);
+    return url.toString()+'#referral-form';
+  }
+  function resetShareUi(){
+    clearTimeout(shareResetTimer);
+    jobModalShareLabel.textContent='Share this position';
+    jobModalShareLink.hidden=true; jobModalShareLink.textContent='';
+  }
   function openJobModal(jobId){
     const j=jobs.find(x=>x.jobId===jobId);
     if(!j) return;
     renderJobModal(j);
+    resetShareUi();
     jobModalLastFocus=document.activeElement;
     jobModal.classList.add('show'); document.body.classList.add('locked'); jobModalClose.focus();
   }
@@ -702,6 +732,44 @@
   jobModalClose.addEventListener('click',closeJobModal);
   jobModal.querySelectorAll('[data-jobmodal-close]').forEach(b=>b.addEventListener('click',closeJobModal));
   jobModal.addEventListener('click',e=>{if(e.target===jobModal) closeJobModal();});
+  jobModalShare.addEventListener('click',async()=>{
+    const j=jobs.find(x=>x.jobId===pickedJobId);
+    if(!j) return;
+    const url=jobShareUrl(j.jobId);
+    // Native share sheet first (mobile) — if it opens, leave the button alone
+    // rather than also flashing "Link copied!" once the sheet closes.
+    if(navigator.share){
+      try{
+        await navigator.share({title:'MIYO Global — '+(j.role||'Open position'),
+          text:'Open position at MIYO Global: '+(j.role||'')+(j.location?' ('+j.location+')':''), url});
+        return;
+      }catch(e){ if(e&&e.name==='AbortError') return; }
+    }
+    let copied=false;
+    try{
+      if(navigator.clipboard&&navigator.clipboard.writeText){ await navigator.clipboard.writeText(url); copied=true; }
+    }catch(e){}
+    if(!copied){
+      // Older/locked-down browsers: this still works inside a direct click handler.
+      try{
+        const ta=document.createElement('textarea');
+        ta.value=url; ta.style.position='fixed'; ta.style.opacity='0';
+        document.body.appendChild(ta); ta.focus(); ta.select();
+        copied=document.execCommand('copy');
+        document.body.removeChild(ta);
+      }catch(e){}
+    }
+    clearTimeout(shareResetTimer);
+    if(copied){
+      jobModalShareLabel.textContent='Link copied!';
+      shareResetTimer=setTimeout(resetShareUi,2200);
+    }else{
+      // Both copy paths failed (rare) — leave the link selectable so it is
+      // never a dead end.
+      jobModalShareLabel.textContent='Copy this link:';
+      jobModalShareLink.textContent=url; jobModalShareLink.hidden=false;
+    }
+  });
   addEventListener('keydown',e=>{
     if(!jobModal.classList.contains('show')) return;
     if(e.key==='Escape'){closeJobModal();return;}
@@ -852,6 +920,24 @@
     if(!tile&&list.length) list[0].tabIndex=0;
     renderPicked();
   }
+  // Lands on the position a shared link (?job=<id>, see jobShareUrl above)
+  // points at: pick it, open its full-JD dialog, and scroll it into view —
+  // without this, a shared link would just drop someone on the general form.
+  let sharedJobApplied=false;
+  function applySharedJobFromUrl(){
+    if(sharedJobApplied) return;
+    let wanted='';
+    try{ wanted=new URLSearchParams(location.search).get('job')||''; }catch(e){}
+    if(!wanted) return;
+    const j=jobs.find(x=>x.jobId===wanted);
+    if(!j) return;
+    sharedJobApplied=true;
+    showAllJobs=true; renderTiles();
+    const tile=[...tiles.querySelectorAll('.jobtile')].find(t=>t.dataset.id===wanted);
+    if(!tile) return;
+    pickTile(tile); openJobModal(wanted);
+    requestAnimationFrame(()=>tile.scrollIntoView({behavior:reduce?'auto':'smooth',block:'center'}));
+  }
   jsearch.addEventListener('input',()=>{
     jobQuery=jsearch.value.trim().toLowerCase();
     showAllJobs=false; renderTiles();
@@ -909,6 +995,7 @@
         }
         jsearchWrap.hidden=jobs.length<=TILE_CAP;
         renderTiles();
+        applySharedJobFromUrl();
         return;
       }catch(e){
         if(timer) clearTimeout(timer);
