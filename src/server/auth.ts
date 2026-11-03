@@ -11,7 +11,7 @@ const adminOrigin = process.env.ADMIN_ORIGIN ?? `https://${adminHost}`;
 export const auth = betterAuth({
   baseURL: adminOrigin,
   trustedOrigins: [adminOrigin],
-  secret: process.env.BETTER_AUTH_SECRET,
+  secret: process.env.BETTER_AUTH_SECRET ?? (process.env.NEXT_PHASE === "phase-production-build" ? "build-placeholder-secret-build-placeholder" : undefined),
   database: drizzleAdapter(db, { provider: "pg", schema }),
   emailAndPassword: {
     enabled: true,
