@@ -18,6 +18,14 @@ import { afterPublish } from "@/server/publish";
 import { saveUpload, UploadError } from "@/server/services/media";
 import { createDraft, deletePost, PostError, savePost } from "@/server/services/posts";
 
+function parseJson(raw: string): unknown {
+  try {
+    return typeof raw === "string" && raw.length < 500_000 ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
 export type Result<T = object> = ({ ok: true } & T) | { ok: false; error: string };
 
 export async function createPostAction() {
@@ -28,16 +36,16 @@ export async function createPostAction() {
   redirect(`/posts/${id}`);
 }
 
-export async function savePostAction(id: number, raw: unknown, intent: Intent): Promise<Result<{ status: string; slug: string; issues: { level: string; code: string; message: string }[] }>> {
+export async function savePostAction(id: number, rawJson: string, intent: Intent): Promise<Result<{ status: string; slug: string; issues: { level: string; code: string; message: string }[] }>> {
   const me = await requireStaff("writePosts");
-  const parsed = postInput.safeParse(raw);
+  const parsed = postInput.safeParse(parseJson(rawJson));
   if (!parsed.success || !intents.includes(intent) || !Number.isInteger(id)) {
     return { ok: false, error: parsed.success ? "Invalid request" : parsed.error.issues[0]?.message ?? "Invalid post" };
   }
   try {
     const res = await savePost(id, me.id, me.role, parsed.data, intent);
     await audit(me.id, `post.${intent}`, String(id));
-    if (res.wasLive) await afterPublish(res.slug, res.previousSlug);
+    if (res.wasLive) afterPublish(res.slug, res.previousSlug);
     revalidatePath("/posts");
     return { ok: true, status: res.status, slug: res.slug, issues: res.issues };
   } catch (e) {
@@ -54,9 +62,9 @@ export async function deletePostAction(id: number) {
   redirect("/posts");
 }
 
-export async function checkLinksAction(content: unknown): Promise<Result<{ broken: string[] }>> {
+export async function checkLinksAction(contentJson: string): Promise<Result<{ broken: string[] }>> {
   await requireStaff("writePosts");
-  const parsed = postInput.shape.content.safeParse(content);
+  const parsed = postInput.shape.content.safeParse(parseJson(contentJson));
   if (!parsed.success) return { ok: false, error: "Invalid content" };
   const doc = parsed.data as Doc;
   return { ok: true, broken: await findBrokenLinks(internalLinks(doc), externalLinks(doc)) };

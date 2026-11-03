@@ -95,7 +95,7 @@ export function PostEditor(props: Props) {
     (intent: Intent, silent = false) =>
       start(async () => {
         setError("");
-        const res = await savePostAction(props.id, form, intent);
+        const res = await savePostAction(props.id, JSON.stringify(form), intent);
         if (!res.ok) {
           setError(res.error);
           return;
@@ -129,7 +129,7 @@ export function PostEditor(props: Props) {
   };
 
   const btn = (label: string, active: boolean, on: () => void) => (
-    <button type="button" className={active ? "on" : ""} onClick={on}>{label}</button>
+    <button type="button" className={active ? "on" : ""} onMouseDown={(e) => e.preventDefault()} onClick={on}>{label}</button>
   );
 
   const clusters = [...new Set(props.siblings.map((s) => s.cluster).filter(Boolean))];
@@ -339,7 +339,7 @@ export function PostEditor(props: Props) {
               {issues.map((i) => <li key={i.code} className={i.level === "error" ? "err" : "warn"}>{i.level === "error" ? "Error" : "Warning"}: {i.message}</li>)}
               {issues.length === 0 && <li className="ok">All checks pass</li>}
             </ul>
-            <button type="button" className="btn ghost" disabled={pending} onClick={() => start(async () => { const r = await checkLinksAction(form.content); setBroken(r.ok ? r.broken : null); if (!r.ok) setError(r.error); })}>Check links</button>
+            <button type="button" className="btn ghost" disabled={pending} onClick={() => start(async () => { const r = await checkLinksAction(JSON.stringify(form.content)); setBroken(r.ok ? r.broken : null); if (!r.ok) setError(r.error); })}>Check links</button>
             {broken && (broken.length ? <ul>{broken.map((b) => <li key={b} className="err">Broken: {b}</li>)}</ul> : <p className="ok">No broken links</p>)}
             <h2 style={{ marginTop: 16 }}>Link suggestions</h2>
             <ul>
