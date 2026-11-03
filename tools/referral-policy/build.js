@@ -1,16 +1,3 @@
-/* MIYO Global — Referral Policy 2026 (branded PDF document)
- *
- * Brand: navy + gold, matching the website. Georgia (headings) + Outfit (body).
- * Rule inherited from the source document: no hyphen or dash characters in visible text.
- *
- * Writes referral-policy.html with the logo embedded as base64, then prints it to
- * ../../documents/MIYO_Global_Referral_Policy_2026.pdf with headless Chrome.
- *
- *   node tools/referral-policy/build.js
- *
- * The values here are the same ones referrals.html shows in the policy summary table.
- * Change both together, or the page and the PDF will disagree.
- */
 const fs = require("fs");
 const path = require("path");
 const { execFileSync } = require("child_process");
@@ -126,8 +113,7 @@ const html = `<!doctype html>
   .page{ padding:0 16mm; }
   h1,h2,h3{ font-family:Georgia,"Times New Roman",serif; color:var(--ink); }
 
-  /* ---- hero ---- */
-  .hero{
+    .hero{
     background:var(--navy); color:#fff; border-radius:12px; padding:18px 24px 19px;
     position:relative; overflow:hidden; margin-bottom:13px;
   }
@@ -138,8 +124,7 @@ const html = `<!doctype html>
   .hero h1 .amt{ color:var(--gold); }
   .hero p{ color:#D8E0EC; font-size:10pt; margin:5px 0 0; max-width:122mm; }
 
-  /* ---- facts card ---- */
-  .facts{ border:1px solid var(--line); border-radius:10px; overflow:hidden; margin-bottom:15px; box-shadow:0 2px 10px rgba(11,25,47,.06); }
+    .facts{ border:1px solid var(--line); border-radius:10px; overflow:hidden; margin-bottom:15px; box-shadow:0 2px 10px rgba(11,25,47,.06); }
   .facts .ftitle{ background:var(--navy); color:var(--goldl); font-family:Georgia,serif; font-weight:700;
     font-size:11pt; padding:7px 16px; border-bottom:3px solid var(--gold); }
   .frow{ display:flex; padding:6.5px 16px; align-items:center; }
@@ -147,8 +132,7 @@ const html = `<!doctype html>
   .frow .fk{ flex:0 0 42%; font-weight:700; color:var(--ink); font-size:9.6pt; }
   .frow .fv{ flex:1; color:var(--body); font-size:9.6pt; }
 
-  /* ---- sections ---- */
-  .sec{ margin:0 0 11px; page-break-inside:avoid; }
+    .sec{ margin:0 0 11px; page-break-inside:avoid; }
   .sechead{ display:flex; align-items:center; gap:10px; margin-bottom:5px; }
   .badge{ flex:0 0 auto; width:24px; height:24px; border-radius:50%; background:var(--navy);
     color:var(--goldl); font-family:Georgia,serif; font-weight:700; font-size:11pt;
@@ -170,8 +154,7 @@ const html = `<!doctype html>
   .pk{ font-family:Georgia,serif; font-weight:700; color:var(--ink); font-size:10.5pt; margin-bottom:3px; }
   .pv{ font-size:9.6pt; color:var(--body); }
 
-  /* ---- footer band ---- */
-  .footer{ margin-top:8px; border-top:1px solid var(--line); padding-top:8px;
+    .footer{ margin-top:8px; border-top:1px solid var(--line); padding-top:8px;
     display:flex; justify-content:space-between; font-size:8.2pt; color:var(--mute); }
   .footer .b{ color:var(--ink); font-weight:700; }
   .footer .g{ color:#8F6B14; font-weight:700; }
@@ -220,7 +203,6 @@ execFileSync(
     "--disable-gpu",
     "--no-pdf-header-footer",
     "--print-to-pdf=" + OUT_PDF,
-    // Give the webfont time to load; without it Chrome prints in the fallback face.
     "--virtual-time-budget=8000",
     "file://" + OUT_HTML,
   ],

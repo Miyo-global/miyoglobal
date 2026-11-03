@@ -6,13 +6,13 @@
 <title>Editorial Policy — MIYO Global</title>
 <meta name="description" content="How MIYO Global researches, writes, reviews, updates and corrects the articles published on its blog.">
 <meta name="theme-color" content="#FFFFFF">
-<link rel="canonical" href="https://miyoglobal.com/editorial-policy">
+<link rel="canonical" href="https://www.miyoglobal.com/editorial-policy">
 <meta property="og:title" content="Editorial Policy — MIYO Global">
 <meta property="og:description" content="How MIYO Global researches, writes, reviews, updates and corrects the articles published on its blog.">
 <meta property="og:type" content="website">
-<meta property="og:url" content="https://miyoglobal.com/editorial-policy">
+<meta property="og:url" content="https://www.miyoglobal.com/editorial-policy">
 <meta property="og:site_name" content="MIYO Global">
-<meta property="og:image" content="https://miyoglobal.com/images/og/policy.webp">
+<meta property="og:image" content="https://www.miyoglobal.com/images/og/policy.webp">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:type" content="image/webp">
@@ -20,7 +20,7 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Editorial Policy — MIYO Global">
 <meta name="twitter:description" content="How MIYO Global researches, writes, reviews, updates and corrects the articles published on its blog.">
-<meta name="twitter:image" content="https://miyoglobal.com/images/og/policy.webp">
+<meta name="twitter:image" content="https://www.miyoglobal.com/images/og/policy.webp">
 <meta name="twitter:image:alt" content="Editorial team reviewing and fact-checking an article before publication">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -76,7 +76,6 @@
   .nav-links a.active{font-weight:700}
   .menu-btn{display:none;background:none;border:1.5px solid var(--border);color:var(--ink);border-radius:9px;padding:.45em .65em;font-size:1.1rem;cursor:pointer}
 
-  /* graphic / image panel */
   .gfx{position:relative;border-radius:var(--r);overflow:hidden;border:1px solid var(--border);background:
       radial-gradient(120% 120% at 82% 8%, #FDF6E7 0%, var(--bg2) 55%, #EEF1F7 100%);
     min-height:340px;display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow)}
@@ -93,7 +92,6 @@
   .gfx .badge .bn{font-size:1.4rem;font-weight:800;color:var(--gold-deep);line-height:1}
   .gfx .badge .bl{font-size:.72rem;color:var(--muted);font-weight:600;margin-top:3px}
 
-  /* hero */
   .hero{padding:86px 0 42px;position:relative;background:
     radial-gradient(900px 480px at 88% -10%, #FBF3E2 0%, transparent 60%), var(--bg)}
   .hero-grid{display:grid;grid-template-columns:1.12fr .88fr;gap:52px;align-items:center}
@@ -105,7 +103,6 @@
   .counters .c .n{font-size:clamp(1.8rem,3vw,2.5rem);font-weight:800;color:var(--gold-deep);line-height:1}
   .counters .c .l{color:var(--muted);font-size:.9rem;font-weight:500;margin-top:6px}
 
-  /* marquee */
   .marquee-sec{padding:30px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border);background:var(--bg2)}
   .mq-label{text-align:center;color:var(--soft);font-size:.76rem;letter-spacing:.16em;text-transform:uppercase;margin-bottom:16px;font-weight:700}
   .marquee{overflow:hidden;-webkit-mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent);mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent)}
@@ -171,7 +168,6 @@
   .person p{color:var(--muted);font-size:.92rem}
   .subhead{font-size:.76rem;letter-spacing:.18em;text-transform:uppercase;color:var(--soft);font-weight:700;margin:40px 0 16px}
 
-  /* dark navy CTA band — the one deliberate blue moment */
   .navy-band{background:linear-gradient(120deg,var(--navy) 0%,var(--navy2) 100%);color:#fff;border-radius:24px;padding:56px;position:relative;overflow:hidden;box-shadow:var(--shadow-lg)}
   .navy-band h2{color:#fff;font-size:clamp(1.9rem,3.6vw,2.9rem);margin-bottom:10px}
   .navy-band p{color:#B9C4D6;max-width:52ch}
@@ -265,8 +261,6 @@
     .gfx .ring.b{animation:pulse 6s ease-in-out infinite .8s}
   }
 
-  /* Nav collapses earlier than the rest of the mobile layout: seven links crowd
-     the bar from ~815px down, which would otherwise break tablet portrait. */
   @media (max-width:1040px){
     .nav-links{display:none}
     .nav-links.open{display:flex;position:absolute;top:74px;left:0;right:0;flex-direction:column;background:#fff;border-bottom:1px solid var(--border);padding:8px 0;box-shadow:var(--shadow-lg)}
@@ -383,7 +377,6 @@
     function restart(){clearInterval(timer);start();}
     const sl=document.querySelector('.slider');
     sl.addEventListener('mouseenter',()=>clearInterval(timer)); sl.addEventListener('mouseleave',start); start();}
-  // cookie consent (essential-only site; records acknowledgement)
   try{
     const cb=document.getElementById('cookiebar');
     if(cb && !localStorage.getItem('miyo-consent')){

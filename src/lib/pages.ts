@@ -8,6 +8,8 @@ export const STATIC_PAGES = [
   { path: "/contact", lastmod: "2026-07-03" },
   { path: "/privacy-policy", lastmod: "2026-07-03" },
   { path: "/editorial-policy", lastmod: "2026-11-03" },
+  { path: "/terms", lastmod: "2026-11-03" },
+  { path: "/disclosure", lastmod: "2026-11-03" },
 ] as const;
 
 export const REWRITTEN_PAGES = STATIC_PAGES.map((p) => p.path.slice(1)).filter(Boolean);

@@ -6,13 +6,13 @@
 <title>Referrals — MIYO Global</title>
 <meta name="description" content="Refer a candidate for an open MIYO Global mandate. When they are hired and onboarded, you earn a ₹15,000 referral reward.">
 <meta name="theme-color" content="#FFFFFF">
-<link rel="canonical" href="https://miyoglobal.com/referrals">
+<link rel="canonical" href="https://www.miyoglobal.com/referrals">
 <meta property="og:title" content="Referrals — MIYO Global">
 <meta property="og:description" content="Refer talent for open MIYO Global mandates and earn a ₹15,000 referral reward.">
 <meta property="og:type" content="website">
-<meta property="og:url" content="https://miyoglobal.com/referrals">
+<meta property="og:url" content="https://www.miyoglobal.com/referrals">
 <meta property="og:site_name" content="MIYO Global">
-<meta property="og:image" content="https://miyoglobal.com/images/og/referrals.webp">
+<meta property="og:image" content="https://www.miyoglobal.com/images/og/referrals.webp">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:type" content="image/webp">
@@ -20,7 +20,7 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Referrals — MIYO Global">
 <meta name="twitter:description" content="Refer talent for open MIYO Global mandates and earn a ₹15,000 referral reward.">
-<meta name="twitter:image" content="https://miyoglobal.com/images/og/referrals.webp">
+<meta name="twitter:image" content="https://www.miyoglobal.com/images/og/referrals.webp">
 <meta name="twitter:image:alt" content="Hiring process diagram showing how MIYO Global referrals move from submission to placement">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -76,7 +76,6 @@
   .nav-links a.active{font-weight:700}
   .menu-btn{display:none;background:none;border:1.5px solid var(--border);color:var(--ink);border-radius:9px;padding:.45em .65em;font-size:1.1rem;cursor:pointer}
 
-  /* graphic / image panel */
   .gfx{position:relative;border-radius:var(--r);overflow:hidden;border:1px solid var(--border);background:
       radial-gradient(120% 120% at 82% 8%, #FDF6E7 0%, var(--bg2) 55%, #EEF1F7 100%);
     min-height:340px;display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow)}
@@ -93,7 +92,6 @@
   .gfx .badge .bn{font-size:1.4rem;font-weight:800;color:var(--gold-deep);line-height:1}
   .gfx .badge .bl{font-size:.72rem;color:var(--muted);font-weight:600;margin-top:3px}
 
-  /* hero */
   .hero{padding:86px 0 42px;position:relative;background:
     radial-gradient(900px 480px at 88% -10%, #FBF3E2 0%, transparent 60%), var(--bg)}
   .hero-grid{display:grid;grid-template-columns:1.12fr .88fr;gap:52px;align-items:center}
@@ -105,7 +103,6 @@
   .counters .c .n{font-size:clamp(1.8rem,3vw,2.5rem);font-weight:800;color:var(--gold-deep);line-height:1}
   .counters .c .l{color:var(--muted);font-size:.9rem;font-weight:500;margin-top:6px}
 
-  /* marquee */
   .marquee-sec{padding:30px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border);background:var(--bg2)}
   .mq-label{text-align:center;color:var(--soft);font-size:.76rem;letter-spacing:.16em;text-transform:uppercase;margin-bottom:16px;font-weight:700}
   .marquee{overflow:hidden;-webkit-mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent);mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent)}
@@ -171,7 +168,6 @@
   .person p{color:var(--muted);font-size:.92rem}
   .subhead{font-size:.76rem;letter-spacing:.18em;text-transform:uppercase;color:var(--soft);font-weight:700;margin:40px 0 16px}
 
-  /* dark navy CTA band — the one deliberate blue moment */
   .navy-band{background:linear-gradient(120deg,var(--navy) 0%,var(--navy2) 100%);color:#fff;border-radius:24px;padding:56px;position:relative;overflow:hidden;box-shadow:var(--shadow-lg)}
   .navy-band h2{color:#fff;font-size:clamp(1.9rem,3.6vw,2.9rem);margin-bottom:10px}
   .navy-band p{color:#B9C4D6;max-width:52ch}
@@ -265,8 +261,6 @@
     .gfx .ring.b{animation:pulse 6s ease-in-out infinite .8s}
   }
 
-  /* Nav collapses earlier than the rest of the mobile layout: seven links crowd
-     the bar from ~815px down, which would otherwise break tablet portrait. */
   @media (max-width:1040px){
     .nav-links{display:none}
     .nav-links.open{display:flex;position:absolute;top:74px;left:0;right:0;flex-direction:column;background:#fff;border-bottom:1px solid var(--border);padding:8px 0;box-shadow:var(--shadow-lg)}
@@ -287,10 +281,7 @@
     .cform input,.cform textarea{font-size:16px}
   }
 
-  /* ── Referrals page only ───────────────────────────────────────────── */
-  /* .btn sets display:inline-flex, which beats the UA rule for [hidden]. */
   [hidden]{display:none!important}
-  /* <button class="btn"> otherwise falls back to the system UI face. */
   .btn{font-family:inherit}
   .narrow{max-width:960px}
   .pol{border:1px solid var(--border);border-radius:var(--r);background:#fff;overflow:hidden;box-shadow:var(--shadow);margin-top:30px}
@@ -322,7 +313,6 @@
 
   .jstatus{margin-top:13px;font-size:.9rem;color:var(--muted)}
 
-  /* 76 live mandates is too many to scan, so the grid is searchable and capped. */
   .jtsearch{position:relative;margin-top:18px}
   .jtsearch input{width:100%;background-color:var(--bg2);border:1.5px solid var(--border);border-radius:11px;
     padding:13px 15px 13px 43px;color:var(--ink);font:inherit;font-size:.95rem;transition:border-color .2s}
@@ -353,7 +343,6 @@
   .jtfail .jf-act{display:flex;gap:10px;flex-wrap:wrap;margin-top:15px}
   .jtfail .jf-act .btn{padding:.58em 1.15em;font-size:.89rem}
 
-  /* Open positions render as a selectable tile grid, not a dropdown. */
   .jobtiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(266px,1fr));gap:14px;margin-top:18px}
   .jobtiles:empty{display:none}
   .jobtile{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:10px;
@@ -364,15 +353,8 @@
   .jobtile:hover{transform:translateY(-3px);border-color:rgba(224,180,88,.7);box-shadow:var(--shadow)}
   .jobtile[aria-checked="true"]{border-color:var(--gold);background:linear-gradient(180deg,#FFFCF4 0%,#fff 62%);
     box-shadow:0 14px 32px rgba(224,180,88,.24)}
-  /* Titles and blurbs are clamped to a fixed number of lines so every tile in a
-     row lines up: real role names run from 8 to 61 characters. */
   .jobtile .jt-role{font-weight:700;font-size:1rem;line-height:1.3;letter-spacing:-.015em;padding-right:34px;
     display:-webkit-box;-webkit-line-clamp:3;line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
-  /* align-self:stretch + min-width:0 give this row a real, bounded width to wrap
-     against — without them a flex column's auto-width child (and its unshrinkable
-     nowrap/ellipsis pill) grows to fit long text instead of respecting the tile edge,
-     so a multi-city location like "Pune / Bangalore / Hyde / Chen / Kolkata / Gurgram"
-     just runs past the card border. */
   .jobtile .jt-tags{display:flex;flex-wrap:wrap;gap:7px;align-self:stretch;min-width:0}
   .jt-tag{display:inline-flex;align-items:flex-start;gap:.42em;font-size:.75rem;font-weight:600;color:var(--muted);
     background:var(--tint);border:1px solid var(--border);border-radius:14px;padding:.32em .75em;line-height:1.35;
@@ -380,8 +362,6 @@
   .jt-tag svg{width:12px;height:12px;margin-top:.15em;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
   .jt-desc{color:var(--muted);font-size:.88rem;line-height:1.5;
     display:-webkit-box;-webkit-line-clamp:2;line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:2.64em}
-  /* The tile only ever shows a 2-line clamp of the description — this hint tells
-     people the full text is one click away instead of just looking cut off. */
   .jt-more{font-size:.78rem;font-weight:700;color:var(--gold-deep)}
   .jt-id{margin-top:auto;padding-top:2px;font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--soft)}
   .jt-check{position:absolute;top:17px;right:17px;width:21px;height:21px;border-radius:50%;flex:none;
@@ -420,8 +400,6 @@
   .modal .mf{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;padding:14px 22px;border-top:1px solid var(--border)}
   .modal .mf a{color:var(--gold-deep);font-weight:600;text-decoration:underline;text-underline-offset:2px;display:inline-block;padding:8px 2px}
   .modal .mf .jd-note{color:var(--muted);font-size:.88rem}
-  /* Job-description modal: same .modal/.sheet shell as the policy PDF viewer,
-     but sized to its text content instead of forced to near-full viewport height. */
   .jd-sheet{height:auto;max-height:min(88vh,760px)}
   .jd-body{padding:22px 26px 6px;overflow-y:auto;flex:1;min-height:0}
   .jd-tags{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px}
@@ -429,9 +407,6 @@
   .jd-id{margin:22px 0 18px;padding-top:16px;border-top:1px solid var(--border);
     font-size:.76rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--soft)}
   .jd-mfbtns{display:flex;gap:10px;flex-wrap:wrap}
-  /* Fallback for browsers/contexts where clipboard copy is blocked: reveal the
-     link as selectable text instead of silently failing. flex-basis:100% drops
-     it onto its own row under the note + buttons, which already fill the row. */
   .jd-sharelink{flex:1 1 100%;font-size:.78rem;color:var(--soft);background:var(--tint);
     border:1px solid var(--border);border-radius:7px;padding:.45em .7em;
     font-family:ui-monospace,SFMono-Regular,Menlo,monospace;word-break:break-all;user-select:all}
@@ -595,10 +570,7 @@
   <div class="sheet">
     <div class="mh"><h2 id="policyTitle">Referral Policy 2026</h2>
       <button class="x" type="button" id="policyClose" aria-label="Close">×</button></div>
-    <!-- tabindex=-1: once focus enters the PDF viewer its own document swallows
-         keydown, so the dialog can no longer contain Tab. Keyboard users reach the
-         document itself through the two links below. -->
-    <iframe id="policyFrame" title="MIYO Global Referral Policy 2026" tabindex="-1"></iframe>
+        <iframe id="policyFrame" title="MIYO Global Referral Policy 2026" tabindex="-1"></iframe>
     <div class="mf">
       <div><a href="documents/MIYO_Global_Referral_Policy_2026.pdf" download>Download the PDF</a>
         &nbsp;·&nbsp;
@@ -648,7 +620,6 @@
     if(reduce){el.textContent=target+suf;return;}
     const dur=1200,t0=performance.now();
     (function tick(t){const p=Math.min((t-t0)/dur,1);el.textContent=Math.round((1-Math.pow(1-p,3))*target)+suf;if(p<1)requestAnimationFrame(tick);})(t0);}
-  // cookie consent (essential-only site; records acknowledgement)
   try{
     const cb=document.getElementById('cookiebar');
     if(cb && !localStorage.getItem('miyo-consent')){
@@ -664,8 +635,6 @@
   let lastFocus=null;
   function openPolicy(){
     lastFocus=document.activeElement;
-    // Load the PDF on first open so it is not fetched on every page view.
-    // navpanes/toolbar hide the built-in PDF chrome in Chrome, Edge and Safari.
     if(!frame.src) frame.src=POLICY_PDF+'#navpanes=0&toolbar=0&view=FitH';
     modal.classList.add('show'); document.body.classList.add('locked'); closeBtn.focus();
   }
@@ -682,7 +651,6 @@
     if(!modal.classList.contains('show')) return;
     if(e.key==='Escape'){closePolicy();return;}
     if(e.key!=='Tab') return;
-    // The dialog declares aria-modal="true", so keep Tab inside it.
     const items=[...modal.querySelectorAll(MODAL_FOCUSABLE)];
     if(!items.length) return;
     const first=items[0], last=items[items.length-1], active=document.activeElement;
@@ -714,8 +682,6 @@
     jobModalBody.appendChild(desc);
     if(j.jobId){const id=document.createElement('p'); id.className='jd-id'; id.textContent='Job ID '+j.jobId; jobModalBody.appendChild(id);}
   }
-  // A link to one specific position: ?job=<id> on this same page, plus the
-  // form-section anchor so it also scrolls straight there on a fresh load.
   function jobShareUrl(jobId){
     const url=new URL(location.href);
     url.search=''; url.hash='';
@@ -746,8 +712,6 @@
     const j=jobs.find(x=>x.jobId===pickedJobId);
     if(!j) return;
     const url=jobShareUrl(j.jobId);
-    // Native share sheet first (mobile) — if it opens, leave the button alone
-    // rather than also flashing "Link copied!" once the sheet closes.
     if(navigator.share){
       try{
         await navigator.share({title:'MIYO Global — '+(j.role||'Open position'),
@@ -760,7 +724,6 @@
       if(navigator.clipboard&&navigator.clipboard.writeText){ await navigator.clipboard.writeText(url); copied=true; }
     }catch(e){}
     if(!copied){
-      // Older/locked-down browsers: this still works inside a direct click handler.
       try{
         const ta=document.createElement('textarea');
         ta.value=url; ta.style.position='fixed'; ta.style.opacity='0';
@@ -774,8 +737,6 @@
       jobModalShareLabel.textContent='Link copied!';
       shareResetTimer=setTimeout(resetShareUi,2200);
     }else{
-      // Both copy paths failed (rare) — leave the link selectable so it is
-      // never a dead end.
       jobModalShareLabel.textContent='Copy this link:';
       jobModalShareLink.textContent=url; jobModalShareLink.hidden=false;
     }
@@ -808,7 +769,6 @@
         banner=document.getElementById('rbanner'), submitBtn=document.getElementById('rsubmit'),
         clearBtn=document.getElementById('rclear');
   const F=id=>document.getElementById(id);
-  // TILE_CAP keeps the first paint short; "Show all" and the search box open it up.
   const TILE_CAP=12;
   let jobs=[], submitting=false, pickedJobId='', jobQuery='', showAllJobs=false;
 
@@ -821,9 +781,6 @@
     jstat.textContent=text||''; jstat.hidden=!text; jstat.className='jstatus';
   }
   function hideFail(){jfail.hidden=true;}
-  // Distinguish the two failures a referrer can actually act on: a request the
-  // browser never got to send (blocker / VPN / firewall) versus one that was
-  // sent and never came back in time.
   function failWhy(e){
     if(e&&e.name==='AbortError')
       return 'The positions service did not answer in time. That is usually a slow connection or a cold start, and trying again normally works.';
@@ -905,7 +862,6 @@
     const shown=showAllJobs?hits:hits.slice(0,TILE_CAP);
     tiles.textContent='';
     shown.forEach((j,i)=>tiles.appendChild(buildTile(j,i)));
-    // Roving tabindex needs exactly one tab stop when nothing here is picked.
     if(shown.length&&!tiles.querySelector('.jobtile[aria-checked="true"]')) tiles.firstChild.tabIndex=0;
     const rest=hits.length-shown.length;
     jmore.hidden=rest<=0;
@@ -927,9 +883,6 @@
     if(!tile&&list.length) list[0].tabIndex=0;
     renderPicked();
   }
-  // Lands on the position a shared link (?job=<id>, see jobShareUrl above)
-  // points at: pick it, open its full-JD dialog, and scroll it into view —
-  // without this, a shared link would just drop someone on the general form.
   let sharedJobApplied=false;
   function applySharedJobFromUrl(){
     if(sharedJobApplied) return;
@@ -963,13 +916,6 @@
     e.preventDefault(); pickTile(list[n]); list[n].focus();
   });
 
-  // The open-positions GET goes through our own /api/jobs (see api/jobs.js),
-  // which proxies to Apps Script server-side. That keeps this request same-origin
-  // so an ad blocker, VPN or office firewall that singles out script.google.com
-  // can't silently drop it the way it could when we called Apps Script directly —
-  // that used to leave referrers stuck on "Fetching open positions…" forever.
-  // Submitting a referral (below) still posts straight to Apps Script, since the
-  // resume upload is too large for a same-origin function proxy to relay.
   async function fetchJobsOnce(signal){
     const r=await fetch('/api/jobs',{method:'GET',signal});
     if(!r.ok) throw new Error('network response was not OK ('+r.status+')');
@@ -978,8 +924,6 @@
     return d.jobs;
   }
 
-  // 20s per try: the board is ~40KB behind an Apps Script /exec redirect, and a
-  // cold start alone can spend several seconds before a byte is sent.
   const JOBS_TIMEOUT_MS=20000, JOBS_ATTEMPTS=3;
 
   async function loadJobs(){
@@ -1007,7 +951,6 @@
       }catch(e){
         if(timer) clearTimeout(timer);
         lastErr=e;
-        // Brief backoff before retry — Apps Script cold starts are often transient.
         if(i<JOBS_ATTEMPTS-1) await new Promise(r=>setTimeout(r,800*(i+1)));
       }
     }
@@ -1063,7 +1006,6 @@
       submitting=false; submitBtn.textContent='Submit referral'; syncSubmit();
     };
     reader.onload=async ev=>{
-      // FileReader gives "data:application/pdf;base64,XXXX…" — strip the prefix.
       const base64=String(ev.target.result||'').split(',')[1]||'';
       const payload={
         referrerName:F('refName').value.trim(),

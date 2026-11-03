@@ -2,10 +2,11 @@ import "server-only";
 import { lookup } from "node:dns/promises";
 import { isIP } from "node:net";
 import { inArray } from "drizzle-orm";
+import { STATIC_PAGES } from "@/lib/pages";
 import { db } from "./db";
 import { posts, redirects } from "./db/schema";
 
-const STATIC = ["/", "/about", "/case-studies", "/contact", "/digital-solutions", "/privacy-policy", "/referrals", "/staffing-solutions", "/editorial-policy", "/blog"];
+const STATIC: string[] = [...STATIC_PAGES.map((p) => p.path), "/blog"];
 
 function privateAddress(ip: string): boolean {
   if (ip.includes(":")) return ip === "::1" || ip.startsWith("fc") || ip.startsWith("fd") || ip.startsWith("fe80") || ip.startsWith("::ffff:");

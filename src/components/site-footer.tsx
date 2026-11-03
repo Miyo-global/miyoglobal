@@ -28,6 +28,8 @@ export function SiteFooter() {
             <a href="/contact">Contact</a>
             <a href="/editorial-policy">Editorial policy</a>
             <a href="/privacy-policy">Privacy &amp; Cookies</a>
+            <a href="/terms">Terms</a>
+            <a href="/disclosure">Disclosure</a>
           </div>
           <div className="fcol">
             <h5>Get in touch</h5>
