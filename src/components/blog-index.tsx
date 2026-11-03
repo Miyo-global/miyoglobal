@@ -36,11 +36,14 @@ export async function BlogIndex({ page }: { page: number }) {
             <PostCard post={featured} large />
           </section>
         )}
-        <section className="b-sec" aria-labelledby="latest">
-          <h2 id="latest">{page === 1 ? "Latest articles" : `Articles, page ${page}`}</h2>
-          {grid.length === 0 && !featured ? <p className="b-empty">New articles are on the way.</p> : <div className="b-grid">{grid.map((p) => <PostCard key={p.id} post={p} />)}</div>}
-          <Pager page={page} pages={pages} base="/blog" />
-        </section>
+        {grid.length > 0 && (
+          <section className="b-sec" aria-labelledby="latest">
+            <h2 id="latest">{page === 1 ? "Latest articles" : `Articles, page ${page}`}</h2>
+            <div className="b-grid">{grid.map((p) => <PostCard key={p.id} post={p} />)}</div>
+            <Pager page={page} pages={pages} base="/blog" />
+          </section>
+        )}
+        {!featured && grid.length === 0 && <p className="b-empty">New articles are on the way.</p>}
         {rails.filter((r) => r.posts.length).map(({ c, posts: ps }) => (
           <section className="b-sec" key={c.id} aria-label={c.name}>
             <div className="b-sec-head">
