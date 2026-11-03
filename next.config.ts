@@ -23,8 +23,11 @@ const csp = [
   "object-src 'self'",
 ].join("; ");
 
+const adminHost = process.env.ADMIN_HOST ?? "adm.miyoglobal.com";
+
 const config: NextConfig = {
   trailingSlash: false,
+  experimental: { serverActions: { bodySizeLimit: "12mb", allowedOrigins: [adminHost] } },
   poweredByHeader: false,
   async headers() {
     return [

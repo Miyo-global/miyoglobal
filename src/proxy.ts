@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 
 const adminHost = (process.env.ADMIN_HOST ?? "adm.miyoglobal.com").toLowerCase();
 const adminOnly = /^\/(studio|api\/auth)(\/|$)/;
-const shared = /^\/(_next|images\/|favicon\.svg)/;
+const shared = /^\/(_next|uploads\/|images\/|favicon\.svg)/;
 
 function notFound() {
   return new NextResponse(null, { status: 404 });
