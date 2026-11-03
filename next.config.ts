@@ -1,14 +1,8 @@
 import type { NextConfig } from "next";
+import { REWRITTEN_PAGES } from "./src/lib/pages";
 
-const pages = [
-  "about",
-  "case-studies",
-  "contact",
-  "digital-solutions",
-  "privacy-policy",
-  "referrals",
-  "staffing-solutions",
-];
+const pages = REWRITTEN_PAGES;
+
 
 const csp = [
   "default-src 'self'",
