@@ -39,7 +39,7 @@ Set `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY` and `R2_PUBLIC_B
 
 ## Scheduled publishing
 
-`vercel.json` calls `GET /api/cron/publish` every 5 minutes with `Authorization: Bearer ${CRON_SECRET}`. Vercel sends the header when `CRON_SECRET` is set. Due posts become published, get an audit row, and trigger revalidation and IndexNow.
+`.github/workflows/publish-cron.yml` calls `GET /api/cron/publish` every 5 minutes with `Authorization: Bearer ${CRON_SECRET}` (repo secret `CRON_SECRET`, same value as Vercel). `vercel.json` also runs it daily, because Vercel Hobby rejects more frequent crons; on Pro, change that schedule to `*/5 * * * *` and delete the workflow. Due posts become published, get an audit row, and trigger revalidation and IndexNow.
 
 ## IndexNow
 

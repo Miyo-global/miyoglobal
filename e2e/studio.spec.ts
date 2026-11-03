@@ -394,3 +394,13 @@ test("static pages use clean canonicals without redirects", async ({ request }) 
   expect(referrals).not.toContain("script.google.com");
   expect(referrals).not.toContain("s3cret");
 });
+
+test("no horizontal overflow on phones, tablets and desktop", async ({ page }) => {
+  for (const width of [375, 768, 1280]) {
+    await page.setViewportSize({ width, height: 800 });
+    for (const path of ["/blog", "/blog/gcc-staffing-guide-updated", "/terms", "/about"]) {
+      await page.goto(path);
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), `${path} at ${width}`).toBe(true);
+    }
+  }
+});
