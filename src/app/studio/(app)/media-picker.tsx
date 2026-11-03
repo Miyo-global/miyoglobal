@@ -2,11 +2,11 @@
 
 import Image from "next/image";
 import { useState, useTransition } from "react";
-import { uploadMediaAction } from "./actions";
+import { deleteMediaAction, uploadMediaAction } from "./actions";
 
 export type MediaItem = { id: number; url: string; alt: string; width: number; height: number };
 
-export function MediaPicker({ items, onPick }: { items: MediaItem[]; onPick?: (m: MediaItem) => void }) {
+export function MediaPicker({ items, onPick, canDelete = false }: { items: MediaItem[]; onPick?: (m: MediaItem) => void; canDelete?: boolean }) {
   const [list, setList] = useState(items);
   const [error, setError] = useState("");
   const [pending, start] = useTransition();
@@ -25,11 +25,21 @@ export function MediaPicker({ items, onPick }: { items: MediaItem[]; onPick?: (m
     });
   }
 
+  function remove(m: MediaItem) {
+    if (!window.confirm("Delete this image permanently?")) return;
+    setError("");
+    start(async () => {
+      const res = await deleteMediaAction(m.id);
+      if (!res.ok) return setError(res.error);
+      setList((l) => l.filter((x) => x.id !== m.id));
+    });
+  }
+
   return (
     <div>
       <form onSubmit={upload}>
         <label>
-          Image (JPEG, PNG, WebP or AVIF, min 1200px wide, max 10MB)
+          Image (JPEG, PNG, WebP or AVIF, min 1200px wide, max 4MB)
           <input name="file" type="file" accept="image/jpeg,image/png,image/webp,image/avif" required />
         </label>
         <label>
@@ -46,6 +56,11 @@ export function MediaPicker({ items, onPick }: { items: MediaItem[]; onPick?: (m
             {onPick && (
               <button type="button" className="link" onClick={() => onPick(m)}>
                 Use this image
+              </button>
+            )}
+            {canDelete && (
+              <button type="button" className="link" onClick={() => remove(m)}>
+                Delete
               </button>
             )}
           </figure>

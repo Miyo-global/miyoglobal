@@ -1,4 +1,4 @@
-export const SITE_URL = (process.env.SITE_URL ?? "https://miyoglobal.com").replace(/\/$/, "");
+export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.miyoglobal.com").replace(/\/$/, "");
 export const SITE_NAME = "MIYO Global";
 
 export function absolute(path: string): string {

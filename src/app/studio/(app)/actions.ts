@@ -15,7 +15,7 @@ import { account, authors, categories, tags, user } from "@/server/db/schema";
 import { requireStaff } from "@/server/guards";
 import { findBrokenLinks } from "@/server/links";
 import { afterPublish } from "@/server/publish";
-import { saveUpload, UploadError } from "@/server/services/media";
+import { deleteMedia, saveUpload, UploadError } from "@/server/services/media";
 import { createDraft, deletePost, PostError, savePost } from "@/server/services/posts";
 
 function parseJson(raw: string): unknown {
@@ -79,6 +79,19 @@ export async function uploadMediaAction(form: FormData): Promise<Result<{ media:
     await audit(me.id, "media.upload", String(m.id));
     revalidatePath("/media");
     return { ok: true, media: { id: m.id, url: m.url, alt: m.alt, width: m.width, height: m.height } };
+  } catch (e) {
+    if (e instanceof UploadError) return { ok: false, error: e.message };
+    throw e;
+  }
+}
+
+export async function deleteMediaAction(id: number): Promise<Result> {
+  const me = await requireStaff("deletePosts");
+  try {
+    await deleteMedia(id);
+    await audit(me.id, "media.delete", String(id));
+    revalidatePath("/media");
+    return { ok: true };
   } catch (e) {
     if (e instanceof UploadError) return { ok: false, error: e.message };
     throw e;

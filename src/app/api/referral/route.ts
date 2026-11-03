@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { allow, clientIp, sameOrigin } from "@/server/request";
+import { allow, clientIp, sameOrigin, tooLarge } from "@/server/request";
 
 const MAX_RESUME_BYTES = 3 * 1024 * 1024;
 const MIME = ["application/pdf", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"];
@@ -37,6 +37,11 @@ function resumeOk(base64: string, name: string): boolean {
 export async function POST(req: Request) {
   if (!sameOrigin(req)) return json({ status: "error", message: "Forbidden" }, 403);
 
+  if (tooLarge(req, 4_400_000)) return json({ status: "error", message: "Resume must be a PDF or DOCX under 3MB" }, 413);
+  if (!(await allow(`referral:${clientIp(req)}`, 5, 10 * 60 * 1000))) {
+    return json({ status: "error", message: "Too many submissions, please try again later" }, 429);
+  }
+
   const raw = await req.json().catch(() => null);
   const parsed = body.safeParse(raw);
   if (!parsed.success) return json({ status: "error", message: "Please check the form and try again" }, 422);
@@ -46,14 +51,10 @@ export async function POST(req: Request) {
     return json({ status: "error", message: "Resume must be a PDF or DOCX under 3MB" }, 422);
   }
 
-  if (!(await allow(`referral:${clientIp(req)}`, 5, 10 * 60 * 1000))) {
-    return json({ status: "error", message: "Too many submissions, please try again later" }, 429);
-  }
-
-  const endpoint = process.env.REFERRAL_ENDPOINT;
-  const secret = process.env.REFERRAL_SECRET;
+  const endpoint = process.env.REFERRAL_SCRIPT_URL;
+  const secret = process.env.REFERRAL_SCRIPT_SECRET;
   if (!endpoint || !secret) {
-    console.error("referral: REFERRAL_ENDPOINT or REFERRAL_SECRET is not set");
+    console.error("referral: REFERRAL_SCRIPT_URL or REFERRAL_SCRIPT_SECRET is not set");
     return json({ status: "error", message: "Referrals are temporarily unavailable" }, 503);
   }
 

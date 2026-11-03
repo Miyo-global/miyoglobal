@@ -14,6 +14,10 @@ export function sameOrigin(req: Request): boolean {
   }
 }
 
+export function tooLarge(req: Request, max: number): boolean {
+  return Number(req.headers.get("content-length") ?? Infinity) > max;
+}
+
 export function clientIp(req: Request): string {
   return req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || req.headers.get("x-real-ip") || "unknown";
 }

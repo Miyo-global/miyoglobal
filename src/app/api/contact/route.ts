@@ -1,5 +1,6 @@
 import { z } from "zod";
-import { allow, clientIp, sameOrigin } from "@/server/request";
+import { sendMail } from "@/server/mail";
+import { allow, clientIp, sameOrigin, tooLarge } from "@/server/request";
 
 const body = z.object({
   name: z.string().trim().min(1).max(120),
@@ -16,6 +17,12 @@ const json = (data: object, status = 200) => Response.json(data, { status });
 export async function POST(req: Request) {
   if (!sameOrigin(req)) return json({ ok: false, error: "Forbidden" }, 403);
 
+  if (tooLarge(req, 64 * 1024)) return json({ ok: false, error: "Message is too large" }, 413);
+  const ip = clientIp(req);
+  if (!(await allow(`contact:${ip}`, 5, 10 * 60 * 1000))) {
+    return json({ ok: false, error: "Too many requests. Please try again later or email us directly." }, 429);
+  }
+
   const form = await req.formData().catch(() => null);
   if (!form) return json({ ok: false, error: "Invalid request" }, 400);
   const parsed = body.safeParse(Object.fromEntries(form));
@@ -23,33 +30,12 @@ export async function POST(req: Request) {
   const d = parsed.data;
   if (d.website) return json({ ok: true });
 
-  const ip = clientIp(req);
-  if (!(await allow(`contact:${ip}`, 5, 10 * 60 * 1000))) {
-    return json({ ok: false, error: "Too many requests. Please try again later or email us directly." }, 429);
-  }
-
-  const key = process.env.RESEND_API_KEY;
-  if (!key) {
-    console.error("contact: RESEND_API_KEY is not set");
-    return json({ ok: false, error: "Could not send right now. Please email staffing@miyoglobal.com directly." }, 500);
-  }
-
-  const res = await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
-    body: JSON.stringify({
-      from: process.env.CONTACT_FROM ?? "MIYO Global <no-reply@miyoglobal.com>",
-      to: [process.env.CONTACT_TO ?? "staffing@miyoglobal.com"],
-      reply_to: d.email,
-      subject: `Staffing enquiry from ${line(d.name)}${d.company ? ` (${line(d.company)})` : ""}`,
-      text: `Name: ${line(d.name)}\nEmail: ${d.email}\nCompany: ${line(d.company)}\nPhone: ${line(d.phone)}\nIP: ${ip}\n\nMessage:\n${d.message}\n`,
-    }),
-    signal: AbortSignal.timeout(10000),
-  }).catch(() => null);
-
-  if (!res?.ok) {
-    console.error("contact: Resend rejected the message", res?.status);
-    return json({ ok: false, error: "Could not send right now. Please email staffing@miyoglobal.com directly." }, 502);
-  }
+  const sent = await sendMail({
+    to: process.env.CONTACT_TO_EMAIL ?? "staffing@miyoglobal.com",
+    replyTo: { address: d.email, name: line(d.name) },
+    subject: `Staffing enquiry from ${line(d.name)}${d.company ? ` (${line(d.company)})` : ""}`,
+    text: `Name: ${line(d.name)}\nEmail: ${d.email}\nCompany: ${line(d.company)}\nPhone: ${line(d.phone)}\nIP: ${ip}\n\nMessage:\n${d.message}\n`,
+  });
+  if (!sent) return json({ ok: false, error: "Could not send right now. Please email staffing@miyoglobal.com directly." }, 502);
   return json({ ok: true });
 }

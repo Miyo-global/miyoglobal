@@ -1,16 +1,16 @@
 import type { NextConfig } from "next";
+import { ADMIN_HOST, ADMIN_URL } from "./src/lib/hosts";
 import { REWRITTEN_PAGES } from "./src/lib/pages";
 
 const pages = REWRITTEN_PAGES;
-const adminHost = process.env.ADMIN_HOST ?? "adm.miyoglobal.com";
-const adminHostName = adminHost.split(":")[0];
+const mediaUrl = process.env.NEXT_PUBLIC_MEDIA_URL ? new URL(process.env.NEXT_PUBLIC_MEDIA_URL) : null;
 
 const csp = [
   "default-src 'self'",
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
   "font-src https://fonts.gstatic.com",
   "script-src 'self' 'unsafe-inline'",
-  "img-src 'self' data: https://*.public.blob.vercel-storage.com",
+  `img-src 'self' data:${mediaUrl ? ` ${mediaUrl.origin}` : ""}`,
   "connect-src 'self'",
   "frame-ancestors 'self'",
   "base-uri 'self'",
@@ -30,17 +30,17 @@ const baseHeaders = [
 const config: NextConfig = {
   trailingSlash: false,
   poweredByHeader: false,
-  experimental: { serverActions: { bodySizeLimit: "12mb", allowedOrigins: [adminHost] } },
+  experimental: { serverActions: { bodySizeLimit: "5mb", allowedOrigins: [new URL(ADMIN_URL).host] } },
   images: {
     formats: ["image/avif", "image/webp"],
-    remotePatterns: [{ protocol: "https", hostname: "*.public.blob.vercel-storage.com" }],
+    remotePatterns: mediaUrl ? [{ protocol: "https", hostname: mediaUrl.hostname }] : [],
   },
   async headers() {
     const edge = "public, s-maxage=300, stale-while-revalidate=600";
     return [
       {
         source: "/:path*",
-        missing: [{ type: "host", value: adminHostName }],
+        missing: [{ type: "host", value: ADMIN_HOST }],
         headers: [
           ...baseHeaders,
           { key: "X-Frame-Options", value: "SAMEORIGIN" },
@@ -49,7 +49,7 @@ const config: NextConfig = {
       },
       {
         source: "/:path*",
-        has: [{ type: "host", value: adminHostName }],
+        has: [{ type: "host", value: ADMIN_HOST }],
         headers: [
           ...baseHeaders,
           { key: "X-Frame-Options", value: "DENY" },

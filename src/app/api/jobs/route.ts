@@ -1,6 +1,6 @@
 export async function GET() {
-  const endpoint = process.env.REFERRAL_ENDPOINT;
-  const secret = process.env.REFERRAL_SECRET;
+  const endpoint = process.env.REFERRAL_SCRIPT_URL;
+  const secret = process.env.REFERRAL_SCRIPT_SECRET;
   if (!endpoint || !secret) {
     return Response.json({ status: "error", message: "jobs are temporarily unavailable" }, { status: 503 });
   }

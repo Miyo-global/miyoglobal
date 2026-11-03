@@ -1,17 +1,17 @@
 import "server-only";
 import { randomUUID } from "node:crypto";
-import { desc } from "drizzle-orm";
+import { desc, eq, sql } from "drizzle-orm";
 import sharp from "sharp";
 import { detectImage, MAX_UPLOAD_BYTES, MIN_UPLOAD_WIDTH, validateAlt } from "@/lib/image-type";
 import { db } from "../db";
-import { media } from "../db/schema";
-import { store } from "../storage";
+import { media, posts } from "../db/schema";
+import { removeObject, store } from "../storage";
 
 export class UploadError extends Error {}
 
 export async function saveUpload(file: File, alt: string, userId: string) {
   if (file.size === 0) throw new UploadError("Choose an image");
-  if (file.size > MAX_UPLOAD_BYTES) throw new UploadError("Image must be 10MB or smaller");
+  if (file.size > MAX_UPLOAD_BYTES) throw new UploadError("Image must be 4MB or smaller");
   const altError = validateAlt(alt);
   if (altError) throw new UploadError(altError);
   const input = Buffer.from(await file.arrayBuffer());
@@ -32,7 +32,10 @@ export async function saveUpload(file: File, alt: string, userId: string) {
     store(`${id}.webp`, main.data, "image/webp"),
     store(`${id}-avif.avif`, avif, "image/avif"),
     store(`${id}-og.webp`, og, "image/webp"),
-  ]);
+  ]).catch((e) => {
+    console.error("media: upload failed", e instanceof Error ? e.message : e);
+    throw new UploadError("Could not store the image. Please try again.");
+  });
 
   const [row] = await db
     .insert(media)
@@ -49,6 +52,19 @@ export async function saveUpload(file: File, alt: string, userId: string) {
     })
     .returning();
   return row;
+}
+
+export async function deleteMedia(id: number) {
+  const [row] = await db.select().from(media).where(eq(media.id, id));
+  if (!row) throw new UploadError("Image not found");
+  const [used] = await db
+    .select({ id: posts.id })
+    .from(posts)
+    .where(sql`${posts.coverMediaId} = ${id} or ${posts.content}::text like ${`%${row.url}%`}`)
+    .limit(1);
+  if (used) throw new UploadError("This image is used by a post");
+  await Promise.all([row.url, row.avifUrl, row.ogUrl].filter((u): u is string => !!u).map(removeObject));
+  await db.delete(media).where(eq(media.id, id));
 }
 
 export function listMedia(limit = 200) {
