@@ -1,7 +1,9 @@
 const SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
+const RESERVED = new Set(["search", "category", "tag", "author", "page"]);
+
 export function isValidSlug(slug: string): boolean {
-  return slug.length > 0 && slug.length <= 96 && SLUG.test(slug);
+  return slug.length > 0 && slug.length <= 96 && SLUG.test(slug) && !RESERVED.has(slug);
 }
 
 export function slugify(text: string): string {

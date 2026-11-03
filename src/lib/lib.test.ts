@@ -15,6 +15,7 @@ describe("slug", () => {
     expect(isValidSlug("a--b")).toBe(false);
     expect(isValidSlug("-a")).toBe(false);
     expect(isValidSlug("")).toBe(false);
+    expect(isValidSlug("search")).toBe(false);
   });
   it("slugifies", () => {
     expect(slugify("  Café & Co: 10 Tips!  ")).toBe("cafe-co-10-tips");
