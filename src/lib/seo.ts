@@ -7,7 +7,10 @@ export function absolute(path: string): string {
 
 export function titleFor(metaTitle: string, title: string): string {
   const base = (metaTitle || title).trim();
-  return base.length > 60 ? base.slice(0, 57).trimEnd() + "..." : base;
+  const clamp = (t: string, max: number) => (t.length > max ? `${t.slice(0, max - 3).trimEnd()}...` : t);
+  if (base.includes("|")) return clamp(base, 60);
+  const suffix = ` | ${SITE_NAME}`;
+  return clamp(base, 60 - suffix.length) + suffix;
 }
 
 export function jsonLdScript(data: unknown): string {

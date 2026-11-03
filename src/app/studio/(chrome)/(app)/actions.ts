@@ -1,7 +1,7 @@
 "use server";
 
 import { hashPassword } from "better-auth/crypto";
-import { and, eq } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
@@ -11,7 +11,7 @@ import { slugify } from "@/lib/slug";
 import type { Doc } from "@/lib/content";
 import { audit } from "@/server/audit";
 import { db } from "@/server/db";
-import { account, authors, categories, tags, user } from "@/server/db/schema";
+import { account, authors, categories, session, tags, twoFactor, user } from "@/server/db/schema";
 import { requireStaff } from "@/server/guards";
 import { findBrokenLinks } from "@/server/links";
 import { afterPublish } from "@/server/publish";
@@ -196,7 +196,9 @@ export async function resetTwoFactorAction(form: FormData) {
   const me = await requireStaff("manageUsers");
   const id = z.string().min(1).parse(form.get("id"));
   if (id === me.id) return;
-  await db.update(user).set({ twoFactorEnabled: false }).where(and(eq(user.id, id)));
+  await db.update(user).set({ twoFactorEnabled: false }).where(eq(user.id, id));
+  await db.delete(twoFactor).where(eq(twoFactor.userId, id));
+  await db.delete(session).where(eq(session.userId, id));
   await audit(me.id, "user.2fa-reset", id);
   revalidatePath("/users");
 }

@@ -2,7 +2,9 @@ import { describe, expect, it } from "vitest";
 import { headingIds, readingMinutes, renderHtml, safeUrl, type Doc } from "./content";
 import { checkHealth } from "./health";
 import { planRedirect } from "./redirects";
-import { jsonLdScript, parseCustomJsonLd } from "./seo";
+import { fromIstInput, toIstInput } from "./ist";
+import { normalizeHost } from "./hosts";
+import { jsonLdScript, parseCustomJsonLd, titleFor } from "./seo";
 import { isValidSlug, slugify } from "./slug";
 
 const p = (text: string) => ({ type: "paragraph", content: [{ type: "text", text }] });
@@ -83,6 +85,43 @@ describe("redirects", () => {
     const r = planRedirect([{ fromPath: "/blog/a", toPath: "/blog/b" }], "/blog/b", "/blog/a");
     expect(r.remove).toEqual(["/blog/a"]);
     expect(r.upsert).toEqual([{ fromPath: "/blog/b", toPath: "/blog/a" }]);
+  });
+});
+
+describe("redirect chains", () => {
+  it("collapses a 3-hop chain to the final URL with no loop", () => {
+    let rows = [{ fromPath: "/blog/a", toPath: "/blog/b" }];
+    const apply = (from: string, to: string) => {
+      const plan = planRedirect(rows, from, to);
+      const kept = rows.filter((r) => !plan.remove.includes(r.fromPath) && !plan.upsert.some((u) => u.fromPath === r.fromPath));
+      rows = [...kept, ...plan.upsert];
+    };
+    apply("/blog/b", "/blog/c");
+    apply("/blog/c", "/blog/d");
+    expect(rows.every((r) => r.toPath === "/blog/d")).toBe(true);
+    expect(rows.map((r) => r.fromPath).sort()).toEqual(["/blog/a", "/blog/b", "/blog/c"]);
+    apply("/blog/d", "/blog/a");
+    expect(rows.some((r) => r.fromPath === "/blog/a")).toBe(false);
+    expect(rows.every((r) => r.toPath === "/blog/a")).toBe(true);
+  });
+});
+
+describe("ist", () => {
+  it("round trips IST input", () => {
+    expect(fromIstInput("2026-11-03T10:30")).toBe("2026-11-03T05:00:00.000Z");
+    expect(toIstInput("2026-11-03T05:00:00.000Z")).toBe("2026-11-03T10:30");
+    expect(fromIstInput("")).toBeNull();
+  });
+});
+
+describe("hosts and titles", () => {
+  it("ignores port, trailing dot and case", () => {
+    expect(normalizeHost("ADM.miyoglobal.com.:443")).toBe("adm.miyoglobal.com");
+  });
+  it("keeps titles within 60 chars with brand", () => {
+    expect(titleFor("", "x".repeat(90)).length).toBeLessThanOrEqual(60);
+    expect(titleFor("Short", "")).toBe("Short | MIYO Global");
+    expect(titleFor("Own | Brand", "")).toBe("Own | Brand");
   });
 });
 

@@ -7,6 +7,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from
 import type { Doc } from "@/lib/content";
 import { checkHealth } from "@/lib/health";
 import type { Intent, PostInput } from "@/lib/post-schema";
+import { fromIstInput, toIstInput } from "@/lib/ist";
 import { parseCustomJsonLd, titleFor } from "@/lib/seo";
 import { slugify } from "@/lib/slug";
 import { checkLinksAction, deletePostAction, savePostAction } from "../../actions";
@@ -86,6 +87,7 @@ export function PostEditor(props: Props) {
         doc: form.content as Doc,
         coverAlt: cover?.alt ?? null,
         hasCover: !!cover,
+        coverWidth: cover?.width,
       }),
     [form, cover],
   );
@@ -102,6 +104,7 @@ export function PostEditor(props: Props) {
         }
         setStatus(res.status);
         setDirty(false);
+        if (intent === "draft") setForm((f) => ({ ...f, scheduledAt: null }));
         if (res.slug !== form.slug) setForm((f) => ({ ...f, slug: res.slug }));
         setNote(silent ? `Autosaved ${new Date().toLocaleTimeString()}` : `Saved as ${res.status}`);
       }),
@@ -133,7 +136,7 @@ export function PostEditor(props: Props) {
   );
 
   const clusters = [...new Set(props.siblings.map((s) => s.cluster).filter(Boolean))];
-  const related = props.siblings.filter((s) => form.cluster && s.cluster === form.cluster).slice(0, 6);
+  const related = [...props.siblings].sort((a, b) => Number(b.cluster === form.cluster) - Number(a.cluster === form.cluster)).slice(0, 6);
   const errors = issues.filter((i) => i.level === "error");
 
   return (
@@ -224,14 +227,16 @@ export function PostEditor(props: Props) {
             </div>
             {errors.length > 0 && <p className="error">Fix {errors.length} error{errors.length > 1 ? "s" : ""} to publish</p>}
             <label style={{ marginTop: 12 }}>
-              Schedule for
-              <input type="datetime-local" onChange={(e) => set("scheduledAt", e.target.value ? new Date(e.target.value).toISOString() : null)} defaultValue={form.scheduledAt ? new Date(form.scheduledAt).toISOString().slice(0, 16) : ""} />
+              Schedule for (IST)
+              <input type="datetime-local" value={toIstInput(form.scheduledAt)} onChange={(e) => set("scheduledAt", fromIstInput(e.target.value))} />
             </label>
             <div className="row">
               <button type="button" className="btn ghost" disabled={pending || errors.length > 0 || !form.scheduledAt} onClick={() => submit("schedule")}>Schedule</button>
-              {status !== "draft" && <button type="button" className="btn ghost" disabled={pending} onClick={() => submit("draft")}>Unpublish</button>}
+              {live && <button type="button" className="btn ghost" disabled={pending} onClick={() => submit("draft")}>Unpublish</button>}
+              {status === "scheduled" && <button type="button" className="btn ghost" disabled={pending} onClick={() => submit("draft")}>Cancel schedule</button>}
               {status !== "archived" && <button type="button" className="btn ghost" disabled={pending} onClick={() => submit("archive")}>Archive</button>}
             </div>
+            <p><a href={`/preview/${props.id}`} target="_blank" rel="noopener">Preview saved version</a></p>
             {live && <p className="muted">Live posts are not autosaved. Use Update to publish changes.</p>}
             {props.canDelete && (
               <form action={deletePostAction.bind(null, props.id)} onSubmit={(e) => { if (!window.confirm("Delete this post permanently?")) e.preventDefault(); }} style={{ marginTop: 12 }}>

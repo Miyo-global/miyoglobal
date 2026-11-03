@@ -6,7 +6,7 @@ export const fmtDate = (d: Date | null) =>
   d ? d.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" }) : "";
 
 export function PostCard({ post, large = false }: { post: CardPost; large?: boolean }) {
-  const date = post.publishedAt ?? post.scheduledAt;
+  const date = post.publishedAt;
   return (
     <article className={`b-card${large ? " large" : ""}`}>
       <Link href={`/blog/${post.slug}`} className="b-card-img" tabIndex={-1} aria-hidden="true">

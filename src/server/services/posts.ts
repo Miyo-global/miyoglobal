@@ -54,7 +54,7 @@ export async function createDraft(authorId: number | null) {
 
 export async function healthFor(input: PostInput): Promise<Issue[]> {
   const cover = input.coverMediaId
-    ? (await db.select({ alt: media.alt }).from(media).where(eq(media.id, input.coverMediaId)))[0]
+    ? (await db.select({ alt: media.alt, width: media.width }).from(media).where(eq(media.id, input.coverMediaId)))[0]
     : undefined;
   return checkHealth({
     title: input.title,
@@ -66,6 +66,7 @@ export async function healthFor(input: PostInput): Promise<Issue[]> {
     doc: input.content as Doc,
     coverAlt: cover?.alt ?? null,
     hasCover: !!cover,
+    coverWidth: cover?.width,
   });
 }
 
@@ -104,8 +105,8 @@ export async function savePost(id: number, userId: string, role: string, input: 
     status = "draft";
   } else if (intent === "archive") {
     status = "archived";
-  } else if (existing.status === "scheduled" && input.scheduledAt) {
-    scheduledAt = new Date(input.scheduledAt);
+  } else if (existing.status === "scheduled") {
+    scheduledAt = input.scheduledAt ? new Date(input.scheduledAt) : existing.scheduledAt;
   }
 
   const wasLive = existing.status === "published" || existing.status === "archived" || !!existing.publishedAt;

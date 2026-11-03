@@ -2,7 +2,7 @@ import { SITE_URL } from "@/lib/seo";
 
 const AI_CRAWLERS = ["GPTBot", "OAI-SearchBot", "ChatGPT-User", "ClaudeBot", "Claude-SearchBot", "PerplexityBot", "Google-Extended", "Applebot-Extended", "CCBot"];
 
-const BLOCKED = ["/api/", "/blog/search", "/studio", "/uploads/", "/*?*"];
+const BLOCKED = ["/api/", "/blog/search", "/studio", "/*?*"];
 
 export function GET() {
   const rules = (agent: string) => [`User-agent: ${agent}`, "Allow: /", ...BLOCKED.map((p) => `Disallow: ${p}`), ""].join("\n");

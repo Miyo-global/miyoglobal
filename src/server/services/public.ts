@@ -1,12 +1,11 @@
 import "server-only";
-import { and, desc, eq, ilike, inArray, lte, ne, or, sql } from "drizzle-orm";
+import { and, desc, eq, ilike, inArray, ne, or, sql } from "drizzle-orm";
 import { db } from "../db";
-import { authors, categories, media, postTags, posts, redirects, tags } from "../db/schema";
+import { authors, categories, media, postTags, posts, tags } from "../db/schema";
 
 export const PER_PAGE = 9;
 
-const live = () =>
-  or(eq(posts.status, "published"), and(eq(posts.status, "scheduled"), lte(posts.scheduledAt, new Date())));
+const live = () => eq(posts.status, "published");
 
 const cardColumns = {
   id: posts.id,
@@ -14,7 +13,6 @@ const cardColumns = {
   title: posts.title,
   excerpt: posts.excerpt,
   publishedAt: posts.publishedAt,
-  scheduledAt: posts.scheduledAt,
   updatedAt: posts.updatedAt,
   readingMinutes: posts.readingMinutes,
   categoryName: categories.name,
@@ -35,7 +33,7 @@ function cards(where?: ReturnType<typeof and>, limit = PER_PAGE, offset = 0) {
     .leftJoin(categories, eq(posts.categoryId, categories.id))
     .leftJoin(media, eq(posts.coverMediaId, media.id))
     .where(where ? and(live(), where) : live())
-    .orderBy(desc(sql`coalesce(${posts.publishedAt}, ${posts.scheduledAt})`))
+    .orderBy(desc(posts.publishedAt))
     .limit(limit)
     .offset(offset);
 }
@@ -72,7 +70,7 @@ export async function categoriesWithPosts() {
   return db
     .select({ id: categories.id, slug: categories.slug, name: categories.name, description: categories.description })
     .from(categories)
-    .where(sql`exists (select 1 from ${posts} where ${posts.categoryId} = ${categories.id} and (${posts.status} = 'published' or (${posts.status} = 'scheduled' and ${posts.scheduledAt} <= now())))`)
+    .where(sql`exists (select 1 from ${posts} where ${posts.categoryId} = ${categories.id} and ${posts.status} = 'published')`)
     .orderBy(categories.name);
 }
 
@@ -80,7 +78,13 @@ export const getCategory = async (slug: string) => (await db.select().from(categ
 export const getTag = async (slug: string) => (await db.select().from(tags).where(eq(tags.slug, slug)))[0] ?? null;
 export const getAuthor = async (slug: string) => (await db.select().from(authors).where(eq(authors.slug, slug)))[0] ?? null;
 
-export async function getPostBySlug(slug: string) {
+export const getPostBySlug = (slug: string) => loadPost(and(live(), eq(posts.slug, slug)));
+
+export const getPostById = (id: number) => loadPost(eq(posts.id, id));
+
+export type PostData = NonNullable<Awaited<ReturnType<typeof loadPost>>>;
+
+async function loadPost(where: ReturnType<typeof and>) {
   const [row] = await db
     .select({
       post: posts,
@@ -91,7 +95,7 @@ export async function getPostBySlug(slug: string) {
     .from(posts)
     .leftJoin(categories, eq(posts.categoryId, categories.id))
     .leftJoin(media, eq(posts.coverMediaId, media.id))
-    .where(and(live(), eq(posts.slug, slug)));
+    .where(where);
   if (!row) return null;
   const [author] = row.post.authorId ? await db.select().from(authors).where(eq(authors.id, row.post.authorId)) : [];
   const [reviewer] = row.post.reviewerId ? await db.select().from(authors).where(eq(authors.id, row.post.reviewerId)) : [];
@@ -111,11 +115,6 @@ export async function related(postId: number, categoryId: number | null, tagIds:
   if (!conds.length) return cards(ne(posts.id, postId), limit);
   const rows = await cards(and(ne(posts.id, postId), or(...conds)), limit);
   return rows.length >= limit ? rows : [...rows, ...(await cards(ne(posts.id, postId), limit + rows.length)).filter((r) => !rows.some((x) => x.id === r.id))].slice(0, limit);
-}
-
-export async function findRedirect(path: string) {
-  const [row] = await db.select({ to: redirects.toPath }).from(redirects).where(eq(redirects.fromPath, path));
-  return row?.to ?? null;
 }
 
 export async function sitemapEntries() {

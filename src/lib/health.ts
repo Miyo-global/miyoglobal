@@ -12,6 +12,7 @@ export type HealthInput = {
   doc: Doc;
   coverAlt: string | null;
   hasCover: boolean;
+  coverWidth?: number;
 };
 
 export const SERVICE_PATHS = ["/staffing-solutions", "/digital-solutions", "/contact", "/referrals"];
@@ -43,6 +44,7 @@ export function checkHealth(i: HealthInput): Issue[] {
   if (images.some((n) => !String(n.attrs?.alt ?? "").trim())) add("error", "alt", "An image in the body has no alt text");
   if (i.hasCover && !(i.coverAlt ?? "").trim()) add("error", "cover-alt", "Cover image has no alt text");
   if (!i.hasCover) add("warn", "cover", "No cover image");
+  else if (i.coverWidth && i.coverWidth < 1920) add("warn", "cover-size", `Cover is ${i.coverWidth}px wide (aim for 1920px+)`);
   if (!toc.some((t) => t.level === 2)) add("warn", "h2", "No H2 headings");
   if (words < 600) add("warn", "thin", `Thin content: ${words} words (aim for 600+)`);
   if (!i.metaTitle.trim()) add("warn", "meta-title", "Meta title is empty");
