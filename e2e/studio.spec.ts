@@ -1,10 +1,14 @@
 import { expect, test, type Page } from "@playwright/test";
+import { readFileSync } from "node:fs";
+import pg from "pg";
 import sharp from "sharp";
 import { totp } from "./support/totp";
 
 const ADMIN = "http://adm.localhost:3111";
 const EMAIL = process.env.SEED_ADMIN_EMAIL ?? "admin@miyoglobal.test";
 const PASSWORD = process.env.SEED_ADMIN_PASSWORD ?? "";
+const CRON = { Authorization: "Bearer e2e-cron-secret" };
+const mockCalls = () => readFileSync("/tmp/miyo-e2e-mock-calls.log", "utf8");
 const ALT = "A recruiter reviewing candidate resumes at a bright modern office desk";
 
 let page: Page;
@@ -26,7 +30,10 @@ test.describe.serial("studio to public flow", () => {
   test("host lock", async ({ request }) => {
     expect((await request.get("/studio/login")).status()).toBe(404);
     expect((await request.get("/api/auth/get-session")).status()).toBe(404);
+    expect((await request.get("/login")).status()).toBe(404);
     expect((await request.get(`${ADMIN}/about`)).status()).toBe(404);
+    const root = await request.get(`${ADMIN}/`, { maxRedirects: 0 });
+    expect(root.headers()["location"]).toBe("/login");
     const robots = await request.get(`${ADMIN}/robots.txt`);
     expect(await robots.text()).toContain("Disallow: /");
     const res = await page.goto(`${ADMIN}/login`);
@@ -173,9 +180,9 @@ test.describe.serial("studio to public flow", () => {
     expect(robots).toContain("Disallow: /blog/search");
     expect(robots).toContain("GPTBot");
     expect(robots).toContain("posts-sitemap.xml");
+    expect(robots).not.toContain("uploads");
     expect(await (await request.get("/indexnow-key.txt")).text()).toBe("e2ekey1234567890");
-    const calls = (await import("node:fs")).readFileSync("/tmp/miyo-e2e-mock-calls.log", "utf8");
-    expect(calls).toMatch(/INDEXNOW .*\/blog\/gcc-staffing-guide-2026/);
+    expect(mockCalls()).toMatch(/INDEXNOW .*\/blog\/gcc-staffing-guide-2026/);
   });
 
   test("slug change 301s the old URL", async ({ request }) => {
@@ -189,7 +196,7 @@ test.describe.serial("studio to public flow", () => {
     await page.getByRole("button", { name: "Update" }).click();
     await expect(page.getByText("Saved as published")).toBeVisible();
     const old = await request.get(`/blog/${slug}`, { maxRedirects: 0 });
-    expect([301, 308]).toContain(old.status());
+    expect(old.status()).toBe(301);
     expect(old.headers()["location"]).toContain(`/blog/${next}`);
     expect((await request.get(`/blog/${next}`)).status()).toBe(200);
     slug = next;
@@ -204,6 +211,87 @@ test.describe.serial("studio to public flow", () => {
     expect(await (await request.get("/posts-sitemap.xml")).text()).not.toContain(`/blog/${slug}`);
     await page.goto(`/blog/${slug}`);
     await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", /noindex/);
+  });
+
+  test("preview, schedule, cron, cancel, unpublish and delete", async ({ request }) => {
+    const draftSlug = "scheduled-flow-post";
+    await page.goto(`${ADMIN}/posts`);
+    await page.getByRole("button", { name: "New post" }).click();
+    await expect(page).toHaveURL(/\/posts\/\d+$/);
+    const id = page.url().split("/").pop();
+    await page.getByLabel("Title (H1)").fill("Scheduled flow post");
+    await page.getByLabel("Slug", { exact: true }).fill(draftSlug);
+    await page.getByRole("button", { name: "Save", exact: true }).click();
+    await expect(page.getByText(/Saved as draft/)).toBeVisible();
+
+    await page.goto(`${ADMIN}/preview/${id}`);
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Scheduled flow post");
+    await expect(page.getByRole("status")).toContainText("draft");
+    await expect(page.locator('meta[name="robots"]').first()).toHaveAttribute("content", /noindex/);
+    const anon = await request.get(`${ADMIN}/preview/${id}`, { maxRedirects: 0, headers: { Cookie: "" } });
+    expect(anon.status()).not.toBe(200);
+    expect((await request.get(`/blog/${draftSlug}`)).status()).toBe(404);
+
+    const schedule = async () => {
+      await page.goto(`${ADMIN}/posts/${id}`);
+      await page.getByLabel("Schedule for (IST)").fill("2099-01-15T10:30");
+      await page.getByRole("button", { name: "Schedule", exact: true }).click();
+      await expect(page.locator("h1 .pill")).toHaveText("scheduled");
+    };
+    await schedule();
+    await page.reload();
+    await expect(page.getByLabel("Schedule for (IST)")).toHaveValue("2099-01-15T10:30");
+
+    await page.getByRole("button", { name: "Cancel schedule" }).click();
+    await expect(page.locator("h1 .pill")).toHaveText("draft");
+    await schedule();
+
+    expect((await request.get("/api/cron/publish")).status()).toBe(401);
+    expect((await request.get("/api/cron/publish", { headers: { Authorization: "Bearer wrong" } })).status()).toBe(401);
+    expect(await (await request.get("/api/cron/publish", { headers: CRON })).json()).toEqual({ published: 0 });
+    expect((await request.get(`/blog/${draftSlug}`)).status()).toBe(404);
+
+    const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
+    await pool.query("update posts set scheduled_at = timezone('utc', now()) - interval '1 minute' where id = $1", [id]);
+    expect(await (await request.get("/api/cron/publish", { headers: CRON })).json()).toEqual({ published: 1 });
+    const { rows } = await pool.query("select status, published_at from posts where id = $1", [id]);
+    expect(rows[0].status).toBe("published");
+    expect(rows[0].published_at).toBeTruthy();
+    const audited = await pool.query("select 1 from audit_log where action = 'post.cron-publish' and target = $1", [id]);
+    expect(audited.rowCount).toBe(1);
+    await pool.end();
+    expect((await request.get(`/blog/${draftSlug}`)).status()).toBe(200);
+    expect(await (await request.get("/posts-sitemap.xml")).text()).toContain(draftSlug);
+    expect(await (await request.get("/feed.xml")).text()).toContain(draftSlug);
+    expect(await (await request.get("/llms.txt")).text()).toContain("Scheduled flow post");
+    expect(mockCalls()).toContain(`/blog/${draftSlug}`);
+
+    await page.goto(`${ADMIN}/posts/${id}`);
+    await page.getByRole("button", { name: "Unpublish" }).click();
+    await expect(page.locator("h1 .pill")).toHaveText("draft");
+    expect((await request.get(`/blog/${draftSlug}`)).status()).toBe(404);
+    expect(await (await request.get("/blog")).text()).not.toContain("Scheduled flow post");
+
+    page.once("dialog", (d) => d.accept());
+    await page.getByRole("button", { name: "Delete post" }).click();
+    await expect(page).toHaveURL(/\/posts$/);
+    await expect(page.getByRole("link", { name: "Scheduled flow post" })).toHaveCount(0);
+  });
+
+  test("media in use is protected and deletes remove R2 objects", async () => {
+    await page.goto(`${ADMIN}/media`);
+    page.on("dialog", (d) => d.accept());
+    await page.getByRole("button", { name: "Delete" }).first().click();
+    await expect(page.locator('p.error[role="alert"]')).toContainText("used by a post");
+    const png = await sharp({ create: { width: 1300, height: 800, channels: 3, background: "#225588" } }).png().toBuffer();
+    await page.locator('input[type="file"]').setInputFiles({ name: "x.png", mimeType: "image/png", buffer: png });
+    await page.getByLabel(/^Alt text/).fill(ALT);
+    await page.getByRole("button", { name: "Upload" }).click();
+    await expect(page.locator(".media-grid figure")).toHaveCount(2);
+    expect(mockCalls()).toMatch(/R2 PUT \/e2e-public\/[a-f0-9-]+-avif\.avif/);
+    await page.getByRole("button", { name: "Delete" }).first().click();
+    await expect(page.locator(".media-grid figure")).toHaveCount(1);
+    expect(mockCalls().match(/R2 DELETE/g)).toHaveLength(3);
   });
 
   test("editor cannot reach admin-only pages", async () => {
@@ -241,8 +329,9 @@ test("contact API rejects bad requests", async ({ request }) => {
   expect((await request.post("/api/contact", { headers: origin, multipart: { ...form, email: "nope" } })).status()).toBe(422);
   const spam = await request.post("/api/contact", { headers: origin, multipart: { ...form, website: "http://spam" } });
   expect(await spam.json()).toEqual({ ok: true });
-  const sent = (await import("node:fs")).readFileSync("/tmp/miyo-e2e-mock-calls.log", "utf8");
-  expect(sent).not.toContain("spam");
+  expect(mockCalls()).not.toContain("spam");
+  expect(mockCalls()).toContain("Zoho-enczapikey e2e-token");
+  expect(mockCalls()).toContain('"reply_to":[{"address":"pat@example.com"');
   const statuses: number[] = [];
   for (let i = 0; i < 6; i++) statuses.push((await request.post("/api/contact", { headers: origin, multipart: form })).status());
   expect(statuses).toContain(429);
@@ -263,8 +352,7 @@ test("referral API requires origin, valid resume and attaches the secret", async
   expect((await request.post("/api/referral", { headers: origin, data: { ...payload, extra: 1 } })).status()).toBe(422);
   const ok = await request.post("/api/referral", { headers: origin, data: payload });
   expect(ok.status()).toBe(200);
-  const calls = (await import("node:fs")).readFileSync("/tmp/miyo-e2e-mock-calls.log", "utf8");
-  expect(calls).toContain("APPS POST https://apps.test/exec HAS_SECRET");
+  expect(mockCalls()).toContain("APPS POST https://apps.test/exec HAS_SECRET");
 });
 
 test("static pages keep their URLs", async ({ request }) => {
@@ -276,4 +364,33 @@ test("static pages keep their URLs", async ({ request }) => {
   const missing = await request.get("/nope");
   expect(missing.status()).toBe(404);
   expect(await missing.text()).toContain("Page not found");
+});
+
+test("sign-in is rate limited and accounts lock after repeated failures", async ({ request }) => {
+  const attempt = (email: string, ip: string) =>
+    request.post(`${ADMIN}/api/auth/sign-in/email`, {
+      headers: { Origin: ADMIN, "x-forwarded-for": ip },
+      data: { email, password: "wrong-password-123" },
+    });
+  const statuses: number[] = [];
+  for (let i = 0; i < 6; i++) statuses.push((await attempt("nobody@miyoglobal.test", "203.0.113.7")).status());
+  expect(statuses.slice(0, 5)).not.toContain(429);
+  expect(statuses[5]).toBe(429);
+  for (let i = 0; i < 10; i++) expect((await attempt("locked@miyoglobal.test", `198.51.100.${i + 1}`)).status()).toBe(401);
+  expect((await attempt("locked@miyoglobal.test", "198.51.100.200")).status()).toBe(429);
+  const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
+  const { rowCount } = await pool.query("select 1 from audit_log where action = 'auth.locked' and target = 'locked@miyoglobal.test'");
+  await pool.end();
+  expect(rowCount).toBe(1);
+});
+
+test("static pages use clean canonicals without redirects", async ({ request }) => {
+  for (const p of ["about", "terms", "disclosure", "editorial-policy"]) {
+    const html = await (await request.get(`/${p}`)).text();
+    expect(html).toContain(`<link rel="canonical" href="https://www.miyoglobal.com/${p}">`);
+    expect(html).not.toContain(".html\"");
+  }
+  const referrals = await (await request.get("/referrals")).text();
+  expect(referrals).not.toContain("script.google.com");
+  expect(referrals).not.toContain("s3cret");
 });

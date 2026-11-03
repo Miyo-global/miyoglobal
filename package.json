@@ -11,7 +11,7 @@
     "db:migrate": "drizzle-kit migrate",
     "db:seed": "tsx scripts/seed-admin.mts",
     "test": "vitest run",
-    "e2e": "tsx scripts/e2e-reset.mts && playwright test"
+    "e2e": "rm -f /tmp/miyo-e2e-mock-calls.log && tsx scripts/e2e-reset.mts && playwright test"
   },
   "dependencies": {
     "@tiptap/extension-image": "^3.32.2",

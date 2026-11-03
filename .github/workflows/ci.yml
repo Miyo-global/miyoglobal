@@ -19,10 +19,10 @@ jobs:
           --health-cmd "pg_isready -U postgres" --health-interval 5s --health-timeout 5s --health-retries 10
     env:
       DATABASE_URL: postgres://postgres:postgres@localhost:5432/miyo
+      DATABASE_URL_UNPOOLED: postgres://postgres:postgres@localhost:5432/miyo
       BETTER_AUTH_SECRET: ci-secret-ci-secret-ci-secret-0123456789
-      ADMIN_HOST: adm.localhost:3111
-      ADMIN_ORIGIN: http://adm.localhost:3111
-      SITE_URL: http://localhost:3111
+      NEXT_PUBLIC_ADMIN_URL: http://adm.localhost:3111
+      NEXT_PUBLIC_SITE_URL: http://localhost:3111
       SEED_ADMIN_EMAIL: admin@miyoglobal.test
       SEED_ADMIN_PASSWORD: Ci-Test-Passw0rd-123
     steps:
