@@ -1,4 +1,3 @@
-import { sql } from "drizzle-orm";
 import {
   boolean,
   index,
@@ -10,7 +9,6 @@ import {
   serial,
   text,
   timestamp,
-  uniqueIndex,
 } from "drizzle-orm/pg-core";
 import { user } from "./auth-schema";
 
@@ -121,11 +119,10 @@ export const redirects = pgTable(
   "redirects",
   {
     id: serial("id").primaryKey(),
-    fromPath: text("from_path").notNull(),
+    fromPath: text("from_path").notNull().unique(),
     toPath: text("to_path").notNull(),
     createdAt: timestamp("created_at").defaultNow().notNull(),
   },
-  (t) => [uniqueIndex("redirects_from_idx").on(sql`lower(${t.fromPath})`)],
 );
 
 export const auditLog = pgTable(

@@ -1,5 +1,5 @@
 {
-  "id": "c2651339-2a05-479c-9039-dfec4151a183",
+  "id": "0a04dce7-8254-42ca-a08d-61192c395e08",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -727,26 +727,18 @@
           "default": "now()"
         }
       },
-      "indexes": {
-        "redirects_from_idx": {
-          "name": "redirects_from_idx",
-          "columns": [
-            {
-              "expression": "lower(\"from_path\")",
-              "asc": true,
-              "isExpression": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": true,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
+      "indexes": {},
       "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
+      "uniqueConstraints": {
+        "redirects_from_path_unique": {
+          "name": "redirects_from_path_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "from_path"
+          ]
+        }
+      },
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false

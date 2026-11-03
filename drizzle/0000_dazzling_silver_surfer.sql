@@ -88,7 +88,8 @@ CREATE TABLE "redirects" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"from_path" text NOT NULL,
 	"to_path" text NOT NULL,
-	"created_at" timestamp DEFAULT now() NOT NULL
+	"created_at" timestamp DEFAULT now() NOT NULL,
+	CONSTRAINT "redirects_from_path_unique" UNIQUE("from_path")
 );
 --> statement-breakpoint
 CREATE TABLE "revisions" (
@@ -192,7 +193,6 @@ CREATE INDEX "audit_created_idx" ON "audit_log" USING btree ("created_at");--> s
 CREATE INDEX "contact_rate_key_idx" ON "contact_rate_limit" USING btree ("key","created_at");--> statement-breakpoint
 CREATE INDEX "posts_status_published_idx" ON "posts" USING btree ("status","published_at");--> statement-breakpoint
 CREATE INDEX "posts_category_idx" ON "posts" USING btree ("category_id");--> statement-breakpoint
-CREATE UNIQUE INDEX "redirects_from_idx" ON "redirects" USING btree (lower("from_path"));--> statement-breakpoint
 CREATE INDEX "revisions_post_idx" ON "revisions" USING btree ("post_id","created_at");--> statement-breakpoint
 CREATE INDEX "account_userId_idx" ON "account" USING btree ("user_id");--> statement-breakpoint
 CREATE INDEX "session_userId_idx" ON "session" USING btree ("user_id");--> statement-breakpoint
