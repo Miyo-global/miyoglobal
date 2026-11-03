@@ -14,9 +14,6 @@ importers:
       '@tiptap/extension-link':
         specifier: ^3.32.2
         version: 3.32.2(@tiptap/core@3.32.2(@tiptap/pm@3.32.2))(@tiptap/pm@3.32.2)
-      '@tiptap/html':
-        specifier: ^3.32.2
-        version: 3.32.2(@tiptap/core@3.32.2(@tiptap/pm@3.32.2))(@tiptap/pm@3.32.2)(happy-dom@21.0.4)
       '@tiptap/pm':
         specifier: ^3.32.2
         version: 3.32.2
@@ -1286,13 +1283,6 @@ packages:
     peerDependencies:
       '@tiptap/core': 3.32.2
       '@tiptap/pm': 3.32.2
-
-  '@tiptap/html@3.32.2':
-    resolution: {integrity: sha512-B6IT3maYaTrFxVKagxvhnqmYiUksZklbLj26y2besgU9bWMljkDYs7pLB3ReHhldGHP4jxdnyMsKHcOQvu5AQg==}
-    peerDependencies:
-      '@tiptap/core': 3.32.2
-      '@tiptap/pm': 3.32.2
-      happy-dom: ^20.8.9 || ^21.0.4
 
   '@tiptap/pm@3.32.2':
     resolution: {integrity: sha512-4cuUbYf55NnYBIvDBK/K1VFVQ4pocKwAZC5TAy4s9dptvazxVHkQVMbiQsyhwfIbM4rxmHWkM/6omaFfTB++/g==}
@@ -4254,12 +4244,6 @@ snapshots:
       '@tiptap/core': 3.32.2(@tiptap/pm@3.32.2)
       '@tiptap/pm': 3.32.2
 
-  '@tiptap/html@3.32.2(@tiptap/core@3.32.2(@tiptap/pm@3.32.2))(@tiptap/pm@3.32.2)(happy-dom@21.0.4)':
-    dependencies:
-      '@tiptap/core': 3.32.2(@tiptap/pm@3.32.2)
-      '@tiptap/pm': 3.32.2
-      happy-dom: 21.0.4
-
   '@tiptap/pm@3.32.2':
     dependencies:
       prosemirror-changeset: 2.4.6
@@ -4359,11 +4343,13 @@ snapshots:
 
   '@types/use-sync-external-store@0.0.6': {}
 
-  '@types/whatwg-mimetype@3.0.2': {}
+  '@types/whatwg-mimetype@3.0.2':
+    optional: true
 
   '@types/ws@8.18.2':
     dependencies:
       '@types/node': 26.6.6
+    optional: true
 
   '@typescript-eslint/eslint-plugin@8.72.1(@typescript-eslint/parser@8.72.1(eslint@10.14.0)(typescript@5.9.3))(eslint@10.14.0)(typescript@5.9.3)':
     dependencies:
@@ -4731,6 +4717,7 @@ snapshots:
   buffer-image-size@0.6.4:
     dependencies:
       '@types/node': 26.6.6
+    optional: true
 
   cacheable@2.5.0:
     dependencies:
@@ -4868,7 +4855,8 @@ snapshots:
 
   emoji-regex@9.2.2: {}
 
-  entities@7.0.1: {}
+  entities@7.0.1:
+    optional: true
 
   es-abstract-get@1.0.0:
     dependencies:
@@ -5425,6 +5413,7 @@ snapshots:
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
+    optional: true
 
   has-bigints@1.1.0: {}
 
@@ -6514,7 +6503,8 @@ snapshots:
 
   w3c-keyname@2.2.8: {}
 
-  whatwg-mimetype@3.0.0: {}
+  whatwg-mimetype@3.0.0:
+    optional: true
 
   which-boxed-primitive@1.1.1:
     dependencies:
@@ -6573,7 +6563,8 @@ snapshots:
       string-width: 4.2.3
       strip-ansi: 6.0.1
 
-  ws@8.22.1: {}
+  ws@8.22.1:
+    optional: true
 
   xdg-app-paths@5.5.1:
     dependencies:
