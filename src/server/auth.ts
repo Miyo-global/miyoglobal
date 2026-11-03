@@ -37,7 +37,7 @@ export const auth = betterAuth({
     },
   },
   advanced: {
-    useSecureCookies: process.env.NODE_ENV === "production",
+    useSecureCookies: adminOrigin.startsWith("https://"),
     cookiePrefix: "miyo-studio",
     ipAddress: { ipAddressHeaders: ["x-forwarded-for", "x-real-ip"] },
   },
