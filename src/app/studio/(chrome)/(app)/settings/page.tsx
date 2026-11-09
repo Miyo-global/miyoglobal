@@ -9,7 +9,6 @@ export default async function SettingsPage() {
       <div className="card">
         <h2>Account</h2>
         <p>{me.name} · {me.email} · {me.role}</p>
-        <p className="muted">Two-factor authentication is on.</p>
       </div>
       <PasswordForm />
     </>

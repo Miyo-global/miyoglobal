@@ -13,7 +13,7 @@ export function NewUserForm() {
     const data = new FormData(form);
     start(async () => {
       const res = await createUserAction(data);
-      setMsg(res.ok ? { ok: true, text: "User created. They set up 2FA on first sign-in." } : { ok: false, text: res.error });
+      setMsg(res.ok ? { ok: true, text: "User created." } : { ok: false, text: res.error });
       if (res.ok) form.reset();
     });
   }

@@ -172,5 +172,6 @@ export async function savePost(id: number, userId: string, role: string, input: 
 }
 
 export async function deletePost(id: number) {
-  await db.delete(posts).where(eq(posts.id, id));
+  const [row] = await db.delete(posts).where(eq(posts.id, id)).returning({ slug: posts.slug, status: posts.status, publishedAt: posts.publishedAt });
+  return row ? { slug: row.slug, wasLive: row.status === "published" || !!row.publishedAt } : null;
 }

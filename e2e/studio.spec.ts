@@ -2,7 +2,6 @@ import { expect, test, type Page } from "@playwright/test";
 import { readFileSync } from "node:fs";
 import pg from "pg";
 import sharp from "sharp";
-import { totp } from "./support/totp";
 
 const ADMIN = "http://adm.localhost:3111";
 const EMAIL = process.env.SEED_ADMIN_EMAIL ?? "admin@miyoglobal.test";
@@ -12,7 +11,6 @@ const mockCalls = () => readFileSync("/tmp/miyo-e2e-mock-calls.log", "utf8");
 const ALT = "A recruiter reviewing candidate resumes at a bright modern office desk";
 
 let page: Page;
-let secret = "";
 let slug = "gcc-staffing-guide-2026";
 
 async function login(page: Page) {
@@ -41,36 +39,14 @@ test.describe.serial("studio to public flow", () => {
     expect(res?.headers()["cache-control"]).toContain("no-store");
   });
 
-  test("login forces 2FA setup", async () => {
+  test("login with email and password, no 2FA", async () => {
     await page.goto(`${ADMIN}/posts`);
     await expect(page).toHaveURL(/\/login$/);
-    await login(page);
-    await expect(page).toHaveURL(/\/setup-2fa$/);
-    await page.goto(`${ADMIN}/posts`);
-    await expect(page).toHaveURL(/\/setup-2fa$/);
-    await page.getByLabel("Confirm your password").fill(PASSWORD);
-    await page.getByRole("button", { name: "Continue" }).click();
-    secret = (await page.locator("code").first().innerText()).trim();
-    expect(secret.length).toBeGreaterThan(10);
-    await page.getByLabel("6-digit code").fill(totp(secret));
-    await page.getByRole("button", { name: "Enable" }).click();
-    await expect(page.getByRole("heading", { name: /Welcome/ })).toBeVisible();
-  });
-
-  test("bad credentials and codes are rejected", async () => {
-    await page.goto(`${ADMIN}/login`);
     await page.getByLabel("Email").fill(EMAIL);
     await page.getByLabel("Password").fill("wrong-password-123");
     await page.getByRole("button", { name: "Sign in" }).click();
     await expect(page.locator('p.error[role="alert"]')).toContainText("Invalid email or password");
-    await page.getByLabel("Password").fill(PASSWORD);
-    await page.getByRole("button", { name: "Sign in" }).click();
-    await expect(page).toHaveURL(/\/two-factor$/);
-    await page.getByLabel("6-digit code").fill("000000");
-    await page.getByRole("button", { name: "Verify" }).click();
-    await expect(page.locator('p.error[role="alert"]')).toContainText("Invalid code");
-    await page.getByLabel("6-digit code").fill(totp(secret));
-    await page.getByRole("button", { name: "Verify" }).click();
+    await login(page);
     await expect(page.getByRole("heading", { name: /Welcome/ })).toBeVisible();
   });
 
@@ -307,9 +283,9 @@ test.describe.serial("studio to public flow", () => {
     await page.getByLabel("Email").fill("editor@miyoglobal.test");
     await page.getByLabel("Password").fill("Editor-Passw0rd-123");
     await page.getByRole("button", { name: "Sign in" }).click();
-    await expect(page).toHaveURL(/\/setup-2fa$/);
+    await expect(page.getByRole("heading", { name: /Welcome/ })).toBeVisible();
     await page.goto(`${ADMIN}/users`);
-    await expect(page).toHaveURL(/\/setup-2fa$/);
+    await expect(page.getByRole("heading", { name: "Users" })).toHaveCount(0);
   });
 });
 

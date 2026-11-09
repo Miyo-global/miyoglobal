@@ -66,6 +66,8 @@ const config: NextConfig = {
   async redirects() {
     return [
       { source: "/index.html", destination: "/", permanent: true },
+      { source: "/blogs", destination: "/blog", permanent: true },
+      { source: "/blogs/:path*", destination: "/blog/:path*", permanent: true },
       { source: `/:page(${pages.join("|")}).html`, destination: "/:page", permanent: true },
     ];
   },

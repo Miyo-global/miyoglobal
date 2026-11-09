@@ -11,7 +11,7 @@ import { slugify } from "@/lib/slug";
 import type { Doc } from "@/lib/content";
 import { audit } from "@/server/audit";
 import { db } from "@/server/db";
-import { account, authors, categories, session, tags, twoFactor, user } from "@/server/db/schema";
+import { account, authors, categories, tags, user } from "@/server/db/schema";
 import { requireStaff } from "@/server/guards";
 import { findBrokenLinks } from "@/server/links";
 import { afterPublish } from "@/server/publish";
@@ -56,8 +56,10 @@ export async function savePostAction(id: number, rawJson: string, intent: Intent
 
 export async function deletePostAction(id: number) {
   const me = await requireStaff("deletePosts");
-  await deletePost(id);
+  const deleted = await deletePost(id);
   await audit(me.id, "post.delete", String(id));
+  // Same refresh + IndexNow ping as publish; the post URL now 404s, which IndexNow treats as a removal.
+  if (deleted?.wasLive) afterPublish(deleted.slug, deleted.slug);
   revalidatePath("/posts");
   redirect("/posts");
 }
@@ -189,16 +191,5 @@ export async function setRoleAction(form: FormData) {
   if (d.id === me.id) return;
   await db.update(user).set({ role: d.role }).where(eq(user.id, d.id));
   await audit(me.id, "user.role", `${d.id}:${d.role}`);
-  revalidatePath("/users");
-}
-
-export async function resetTwoFactorAction(form: FormData) {
-  const me = await requireStaff("manageUsers");
-  const id = z.string().min(1).parse(form.get("id"));
-  if (id === me.id) return;
-  await db.update(user).set({ twoFactorEnabled: false }).where(eq(user.id, id));
-  await db.delete(twoFactor).where(eq(twoFactor.userId, id));
-  await db.delete(session).where(eq(session.userId, id));
-  await audit(me.id, "user.2fa-reset", id);
   revalidatePath("/users");
 }

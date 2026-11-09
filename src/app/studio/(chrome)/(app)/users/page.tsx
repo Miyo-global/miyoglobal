@@ -3,7 +3,7 @@ import { db } from "@/server/db";
 import { user } from "@/server/db/schema";
 import { requireStaff } from "@/server/guards";
 import { NewUserForm } from "./new-user-form";
-import { resetTwoFactorAction, setRoleAction } from "../actions";
+import { setRoleAction } from "../actions";
 
 export default async function UsersPage() {
   const me = await requireStaff("manageUsers");
@@ -13,7 +13,7 @@ export default async function UsersPage() {
       <h1>Users</h1>
       <div className="card scroll">
         <table className="table">
-          <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>2FA</th><th /></tr></thead>
+          <thead><tr><th>Name</th><th>Email</th><th>Role</th></tr></thead>
           <tbody>
             {rows.map((u) => (
               <tr key={u.id}>
@@ -28,15 +28,6 @@ export default async function UsersPage() {
                         <option value="admin">admin</option>
                       </select>
                       <button className="btn ghost">Save</button>
-                    </form>
-                  )}
-                </td>
-                <td>{u.twoFactorEnabled ? "on" : "pending"}</td>
-                <td>
-                  {u.id !== me.id && (
-                    <form action={resetTwoFactorAction}>
-                      <input type="hidden" name="id" value={u.id} />
-                      <button className="link">Reset 2FA</button>
                     </form>
                   )}
                 </td>

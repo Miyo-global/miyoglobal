@@ -2,18 +2,17 @@ import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { APIError, createAuthMiddleware } from "better-auth/api";
 import { nextCookies } from "better-auth/next-js";
-import { twoFactor } from "better-auth/plugins";
 import { and, count, desc, eq, gt } from "drizzle-orm";
 import { ADMIN_URL } from "@/lib/hosts";
 import { db } from "./db";
 import * as schema from "./db/schema";
 
-const GUARDED = new Set(["/sign-in/email", "/two-factor/verify-totp", "/two-factor/verify-backup-code"]);
+const GUARDED = new Set(["/sign-in/email"]);
 const MAX_FAILURES = 10;
 const LOCK_MS = 15 * 60 * 1000;
 
-function auditTarget(path: string, email: unknown, ip: string): string {
-  return path === "/sign-in/email" ? String(email ?? "").toLowerCase().slice(0, 200) : `2fa:${ip}`;
+function auditTarget(email: unknown): string {
+  return String(email ?? "").toLowerCase().slice(0, 200);
 }
 
 async function lockedOut(target: string): Promise<boolean> {
@@ -36,7 +35,6 @@ function build() {
   const secret = process.env.BETTER_AUTH_SECRET;
   if (!secret && process.env.NODE_ENV === "production") throw new Error("BETTER_AUTH_SECRET is not set");
   const baseURL = process.env.BETTER_AUTH_URL ?? ADMIN_URL;
-  const ipOf = (headers?: Headers) => headers?.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
 
   return betterAuth({
     baseURL,
@@ -62,9 +60,6 @@ function build() {
       max: 30,
       customRules: {
         "/sign-in/email": { window: 60, max: 5 },
-        "/two-factor/verify-totp": { window: 60, max: 5 },
-        "/two-factor/verify-backup-code": { window: 60, max: 5 },
-        "/two-factor/enable": { window: 60, max: 5 },
         "/change-password": { window: 60, max: 5 },
       },
     },
@@ -76,7 +71,7 @@ function build() {
     hooks: {
       before: createAuthMiddleware(async (ctx) => {
         if (!GUARDED.has(ctx.path)) return;
-        const target = auditTarget(ctx.path, ctx.body?.email, ipOf(ctx.headers));
+        const target = auditTarget(ctx.body?.email);
         if (await lockedOut(target)) {
           await db.insert(schema.auditLog).values({ action: "auth.locked", target });
           throw new APIError("TOO_MANY_REQUESTS", { message: "Too many failed attempts. Try again in 15 minutes." });
@@ -86,11 +81,11 @@ function build() {
         if (!GUARDED.has(ctx.path)) return;
         const failed = ctx.context.returned instanceof APIError;
         if (failed && (ctx.context.returned as APIError).status === "TOO_MANY_REQUESTS") return;
-        const target = auditTarget(ctx.path, ctx.body?.email, ipOf(ctx.headers));
+        const target = auditTarget(ctx.body?.email);
         await db.insert(schema.auditLog).values({ userId: ctx.context.newSession?.user.id ?? null, action: failed ? "auth.failed" : "auth.ok", target });
       }),
     },
-    plugins: [twoFactor({ issuer: "MIYO Studio" }), nextCookies()],
+    plugins: [nextCookies()],
   });
 }
 

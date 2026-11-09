@@ -14,13 +14,13 @@ export default function LoginPage() {
     setBusy(true);
     setError("");
     const data = new FormData(e.currentTarget);
-    const { data: res, error: err } = await authClient.signIn.email({
+    const { error: err } = await authClient.signIn.email({
       email: String(data.get("email")),
       password: String(data.get("password")),
     });
     setBusy(false);
     if (err) return setError("Invalid email or password");
-    router.replace(res && "twoFactorRedirect" in res && res.twoFactorRedirect ? "/two-factor" : "/");
+    router.replace("/");
   }
 
   return (
