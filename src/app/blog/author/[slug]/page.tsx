@@ -4,7 +4,7 @@ import { PostCard } from "@/components/post-card";
 import { absolute, jsonLdScript } from "@/lib/seo";
 import { byAuthorId, getAuthor } from "@/server/services/public";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const a = await getAuthor((await params).slug);

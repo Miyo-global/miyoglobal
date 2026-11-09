@@ -1,3 +1,4 @@
+import { formatIst } from "@/lib/ist";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { PAGE_SIZE, listPosts } from "@/server/services/posts";
@@ -59,7 +60,7 @@ export default async function PostsPage({ searchParams }: { searchParams: Promis
                     <span className="muted small">/blog/{p.slug}</span>
                   </td>
                   <td><span className={`pill ${p.status}`}>{p.status}</span></td>
-                  <td className="muted nowrap"><time dateTime={p.updatedAt.toISOString()}>{p.updatedAt.toISOString().slice(0, 16).replace("T", " ")}</time></td>
+                  <td className="muted nowrap"><time dateTime={p.updatedAt.toISOString()}>{formatIst(p.updatedAt)}</time></td>
                 </tr>
               ))}
             </tbody>

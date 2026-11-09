@@ -193,3 +193,23 @@ export async function setRoleAction(form: FormData) {
   await audit(me.id, "user.role", `${d.id}:${d.role}`);
   revalidatePath("/users");
 }
+
+export async function deleteAuthorAction(form: FormData) {
+  const me = await requireStaff("deletePosts");
+  const id = z.coerce.number().int().positive().parse(form.get("id"));
+  // Posts keep their content; author_id/reviewer_id fall back to null via the FK.
+  const [row] = await db.delete(authors).where(eq(authors.id, id)).returning({ name: authors.name });
+  await audit(me.id, "author.delete", row?.name ?? String(id));
+  revalidatePath("/authors");
+  revalidatePath("/blog", "layout");
+}
+
+export async function deleteUserAction(form: FormData) {
+  const me = await requireStaff("manageUsers");
+  const id = z.string().min(1).parse(form.get("id"));
+  if (id === me.id) return;
+  // Sessions and the password row cascade; their author byline stays, unlinked.
+  const [row] = await db.delete(user).where(eq(user.id, id)).returning({ email: user.email });
+  await audit(me.id, "user.delete", row?.email ?? id);
+  revalidatePath("/users");
+}

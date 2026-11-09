@@ -5,7 +5,7 @@ import { user } from "@/server/db/schema";
 import { requireStaff } from "@/server/guards";
 import { ActionForm } from "../../ui";
 import { NewUserForm } from "./new-user-form";
-import { setRoleAction } from "../actions";
+import { deleteUserAction, setRoleAction } from "../actions";
 
 export const metadata: Metadata = { title: "Users" };
 
@@ -22,7 +22,7 @@ export default async function UsersPage() {
       </div>
       <div className="card flush scroll">
         <table className="table">
-          <thead><tr><th scope="col">Name</th><th scope="col">Email</th><th scope="col">Role</th></tr></thead>
+          <thead><tr><th scope="col">Name</th><th scope="col">Email</th><th scope="col">Role</th><th scope="col"><span className="sr-only">Actions</span></th></tr></thead>
           <tbody>
             {rows.map((u) => (
               <tr key={u.id}>
@@ -39,6 +39,14 @@ export default async function UsersPage() {
                         <option value="admin">admin</option>
                       </select>
                       <button className="btn secondary sm">Save</button>
+                    </ActionForm>
+                  )}
+                </td>
+                <td>
+                  {u.id !== me.id && (
+                    <ActionForm action={deleteUserAction} className="row" success={`${u.name} deleted`} confirm={`Delete ${u.email}? They lose Studio access immediately.`}>
+                      <input type="hidden" name="id" value={u.id} />
+                      <button className="btn danger-ghost sm">Delete</button>
                     </ActionForm>
                   )}
                 </td>

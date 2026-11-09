@@ -75,6 +75,7 @@ const config: NextConfig = {
     return {
       beforeFiles: [
         { source: "/", destination: "/index.html" },
+        { source: "/favicon.ico", destination: "/favicon.svg" },
         { source: `/:page(${pages.join("|")})`, destination: "/:page.html" },
       ],
       afterFiles: [],

@@ -1,21 +1,12 @@
+import { fetchJobs } from "@/server/jobs";
+
 export async function GET() {
-  const endpoint = process.env.REFERRAL_SCRIPT_URL;
-  const secret = process.env.REFERRAL_SCRIPT_SECRET;
-  if (!endpoint || !secret) {
-    return Response.json({ status: "error", message: "jobs are temporarily unavailable" }, { status: 503 });
-  }
-  try {
-    const upstream = await fetch(`${endpoint}?action=getJobs&secret=${encodeURIComponent(secret)}`, {
-      signal: AbortSignal.timeout(20000),
-    });
-    if (!upstream.ok) {
-      return Response.json({ status: "error", message: `upstream returned status ${upstream.status}` }, { status: 502 });
-    }
-    return Response.json(await upstream.json(), {
-      headers: { "Cache-Control": "public, max-age=30, stale-while-revalidate=270" },
-    });
-  } catch (e) {
-    const message = e instanceof Error && e.name === "TimeoutError" ? "upstream did not respond in time" : "upstream fetch failed";
-    return Response.json({ status: "error", message }, { status: 502 });
-  }
+  const res = await fetchJobs();
+  if (!res.ok) return Response.json({ status: "error", message: res.message }, { status: res.status });
+  // Hiring-manager emails and sheet debug info stay server-side.
+  const jobs = (res.data.jobs ?? []).map(({ hmEmail: _hm, ...job }) => job);
+  return Response.json(
+    { status: res.data.status, count: res.data.count ?? jobs.length, jobs },
+    { headers: { "Cache-Control": "public, max-age=30, s-maxage=300, stale-while-revalidate=600" } },
+  );
 }

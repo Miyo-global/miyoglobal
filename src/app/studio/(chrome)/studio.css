@@ -95,7 +95,7 @@
 .studio .split .card{margin:0}
 .studio .page-head{display:flex;align-items:flex-end;justify-content:space-between;gap:var(--s4);flex-wrap:wrap;margin-bottom:var(--s5)}
 .studio .page-head p{margin:var(--s1) 0 0}
-.studio .scroll{overflow-x:auto}
+.studio .scroll,.studio .card.flush.scroll{overflow-x:auto}
 .studio .empty{padding:var(--s6) var(--s5);text-align:center;color:var(--muted)}
 .studio .empty p{margin-bottom:var(--s4)}
 .studio .empty b{color:var(--ink)}

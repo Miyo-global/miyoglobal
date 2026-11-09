@@ -59,7 +59,7 @@ export async function PostView({ data }: { data: PostData }) {
       ))}
       <nav className="b-crumbs" aria-label="Breadcrumb">
         <ol>
-          <li><Link href="/">Home</Link></li>
+          <li><a href="/">Home</a></li>
           <li><Link href="/blog">Blog</Link></li>
           {categoryName && categorySlug && <li><Link href={`/blog/category/${categorySlug}`}>{categoryName}</Link></li>}
           <li aria-current="page">{post.title}</li>

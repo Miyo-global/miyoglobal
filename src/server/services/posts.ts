@@ -3,6 +3,7 @@ import { and, desc, eq, ilike, inArray, or, sql } from "drizzle-orm";
 import { readingMinutes, type Doc } from "@/lib/content";
 import { checkHealth, type Issue } from "@/lib/health";
 import { can } from "@/lib/roles";
+import { isValidSlug, slugify } from "@/lib/slug";
 import { parseCustomJsonLd } from "@/lib/seo";
 import type { Intent, PostInput } from "@/lib/post-schema";
 import { planRedirect } from "@/lib/redirects";
@@ -81,8 +82,14 @@ export async function savePost(id: number, userId: string, role: string, input: 
   }
   if (!can(role, "customJsonLd") && existing.customJsonLd) input = { ...input, customJsonLd: existing.customJsonLd };
 
-  const taken = await db.select({ id: posts.id }).from(posts).where(and(eq(posts.slug, input.slug), sql`${posts.id} <> ${id}`));
-  if (taken.length) throw new PostError("That slug is already used by another post");
+  const slugTaken = async (slug: string) =>
+    (await db.select({ id: posts.id }).from(posts).where(and(eq(posts.slug, slug), sql`${posts.id} <> ${id}`))).length > 0;
+  // New drafts start as untitled-xxxx; follow the title until the post is first published.
+  const fromTitle = slugify(input.title);
+  if (input.slug.startsWith("untitled-") && !existing.publishedAt && isValidSlug(fromTitle) && !(await slugTaken(fromTitle))) {
+    input = { ...input, slug: fromTitle };
+  }
+  if (await slugTaken(input.slug)) throw new PostError("That slug is already used by another post");
 
   let status = existing.status;
   let publishedAt = existing.publishedAt;

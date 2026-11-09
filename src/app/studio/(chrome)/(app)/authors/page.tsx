@@ -2,14 +2,15 @@ import { asc } from "drizzle-orm";
 import type { Metadata } from "next";
 import { db } from "@/server/db";
 import { authors } from "@/server/db/schema";
+import { can } from "@/lib/roles";
 import { requireStaff } from "@/server/guards";
 import { ActionForm } from "../../ui";
-import { saveAuthorAction } from "../actions";
+import { deleteAuthorAction, saveAuthorAction } from "../actions";
 
 export const metadata: Metadata = { title: "Authors" };
 
 export default async function AuthorsPage() {
-  await requireStaff();
+  const me = await requireStaff();
   const rows = await db.select().from(authors).orderBy(asc(authors.name));
   const form = (a?: (typeof rows)[number]) => {
     const p = `author-${a?.id ?? "new"}`;
@@ -28,6 +29,13 @@ export default async function AuthorsPage() {
       </ActionForm>
     );
   };
+  const remove = (a: (typeof rows)[number]) =>
+    can(me.role, "deletePosts") && (
+      <ActionForm action={deleteAuthorAction} key={`del-${a.id}`} className="row" success="Author deleted" confirm={`Delete ${a.name}? Their posts stay, without a byline.`}>
+        <input type="hidden" name="id" value={a.id} />
+        <button className="btn danger-ghost sm">Delete {a.name}</button>
+      </ActionForm>
+    );
   return (
     <>
       <div className="page-head">
@@ -37,7 +45,12 @@ export default async function AuthorsPage() {
         </div>
       </div>
       <div className="cards">
-        {rows.map((a) => form(a))}
+        {rows.map((a) => (
+          <div key={a.id}>
+            {form(a)}
+            {remove(a)}
+          </div>
+        ))}
         {form()}
       </div>
     </>

@@ -5,7 +5,7 @@ import { db } from "@/server/db";
 import { redirects } from "@/server/db/schema";
 
 const adminOnly = /^\/(studio|api\/auth)(\/|$)/;
-const shared = /^\/(_next|media\/|images\/|favicon\.svg)/;
+const shared = /^\/(_next|media\/|images\/|favicon\.(svg|ico))/;
 const postPath = /^\/blog\/(?!search$)[a-z0-9-]+$/;
 
 function notFound() {

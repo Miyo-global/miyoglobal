@@ -7,3 +7,7 @@ export function toIstInput(iso: string | null): string {
 export function fromIstInput(value: string): string | null {
   return value ? new Date(`${value}:00+05:30`).toISOString() : null;
 }
+
+export function formatIst(d: Date): string {
+  return `${toIstInput(d.toISOString()).replace("T", " ")} IST`;
+}

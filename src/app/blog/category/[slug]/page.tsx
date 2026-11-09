@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { PostCard } from "@/components/post-card";
 import { byCategoryId, getCategory } from "@/server/services/public";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const c = await getCategory((await params).slug);

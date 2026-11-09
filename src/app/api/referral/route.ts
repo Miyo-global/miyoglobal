@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { fetchJobs } from "@/server/jobs";
 import { allow, clientIp, sameOrigin, tooLarge } from "@/server/request";
 
 const MAX_RESUME_BYTES = 3 * 1024 * 1024;
@@ -16,7 +17,8 @@ const body = z.strictObject({
   jobApplied: text(200),
   jobId: text(80).min(1),
   jobDescription: text(5000),
-  hmEmail: text(160),
+  // Old clients still send this; ignored, the server looks it up by jobId.
+  hmEmail: text(160).optional(),
   resumeBase64: z.string().min(1).max(Math.ceil((MAX_RESUME_BYTES * 4) / 3) + 8),
   resumeMimeType: z.enum(MIME),
   resumeFileName: text(200).min(1),
@@ -45,9 +47,9 @@ export async function POST(req: Request) {
   const raw = await req.json().catch(() => null);
   const parsed = body.safeParse(raw);
   if (!parsed.success) return json({ status: "error", message: "Please check the form and try again" }, 422);
-  const { website, ...payload } = parsed.data;
+  const { website, hmEmail: _ignored, ...fields } = parsed.data;
   if (website) return json({ status: "success" });
-  if (!resumeOk(payload.resumeBase64, payload.resumeFileName)) {
+  if (!resumeOk(fields.resumeBase64, fields.resumeFileName)) {
     return json({ status: "error", message: "Resume must be a PDF or DOCX under 3MB" }, 422);
   }
 
@@ -58,6 +60,9 @@ export async function POST(req: Request) {
     return json({ status: "error", message: "Referrals are temporarily unavailable" }, 503);
   }
 
+  const jobs = await fetchJobs();
+  const hmEmail = jobs.ok ? String(jobs.data.jobs?.find((j) => String(j.jobId) === fields.jobId)?.hmEmail ?? "") : "";
+  const payload = { ...fields, hmEmail };
   const upstream = await fetch(endpoint, {
     method: "POST",
     body: JSON.stringify({ ...payload, secret }),
