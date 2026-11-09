@@ -2,30 +2,39 @@
 
 import { useState } from "react";
 import { authClient } from "@/lib/auth-client";
+import { useUi } from "../../ui";
 
 export function PasswordForm() {
-  const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
+  const ui = useUi();
+  const [error, setError] = useState("");
+  const [busy, setBusy] = useState(false);
 
   async function submit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const form = e.currentTarget;
     const d = new FormData(form);
-    const { error } = await authClient.changePassword({
+    setBusy(true);
+    setError("");
+    const { error: err } = await authClient.changePassword({
       currentPassword: String(d.get("current")),
       newPassword: String(d.get("next")),
       revokeOtherSessions: true,
     });
-    setMsg(error ? { ok: false, text: "Could not change password" } : { ok: true, text: "Password changed" });
-    if (!error) form.reset();
+    setBusy(false);
+    if (err) return setError("Could not change password. Check your current password.");
+    ui.toast("Password changed");
+    form.reset();
   }
 
   return (
     <form className="card" onSubmit={submit}>
       <h2>Change password</h2>
-      <label>Current password<input name="current" type="password" required autoComplete="current-password" maxLength={128} /></label>
-      <label>New password (12+ characters)<input name="next" type="password" required minLength={12} maxLength={128} autoComplete="new-password" /></label>
-      {msg && <p className={msg.ok ? "ok" : "error"} role="status">{msg.text}</p>}
-      <button className="btn">Change password</button>
+      <div className="grid-2">
+        <div className="field"><label htmlFor="pw-current">Current password</label><input id="pw-current" name="current" type="password" required autoComplete="current-password" maxLength={128} /></div>
+        <div className="field"><label htmlFor="pw-next">New password (12+ characters)</label><input id="pw-next" name="next" type="password" required minLength={12} maxLength={128} autoComplete="new-password" /></div>
+      </div>
+      {error && <p className="error" role="alert">{error}</p>}
+      <button className="btn primary" disabled={busy}>Change password</button>
     </form>
   );
 }

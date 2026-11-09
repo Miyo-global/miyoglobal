@@ -1,4 +1,5 @@
 import { asc, desc, eq, ne, and } from "drizzle-orm";
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { can } from "@/lib/roles";
 import { db } from "@/server/db";
@@ -7,6 +8,8 @@ import { requireStaff } from "@/server/guards";
 import { getPost } from "@/server/services/posts";
 import { listMedia } from "@/server/services/media";
 import { PostEditor } from "./editor";
+
+export const metadata: Metadata = { title: "Edit post" };
 
 export default async function EditPostPage({ params }: { params: Promise<{ id: string }> }) {
   const me = await requireStaff("writePosts");

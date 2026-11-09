@@ -2,6 +2,7 @@
 
 import Image from "@tiptap/extension-image";
 import { EditorContent, useEditor } from "@tiptap/react";
+import NextImage from "next/image";
 import StarterKit from "@tiptap/starter-kit";
 import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from "react";
 import type { Doc } from "@/lib/content";
@@ -11,6 +12,7 @@ import { fromIstInput, toIstInput } from "@/lib/ist";
 import { parseCustomJsonLd, titleFor } from "@/lib/seo";
 import { slugify } from "@/lib/slug";
 import { checkLinksAction, deletePostAction, savePostAction } from "../../actions";
+import { useUi } from "../../../ui";
 import { MediaPicker, type MediaItem } from "../../media-picker";
 
 type Opt = { id: number; name: string };
@@ -41,6 +43,7 @@ const SERVICES = [
 ];
 
 export function PostEditor(props: Props) {
+  const ui = useUi();
   const [form, setForm] = useState<PostInput>(props.initial);
   const [status, setStatus] = useState(props.status);
   const [media, setMedia] = useState(props.media);
@@ -131,32 +134,50 @@ export function PostEditor(props: Props) {
     setPicker(null);
   };
 
+  const remove = async () => {
+    if (!(await ui.confirm("Delete this post permanently? This cannot be undone."))) return;
+    start(() => deletePostAction(props.id));
+  };
+
   const btn = (label: string, active: boolean, on: () => void) => (
-    <button type="button" className={active ? "on" : ""} onMouseDown={(e) => e.preventDefault()} onClick={on}>{label}</button>
+    <button type="button" className={active ? "on" : ""} aria-pressed={active} onMouseDown={(e) => e.preventDefault()} onClick={on}>{label}</button>
   );
 
   const clusters = [...new Set(props.siblings.map((s) => s.cluster).filter(Boolean))];
   const related = [...props.siblings].sort((a, b) => Number(b.cluster === form.cluster) - Number(a.cluster === form.cluster)).slice(0, 6);
   const errors = issues.filter((i) => i.level === "error");
+  const saveState = pending ? "saving" : dirty ? "dirty" : note ? "saved" : "idle";
 
   return (
     <>
-      <div className="row" style={{ justifyContent: "space-between" }}>
-        <h1>Edit post <span className={`pill ${status}`}>{status}</span></h1>
-        <span className="muted" role="status">{pending ? "Saving…" : dirty ? (live ? "Unsaved changes" : "Unsaved") : note}</span>
+      <div className="editor-bar">
+        <div className="editor-title">
+          <h1>Edit post <span className={`pill ${status}`}>{status}</span></h1>
+          <span className={`save-state ${saveState}`} role="status">
+            {pending ? "Saving…" : dirty ? (live ? "Unsaved changes" : "Unsaved") : note || "No changes"}
+          </span>
+        </div>
+        <div className="row nowrap">
+          <a className="btn ghost sm" href={`/preview/${props.id}`} target="_blank" rel="noopener">Preview</a>
+          <button type="button" className="btn secondary" disabled={pending} onClick={() => submit("save")}>Save</button>
+          <button type="button" className="btn primary" disabled={pending || errors.length > 0} onClick={() => submit("publish")}>
+            {status === "published" ? "Update" : "Publish"}
+          </button>
+        </div>
       </div>
-      {error && <p className="error" role="alert">{error}</p>}
+      {error && <p className="error banner" role="alert">{error}</p>}
+      {errors.length > 0 && <p className="hint">Fix {errors.length} error{errors.length > 1 ? "s" : ""} in Content health to publish.</p>}
       <div className="editor-wrap">
-        <div>
-          <div className="card">
-            <label>
-              Title (H1)
-              <input value={form.title} maxLength={120} onChange={(e) => set("title", e.target.value)} placeholder="Answer-first headline with the primary keyword" />
-            </label>
-            <label>
-              Quick answer / TL;DR
-              <textarea value={form.quickAnswer} maxLength={600} onChange={(e) => set("quickAnswer", e.target.value)} />
-            </label>
+        <div className="editor-main">
+          <section className="card">
+            <div className="field">
+              <label htmlFor="post-title">Title (H1)</label>
+              <input id="post-title" name="title" className="title-input" value={form.title} maxLength={120} onChange={(e) => set("title", e.target.value)} placeholder="Answer-first headline with the primary keyword" />
+            </div>
+            <div className="field">
+              <label htmlFor="post-quick">Quick answer / TL;DR</label>
+              <textarea id="post-quick" name="quickAnswer" value={form.quickAnswer} maxLength={600} onChange={(e) => set("quickAnswer", e.target.value)} />
+            </div>
             <div className="toolbar" role="toolbar" aria-label="Formatting">
               {btn("B", !!editor?.isActive("bold"), () => editor?.chain().focus().toggleBold().run())}
               {btn("I", !!editor?.isActive("italic"), () => editor?.chain().focus().toggleItalic().run())}
@@ -176,182 +197,202 @@ export function PostEditor(props: Props) {
               {btn("Redo", false, () => editor?.chain().focus().redo().run())}
             </div>
             <EditorContent editor={editor} />
-          </div>
+          </section>
 
           {picker && (
-            <div className="card">
-              <h2>{picker === "cover" ? "Choose cover image" : "Insert image"}</h2>
+            <section className="card picker">
+              <div className="card-head">
+                <h2>{picker === "cover" ? "Choose cover image" : "Insert image"}</h2>
+                <button type="button" className="btn ghost sm" onClick={() => setPicker(null)}>Close</button>
+              </div>
               <MediaPicker items={media} onPick={pick} />
-              <button type="button" className="link" onClick={() => setPicker(null)}>Close</button>
-            </div>
+            </section>
           )}
 
-          <div className="card">
-            <h2>Excerpt</h2>
-            <textarea value={form.excerpt} maxLength={300} onChange={(e) => set("excerpt", e.target.value)} aria-label="Excerpt" />
-          </div>
+          <section className="card">
+            <h2><label htmlFor="post-excerpt">Excerpt</label></h2>
+            <textarea id="post-excerpt" name="excerpt" value={form.excerpt} maxLength={300} onChange={(e) => set("excerpt", e.target.value)} />
+          </section>
 
-          <div className="card">
+          <section className="card">
             <h2>Sources &amp; further reading</h2>
             {form.sources.map((s, i) => (
-              <div className="row" key={i} style={{ marginBottom: 8 }}>
-                <input aria-label="Source title" style={{ flex: 1, minWidth: 140 }} value={s.title} maxLength={200} onChange={(e) => set("sources", form.sources.map((x, j) => (j === i ? { ...x, title: e.target.value } : x)))} />
-                <input aria-label="Source URL" style={{ flex: 2, minWidth: 180 }} value={s.url} maxLength={500} onChange={(e) => set("sources", form.sources.map((x, j) => (j === i ? { ...x, url: e.target.value } : x)))} />
-                <button type="button" className="link" onClick={() => set("sources", form.sources.filter((_, j) => j !== i))}>remove</button>
+              <div className="row repeat" key={i}>
+                <input name={`sources.${i}.title`} aria-label="Source title" placeholder="Title" className="grow" value={s.title} maxLength={200} onChange={(e) => set("sources", form.sources.map((x, j) => (j === i ? { ...x, title: e.target.value } : x)))} />
+                <input name={`sources.${i}.url`} aria-label="Source URL" placeholder="https://" className="grow-2" value={s.url} maxLength={500} onChange={(e) => set("sources", form.sources.map((x, j) => (j === i ? { ...x, url: e.target.value } : x)))} />
+                <button type="button" className="btn danger-ghost sm" onClick={() => set("sources", form.sources.filter((_, j) => j !== i))}>Remove</button>
               </div>
             ))}
-            <button type="button" className="btn ghost" onClick={() => set("sources", [...form.sources, { title: "", url: "https://" }])}>Add source</button>
-          </div>
+            <button type="button" className="btn secondary sm" onClick={() => set("sources", [...form.sources, { title: "", url: "https://" }])}>Add source</button>
+          </section>
 
-          <div className="card">
-            <h2>FAQ (emits FAQPage schema)</h2>
+          <section className="card">
+            <h2>FAQ <span className="muted small">(emits FAQPage schema)</span></h2>
             {form.faq.map((f, i) => (
-              <div key={i} style={{ marginBottom: 12 }}>
-                <input aria-label="Question" value={f.q} maxLength={200} onChange={(e) => set("faq", form.faq.map((x, j) => (j === i ? { ...x, q: e.target.value } : x)))} placeholder="Question" />
-                <textarea aria-label="Answer" value={f.a} maxLength={1000} onChange={(e) => set("faq", form.faq.map((x, j) => (j === i ? { ...x, a: e.target.value } : x)))} placeholder="Answer" />
-                <button type="button" className="link" onClick={() => set("faq", form.faq.filter((_, j) => j !== i))}>remove</button>
+              <div key={i} className="faq-item">
+                <input name={`faq.${i}.q`} aria-label="Question" value={f.q} maxLength={200} onChange={(e) => set("faq", form.faq.map((x, j) => (j === i ? { ...x, q: e.target.value } : x)))} placeholder="Question" />
+                <textarea name={`faq.${i}.a`} aria-label="Answer" value={f.a} maxLength={1000} onChange={(e) => set("faq", form.faq.map((x, j) => (j === i ? { ...x, a: e.target.value } : x)))} placeholder="Answer" />
+                <button type="button" className="btn danger-ghost sm" onClick={() => set("faq", form.faq.filter((_, j) => j !== i))}>Remove</button>
               </div>
             ))}
-            <button type="button" className="btn ghost" onClick={() => set("faq", [...form.faq, { q: "", a: "" }])}>Add question</button>
-          </div>
+            <button type="button" className="btn secondary sm" onClick={() => set("faq", [...form.faq, { q: "", a: "" }])}>Add question</button>
+          </section>
         </div>
 
-        <aside>
-          <div className="card">
+        <aside className="editor-side">
+          <section className="card">
             <h2>Publish</h2>
-            <div className="row">
-              <button type="button" className="btn ghost" disabled={pending} onClick={() => submit("save")}>Save</button>
-              <button type="button" className="btn gold" disabled={pending || errors.length > 0} onClick={() => submit("publish")}>
-                {status === "published" ? "Update" : "Publish"}
-              </button>
+            <div className="field">
+              <label htmlFor="post-schedule">Schedule for (IST)</label>
+              <input id="post-schedule" name="scheduledAt" type="datetime-local" value={toIstInput(form.scheduledAt)} onChange={(e) => set("scheduledAt", fromIstInput(e.target.value))} />
             </div>
-            {errors.length > 0 && <p className="error">Fix {errors.length} error{errors.length > 1 ? "s" : ""} to publish</p>}
-            <label style={{ marginTop: 12 }}>
-              Schedule for (IST)
-              <input type="datetime-local" value={toIstInput(form.scheduledAt)} onChange={(e) => set("scheduledAt", fromIstInput(e.target.value))} />
-            </label>
             <div className="row">
-              <button type="button" className="btn ghost" disabled={pending || errors.length > 0 || !form.scheduledAt} onClick={() => submit("schedule")}>Schedule</button>
-              {live && <button type="button" className="btn ghost" disabled={pending} onClick={() => submit("draft")}>Unpublish</button>}
-              {status === "scheduled" && <button type="button" className="btn ghost" disabled={pending} onClick={() => submit("draft")}>Cancel schedule</button>}
-              {status !== "archived" && <button type="button" className="btn ghost" disabled={pending} onClick={() => submit("archive")}>Archive</button>}
+              <button type="button" className="btn secondary sm" disabled={pending || errors.length > 0 || !form.scheduledAt} onClick={() => submit("schedule")}>Schedule</button>
+              {live && <button type="button" className="btn secondary sm" disabled={pending} onClick={() => submit("draft")}>Unpublish</button>}
+              {status === "scheduled" && <button type="button" className="btn secondary sm" disabled={pending} onClick={() => submit("draft")}>Cancel schedule</button>}
+              {status !== "archived" && <button type="button" className="btn secondary sm" disabled={pending} onClick={() => submit("archive")}>Archive</button>}
             </div>
-            <p><a href={`/preview/${props.id}`} target="_blank" rel="noopener">Preview saved version</a></p>
-            {live && <p className="muted">Live posts are not autosaved. Use Update to publish changes.</p>}
+            {live && <p className="muted small">Live posts are not autosaved. Use Update to publish changes.</p>}
             {props.canDelete && (
-              <form action={deletePostAction.bind(null, props.id)} onSubmit={(e) => { if (!window.confirm("Delete this post permanently?")) e.preventDefault(); }} style={{ marginTop: 12 }}>
-                <button className="btn danger">Delete post</button>
-              </form>
+              <div className="danger-zone">
+                <button type="button" className="btn danger sm" disabled={pending} onClick={remove}>Delete post</button>
+              </div>
             )}
-          </div>
+          </section>
 
-          <div className="card">
+          <section className="card">
             <h2>URL slug</h2>
-            <input value={form.slug} maxLength={96} onChange={(e) => set("slug", e.target.value.toLowerCase())} aria-label="Slug" />
-            <button type="button" className="link" onClick={() => set("slug", slugify(form.title))}>Generate from title</button>
-            {props.wasPublished && <p className="muted">Changing a published slug creates a 301 redirect from the old URL.</p>}
-          </div>
+            <input name="slug" value={form.slug} maxLength={96} onChange={(e) => set("slug", e.target.value.toLowerCase())} aria-label="Slug" />
+            <button type="button" className="btn ghost sm" onClick={() => set("slug", slugify(form.title))}>Generate from title</button>
+            {props.wasPublished && <p className="muted small">Changing a published slug creates a 301 redirect from the old URL.</p>}
+          </section>
 
-          <div className="card">
-            <h2>Taxonomy</h2>
-            <label>Author
-              <select value={form.authorId ?? ""} onChange={(e) => set("authorId", e.target.value ? Number(e.target.value) : null)}>
-                <option value="">None</option>
-                {props.authors.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
-              </select>
-            </label>
-            <label>Reviewed by (optional)
-              <select value={form.reviewerId ?? ""} onChange={(e) => set("reviewerId", e.target.value ? Number(e.target.value) : null)}>
-                <option value="">None</option>
-                {props.authors.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
-              </select>
-            </label>
-            <label>Category
-              <select value={form.categoryId ?? ""} onChange={(e) => set("categoryId", e.target.value ? Number(e.target.value) : null)}>
+          <section className="card">
+            <h2>Organise</h2>
+            <div className="field">
+              <label htmlFor="post-category">Category</label>
+              <select id="post-category" name="categoryId" value={form.categoryId ?? ""} onChange={(e) => set("categoryId", e.target.value ? Number(e.target.value) : null)}>
                 <option value="">None</option>
                 {props.categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
               </select>
-            </label>
-            <fieldset style={{ border: 0, padding: 0 }}>
-              <legend style={{ fontWeight: 600, fontSize: ".9rem" }}>Tags</legend>
-              {props.tags.map((t) => (
-                <label key={t.id} style={{ display: "flex", gap: 8, fontWeight: 400, marginBottom: 4 }}>
-                  <input type="checkbox" style={{ width: "auto" }} checked={form.tagIds.includes(t.id)} onChange={(e) => set("tagIds", e.target.checked ? [...form.tagIds, t.id] : form.tagIds.filter((x) => x !== t.id))} />
-                  {t.name}
-                </label>
-              ))}
-            </fieldset>
-          </div>
-
-          <div className="card">
-            <h2>Cover image</h2>
-            {cover && <p className="muted">{cover.alt}</p>}
-            <div className="row">
-              <button type="button" className="btn ghost" onClick={() => setPicker("cover")}>{cover ? "Change" : "Choose"} cover</button>
-              {cover && <button type="button" className="link" onClick={() => set("coverMediaId", null)}>remove</button>}
             </div>
-          </div>
+            <fieldset className="bare field">
+              <legend>Tags</legend>
+              {props.tags.length ? (
+                <div className="chips">
+                  {props.tags.map((t) => (
+                    <label key={t.id} className="chip">
+                      <input type="checkbox" name="tagIds" value={t.id} checked={form.tagIds.includes(t.id)} onChange={(e) => set("tagIds", e.target.checked ? [...form.tagIds, t.id] : form.tagIds.filter((x) => x !== t.id))} />
+                      {t.name}
+                    </label>
+                  ))}
+                </div>
+              ) : (
+                <p className="muted small">No tags yet. Add them under Categories &amp; Tags.</p>
+              )}
+            </fieldset>
+            <div className="field">
+              <label htmlFor="post-author">Author</label>
+              <select id="post-author" name="authorId" value={form.authorId ?? ""} onChange={(e) => set("authorId", e.target.value ? Number(e.target.value) : null)}>
+                <option value="">None</option>
+                {props.authors.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
+              </select>
+            </div>
+            <div className="field">
+              <label htmlFor="post-reviewer">Reviewed by (optional)</label>
+              <select id="post-reviewer" name="reviewerId" value={form.reviewerId ?? ""} onChange={(e) => set("reviewerId", e.target.value ? Number(e.target.value) : null)}>
+                <option value="">None</option>
+                {props.authors.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
+              </select>
+            </div>
+          </section>
 
-          <div className="card">
+          <section className="card">
+            <h2>Cover image</h2>
+            {cover ? (
+              <figure className="cover">
+                <NextImage src={cover.url} alt={cover.alt} width={320} height={180} unoptimized />
+                <figcaption className="muted small">{cover.alt}</figcaption>
+              </figure>
+            ) : (
+              <p className="muted small">No cover yet. Posts without one get a generated social image.</p>
+            )}
+            <div className="row">
+              <button type="button" className="btn secondary sm" onClick={() => setPicker("cover")}>{cover ? "Change" : "Choose"} cover</button>
+              {cover && <button type="button" className="btn danger-ghost sm" onClick={() => set("coverMediaId", null)}>Remove</button>}
+            </div>
+          </section>
+
+          <section className="card">
             <h2>SEO</h2>
-            <label>Focus keyword
-              <input value={form.focusKeyword} maxLength={80} onChange={(e) => set("focusKeyword", e.target.value)} />
-            </label>
-            <label>Cluster
-              <input list="clusters" value={form.cluster} maxLength={80} onChange={(e) => set("cluster", e.target.value)} />
+            <div className="field">
+              <label htmlFor="post-keyword">Focus keyword</label>
+              <input id="post-keyword" name="focusKeyword" value={form.focusKeyword} maxLength={80} onChange={(e) => set("focusKeyword", e.target.value)} />
+            </div>
+            <div className="field">
+              <label htmlFor="post-cluster">Cluster</label>
+              <input id="post-cluster" name="cluster" list="clusters" value={form.cluster} maxLength={80} onChange={(e) => set("cluster", e.target.value)} />
               <datalist id="clusters">{clusters.map((c) => <option key={c} value={c} />)}</datalist>
-            </label>
-            <label>Meta title
-              <input value={form.metaTitle} maxLength={120} onChange={(e) => set("metaTitle", e.target.value)} />
+            </div>
+            <div className="field">
+              <label htmlFor="post-meta-title">Meta title</label>
+              <input id="post-meta-title" name="metaTitle" value={form.metaTitle} maxLength={120} onChange={(e) => set("metaTitle", e.target.value)} />
               <span className={`counter ${form.metaTitle.length > 60 ? "bad" : ""}`}>{form.metaTitle.length}/60</span>
-            </label>
-            <label>Meta description
-              <textarea value={form.metaDescription} maxLength={300} onChange={(e) => set("metaDescription", e.target.value)} />
+            </div>
+            <div className="field">
+              <label htmlFor="post-meta-desc">Meta description</label>
+              <textarea id="post-meta-desc" name="metaDescription" value={form.metaDescription} maxLength={300} onChange={(e) => set("metaDescription", e.target.value)} />
               <span className={`counter ${form.metaDescription.length > 160 ? "bad" : ""}`}>{form.metaDescription.length}/160</span>
-            </label>
+            </div>
             <div className="serp" aria-label="Search preview">
               <div className="t">{titleFor(form.metaTitle, form.title) || "Post title"}</div>
               <div className="u">miyoglobal.com › blog › {form.slug}</div>
               <div className="d">{form.metaDescription.slice(0, 160) || "Meta description appears here."}</div>
             </div>
-            <label style={{ display: "flex", gap: 8, fontWeight: 400, marginTop: 12 }}>
-              <input type="checkbox" style={{ width: "auto" }} checked={form.noindex} onChange={(e) => set("noindex", e.target.checked)} /> noindex (also hidden from sitemap)
+            <label className="check">
+              <input type="checkbox" name="noindex" checked={form.noindex} onChange={(e) => set("noindex", e.target.checked)} /> noindex (also hidden from sitemap)
             </label>
-            <label style={{ display: "flex", gap: 8, fontWeight: 400 }}>
-              <input type="checkbox" style={{ width: "auto" }} checked={form.nofollow} onChange={(e) => set("nofollow", e.target.checked)} /> nofollow
+            <label className="check">
+              <input type="checkbox" name="nofollow" checked={form.nofollow} onChange={(e) => set("nofollow", e.target.checked)} /> nofollow
             </label>
-          </div>
+          </section>
 
-          <div className="card">
+          <section className="card">
             <h2>Social (Open Graph / Twitter)</h2>
-            <label>OG title<input value={form.ogTitle} maxLength={120} onChange={(e) => set("ogTitle", e.target.value)} /></label>
-            <label>OG description<textarea value={form.ogDescription} maxLength={300} onChange={(e) => set("ogDescription", e.target.value)} /></label>
-            <p className="muted">The 1200×630 image comes from the cover; posts without a cover get a generated one.</p>
-          </div>
+            <div className="field">
+              <label htmlFor="post-og-title">OG title</label>
+              <input id="post-og-title" name="ogTitle" value={form.ogTitle} maxLength={120} onChange={(e) => set("ogTitle", e.target.value)} />
+            </div>
+            <div className="field">
+              <label htmlFor="post-og-desc">OG description</label>
+              <textarea id="post-og-desc" name="ogDescription" value={form.ogDescription} maxLength={300} onChange={(e) => set("ogDescription", e.target.value)} />
+            </div>
+            <p className="muted small">The 1200×630 image comes from the cover; posts without a cover get a generated one.</p>
+          </section>
 
           {props.isAdmin && (
-            <div className="card">
-              <h2>Custom JSON-LD (admin)</h2>
-              <textarea value={form.customJsonLd ?? ""} maxLength={8000} onChange={(e) => set("customJsonLd", e.target.value || null)} aria-label="Custom JSON-LD" />
+            <section className="card">
+              <h2><label htmlFor="post-jsonld">Custom JSON-LD (admin)</label></h2>
+              <textarea id="post-jsonld" name="customJsonLd" className="mono" value={form.customJsonLd ?? ""} maxLength={8000} onChange={(e) => set("customJsonLd", e.target.value || null)} />
               {jsonLdError && <p className="error">{jsonLdError}</p>}
-              <p className="muted">Parsed and escaped on output. Product schema is rejected.</p>
-            </div>
+              <p className="muted small">Parsed and escaped on output. Product schema is rejected.</p>
+            </section>
           )}
 
-          <div className="card health">
+          <section className="card health">
             <h2>Content health</h2>
             <ul>
               {issues.map((i) => <li key={i.code} className={i.level === "error" ? "err" : "warn"}>{i.level === "error" ? "Error" : "Warning"}: {i.message}</li>)}
               {issues.length === 0 && <li className="ok">All checks pass</li>}
             </ul>
-            <button type="button" className="btn ghost" disabled={pending} onClick={() => start(async () => { const r = await checkLinksAction(JSON.stringify(form.content)); setBroken(r.ok ? r.broken : null); if (!r.ok) setError(r.error); })}>Check links</button>
+            <button type="button" className="btn secondary sm" disabled={pending} onClick={() => start(async () => { const r = await checkLinksAction(JSON.stringify(form.content)); setBroken(r.ok ? r.broken : null); if (!r.ok) setError(r.error); })}>Check links</button>
             {broken && (broken.length ? <ul>{broken.map((b) => <li key={b} className="err">Broken: {b}</li>)}</ul> : <p className="ok">No broken links</p>)}
-            <h2 style={{ marginTop: 16 }}>Link suggestions</h2>
-            <ul>
-              {related.map((r) => <li key={r.slug}>{r.title || r.slug} <button type="button" className="link" onClick={() => link(r.title || r.slug, `/blog/${r.slug}`)}>insert</button></li>)}
-              {SERVICES.map((s) => <li key={s.href}>{s.label} <button type="button" className="link" onClick={() => link(s.label, s.href)}>insert</button></li>)}
+            <h2 className="mt">Link suggestions</h2>
+            <ul className="suggest">
+              {related.map((r) => <li key={r.slug}><span>{r.title || r.slug}</span> <button type="button" className="btn ghost sm" onClick={() => link(r.title || r.slug, `/blog/${r.slug}`)}>Insert</button></li>)}
+              {SERVICES.map((s) => <li key={s.href}><span>{s.label}</span> <button type="button" className="btn ghost sm" onClick={() => link(s.label, s.href)}>Insert</button></li>)}
             </ul>
-          </div>
+          </section>
         </aside>
       </div>
     </>

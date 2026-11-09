@@ -13,6 +13,8 @@ const ALT = "A recruiter reviewing candidate resumes at a bright modern office d
 let page: Page;
 let slug = "gcc-staffing-guide-2026";
 
+const confirmDialog = () => page.getByRole("dialog").getByRole("button", { name: "Delete" }).click();
+
 async function login(page: Page) {
   await page.goto(`${ADMIN}/login`);
   await page.getByLabel("Email").fill(EMAIL);
@@ -248,16 +250,16 @@ test.describe.serial("studio to public flow", () => {
     expect((await request.get(`/blog/${draftSlug}`)).status()).toBe(404);
     expect(await (await request.get("/blog")).text()).not.toContain("Scheduled flow post");
 
-    page.once("dialog", (d) => d.accept());
     await page.getByRole("button", { name: "Delete post" }).click();
+    await confirmDialog();
     await expect(page).toHaveURL(/\/posts$/);
     await expect(page.getByRole("link", { name: "Scheduled flow post" })).toHaveCount(0);
   });
 
   test("media in use is protected and deletes remove R2 objects", async () => {
     await page.goto(`${ADMIN}/media`);
-    page.on("dialog", (d) => d.accept());
     await page.getByRole("button", { name: "Delete" }).first().click();
+    await confirmDialog();
     await expect(page.locator('p.error[role="alert"]')).toContainText("used by a post");
     const png = await sharp({ create: { width: 1300, height: 800, channels: 3, background: "#225588" } }).png().toBuffer();
     await page.locator('input[type="file"]').setInputFiles({ name: "x.png", mimeType: "image/png", buffer: png });
@@ -266,6 +268,7 @@ test.describe.serial("studio to public flow", () => {
     await expect(page.locator(".media-grid figure")).toHaveCount(2);
     expect(mockCalls()).toMatch(/R2 PUT \/e2e-public\/[a-f0-9-]+-avif\.avif/);
     await page.getByRole("button", { name: "Delete" }).first().click();
+    await confirmDialog();
     await expect(page.locator(".media-grid figure")).toHaveCount(1);
     expect(mockCalls().match(/R2 DELETE/g)).toHaveLength(3);
   });
@@ -277,7 +280,7 @@ test.describe.serial("studio to public flow", () => {
     await page.getByLabel(/^Temporary password/).fill("Editor-Passw0rd-123");
     await page.getByRole("button", { name: "Create user" }).click();
     await expect(page.getByText("User created")).toBeVisible();
-    await page.getByRole("button", { name: "Sign out" }).click();
+    await page.getByRole("button", { name: "Log out" }).click();
     await expect(page).toHaveURL(/\/login$/);
 
     await page.getByLabel("Email").fill("editor@miyoglobal.test");

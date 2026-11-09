@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "MIYO Studio",
+  title: { template: "%s · MIYO Studio", default: "MIYO Studio" },
+  icons: { icon: "/favicon.svg" },
   robots: { index: false, follow: false },
 };
 
