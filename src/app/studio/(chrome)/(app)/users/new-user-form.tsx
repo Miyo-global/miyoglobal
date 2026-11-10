@@ -1,11 +1,13 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { useUi } from "../../ui";
 import { createUserAction } from "../actions";
 
 export function NewUserForm() {
   const ui = useUi();
+  const router = useRouter();
   const [error, setError] = useState("");
   const [pending, start] = useTransition();
 
@@ -19,6 +21,7 @@ export function NewUserForm() {
       if (!res.ok) return setError(res.error);
       ui.toast("User created.");
       form.reset();
+      router.refresh();
     });
   }
 

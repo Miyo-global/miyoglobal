@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { Icon } from "../icons";
 import { useUi } from "../ui";
@@ -12,7 +13,9 @@ export function MediaPicker({ items, onPick, canDelete = false }: { items: Media
   const ui = useUi();
   const [list, setList] = useState(items);
   const [error, setError] = useState("");
+  const router = useRouter();
   const [pending, start] = useTransition();
+  const [op, setOp] = useState<number | "upload">("upload");
   const idp = onPick ? "pick" : "lib";
 
   function upload(e: React.FormEvent<HTMLFormElement>) {
@@ -20,24 +23,28 @@ export function MediaPicker({ items, onPick, canDelete = false }: { items: Media
     const form = e.currentTarget;
     const data = new FormData(form);
     setError("");
+    setOp("upload");
     start(async () => {
       const res = await uploadMediaAction(data);
       if (!res.ok) return setError(res.error);
-      setList([res.media, ...list]);
+      setList((l) => [res.media, ...l]);
       form.reset();
       ui.toast("Image uploaded");
       onPick?.(res.media);
+      router.refresh();
     });
   }
 
   async function remove(m: MediaItem) {
     if (!(await ui.confirm("Delete this image permanently? This cannot be undone."))) return;
     setError("");
+    setOp(m.id);
     start(async () => {
       const res = await deleteMediaAction(m.id);
       if (!res.ok) return setError(res.error);
       setList((l) => l.filter((x) => x.id !== m.id));
       ui.toast("Image deleted");
+      router.refresh();
     });
   }
 
@@ -53,7 +60,7 @@ export function MediaPicker({ items, onPick, canDelete = false }: { items: Media
           <textarea id={`${idp}-alt`} name="alt" required maxLength={200} rows={2} />
         </div>
         {error && <p className="error" role="alert">{error}</p>}
-        <button className="btn primary" disabled={pending}><Icon name="upload" size={16} />{pending ? "Uploading…" : "Upload"}</button>
+        <button className="btn primary" disabled={pending}><Icon name="upload" size={16} />{pending && op === "upload" ? "Uploading…" : "Upload"}</button>
       </form>
       {list.length ? (
         <div className="media-grid">
@@ -71,8 +78,8 @@ export function MediaPicker({ items, onPick, canDelete = false }: { items: Media
                   </button>
                 )}
                 {canDelete && (
-                  <button type="button" className="btn danger-ghost sm" onClick={() => remove(m)}>
-                    Delete
+                  <button type="button" className="btn danger-ghost sm" disabled={pending} onClick={() => remove(m)}>
+                    {pending && op === m.id ? "Deleting…" : "Delete"}
                   </button>
                 )}
               </div>

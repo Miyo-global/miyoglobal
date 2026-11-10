@@ -1,7 +1,8 @@
 "use client";
 
-import { unstable_rethrow } from "next/navigation";
+import { unstable_rethrow, useRouter } from "next/navigation";
 import { createContext, useCallback, useContext, useRef, useState, useTransition } from "react";
+import { useFormStatus } from "react-dom";
 
 type Toast = { id: number; text: string; kind: "ok" | "error" };
 type Ask = { text: string; confirmLabel: string; resolve: (ok: boolean) => void };
@@ -76,6 +77,7 @@ export function ActionForm({
   children: React.ReactNode;
 }) {
   const ui = useUi();
+  const router = useRouter();
   const [pending, start] = useTransition();
 
   async function submit(e: React.FormEvent<HTMLFormElement>) {
@@ -88,6 +90,7 @@ export function ActionForm({
         await action(data);
         if (success) ui.toast(success);
         if (reset) form.reset();
+        router.refresh();
       } catch (err) {
         unstable_rethrow(err);
         ui.toast("Something went wrong. Check the fields and try again.", "error");
@@ -99,5 +102,15 @@ export function ActionForm({
     <form className={className} onSubmit={submit} aria-busy={pending}>
       <fieldset className="bare" disabled={pending}>{children}</fieldset>
     </form>
+  );
+}
+
+/** Submit button for a plain `<form action={serverAction}>` that shows a pending label while the action runs. */
+export function PendingButton({ className, pendingLabel, children }: { className?: string; pendingLabel: string; children: React.ReactNode }) {
+  const { pending } = useFormStatus();
+  return (
+    <button className={className} disabled={pending} aria-busy={pending}>
+      {pending ? pendingLabel : children}
+    </button>
   );
 }

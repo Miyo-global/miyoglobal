@@ -1,4 +1,4 @@
-import { STATIC_PAGES } from "@/lib/pages";
+import { STATIC_PAGES, staticLastmods } from "@/lib/pages";
 import { SITE_URL, xml, xmlEscape } from "@/lib/seo";
 import { sitemapEntries } from "@/server/services/public";
 
@@ -6,10 +6,13 @@ export const dynamic = "force-dynamic";
 
 export async function GET() {
   const { posts, categories, tags, authors } = await sitemapEntries();
-  const last = posts[0]?.updatedAt.toISOString().slice(0, 10);
+  const mtimes = staticLastmods();
+  const newestPage = Object.values(mtimes).sort().at(-1);
+  const newestPost = posts.reduce<Date | null>((m, p) => (!m || p.updatedAt > m ? p.updatedAt : m), null);
+  const last = newestPost?.toISOString().slice(0, 10);
   const urls = [
-    ...STATIC_PAGES.map((p) => ({ loc: p.path, lastmod: p.lastmod })),
-    { loc: "/blog", lastmod: last },
+    ...STATIC_PAGES.map((p) => ({ loc: p.path, lastmod: mtimes[p.path] })),
+    { loc: "/blog", lastmod: last ?? newestPage ?? new Date().toISOString().slice(0, 10) },
     ...categories.map((c) => ({ loc: `/blog/category/${c.slug}`, lastmod: last })),
     ...tags.map((t) => ({ loc: `/blog/tag/${t.slug}`, lastmod: last })),
     ...authors.map((a) => ({ loc: `/blog/author/${a.slug}`, lastmod: last })),

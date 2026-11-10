@@ -8,7 +8,13 @@ export const revalidate = 300;
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const t = await getTag((await params).slug);
   if (!t) return {};
-  return { title: `${t.name} | MIYO Global blog`, description: `Articles tagged ${t.name} from MIYO Global.`, alternates: { canonical: `/blog/tag/${t.slug}` } };
+  const empty = !(await byTagId(t.id, 1)).length;
+  return {
+    title: `${t.name} | MIYO Global blog`,
+    description: `Articles tagged ${t.name} from MIYO Global.`,
+    alternates: { canonical: `/blog/tag/${t.slug}` },
+    ...(empty ? { robots: { index: false, follow: true } } : {}),
+  };
 }
 
 export default async function TagPage({ params }: { params: Promise<{ slug: string }> }) {

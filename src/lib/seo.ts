@@ -1,6 +1,25 @@
 export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.miyoglobal.com").replace(/\/$/, "");
 export const SITE_NAME = "MIYO Global";
 
+export const FEED_CACHE = "public, s-maxage=60, must-revalidate";
+
+const ORG_ID = "https://www.miyoglobal.com/#organization";
+
+/** Shared WebSite + Organization nodes; reference the org elsewhere via { "@id": ORG_ID }. */
+export function siteGraph() {
+  return [
+    { "@type": "WebSite", "@id": "https://www.miyoglobal.com/#website", url: "https://www.miyoglobal.com/", name: SITE_NAME, publisher: { "@id": ORG_ID } },
+    {
+      "@type": "Organization",
+      "@id": ORG_ID,
+      name: SITE_NAME,
+      url: "https://www.miyoglobal.com/",
+      logo: "https://www.miyoglobal.com/images/logo-web.png",
+      contactPoint: { "@type": "ContactPoint", contactType: "sales", email: "staffing@miyoglobal.com", areaServed: ["IN", "AE"], availableLanguage: "en" },
+    },
+  ];
+}
+
 export function absolute(path: string): string {
   return /^https?:\/\//i.test(path) ? path : `${SITE_URL}${path.startsWith("/") ? path : `/${path}`}`;
 }
@@ -41,6 +60,6 @@ export function xmlEscape(s: string): string {
 
 export function xml(body: string, contentType = "application/xml"): Response {
   return new Response(`<?xml version="1.0" encoding="UTF-8"?>\n${body}`, {
-    headers: { "Content-Type": `${contentType}; charset=utf-8`, "Cache-Control": "public, s-maxage=60" },
+    headers: { "Content-Type": `${contentType}; charset=utf-8`, "Cache-Control": FEED_CACHE },
   });
 }

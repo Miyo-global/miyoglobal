@@ -8,8 +8,15 @@ const adminOnly = /^\/(studio|api\/auth)(\/|$)/;
 const shared = /^\/(_next|media\/|images\/|favicon\.(svg|ico))/;
 const postPath = /^\/blog\/(?!search$)[a-z0-9-]+$/;
 
+const PUBLIC_HOST = "www.miyoglobal.com";
+
 function notFound() {
   return new NextResponse(null, { status: 404 });
+}
+
+function noindex<T extends NextResponse>(res: T, value = "noindex, nofollow"): T {
+  res.headers.set("X-Robots-Tag", value);
+  return res;
 }
 
 async function findRedirect(path: string) {
@@ -22,12 +29,14 @@ export async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   if (host !== ADMIN_HOST) {
-    if (adminOnly.test(pathname)) return notFound();
+    // Previews (*.vercel.app) and any other alias must never be indexed.
+    const tag = <T extends NextResponse>(res: T) => (host === PUBLIC_HOST ? res : noindex(res));
+    if (adminOnly.test(pathname)) return tag(notFound());
     if (postPath.test(pathname)) {
       const to = await findRedirect(pathname).catch(() => null);
-      if (to) return NextResponse.redirect(new URL(to, req.url), 301);
+      if (to) return tag(NextResponse.redirect(new URL(to, req.url), 301));
     }
-    return NextResponse.next();
+    return tag(NextResponse.next());
   }
 
   if (shared.test(pathname)) return NextResponse.next();
@@ -42,7 +51,7 @@ export async function proxy(req: NextRequest) {
   if (/^\/api\/auth(\/|$)/.test(pathname)) {
     res = NextResponse.next();
   } else if (pathname.startsWith("/studio")) {
-    return notFound();
+    return noindex(notFound(), "noindex, nofollow, noarchive");
   } else {
     const url = req.nextUrl.clone();
     url.pathname = pathname === "/" ? "/studio" : `/studio${pathname}`;

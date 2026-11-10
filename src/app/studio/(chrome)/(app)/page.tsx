@@ -1,3 +1,4 @@
+import { formatIst } from "@/lib/ist";
 import { count } from "drizzle-orm";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -56,7 +57,7 @@ export default async function Dashboard() {
               <li key={p.id}>
                 <Link href={`/posts/${p.id}`} className="list-title">{p.title || "Untitled"}</Link>
                 <span className={`pill ${p.status}`}>{p.status}</span>
-                <time className="muted" dateTime={p.updatedAt.toISOString()}>{p.updatedAt.toISOString().slice(0, 10)}</time>
+                <time className="muted" dateTime={p.updatedAt.toISOString()}>{formatIst(p.updatedAt)}</time>
               </li>
             ))}
           </ul>

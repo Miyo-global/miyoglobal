@@ -33,6 +33,7 @@ export async function createPostAction() {
   const [author] = await db.select({ id: authors.id }).from(authors).where(eq(authors.userId, me.id));
   const id = await createDraft(author?.id ?? null);
   await audit(me.id, "post.create", String(id));
+  revalidatePath("/studio/posts");
   redirect(`/posts/${id}`);
 }
 
@@ -46,7 +47,7 @@ export async function savePostAction(id: number, rawJson: string, intent: Intent
     const res = await savePost(id, me.id, me.role, parsed.data, intent);
     await audit(me.id, `post.${intent}`, String(id));
     if (res.wasLive) afterPublish(res.slug, res.previousSlug);
-    revalidatePath("/posts");
+    revalidatePath("/studio/posts");
     return { ok: true, status: res.status, slug: res.slug, issues: res.issues };
   } catch (e) {
     if (e instanceof PostError) return { ok: false, error: e.message };
@@ -60,7 +61,7 @@ export async function deletePostAction(id: number) {
   await audit(me.id, "post.delete", String(id));
   // Same refresh + IndexNow ping as publish; the post URL now 404s, which IndexNow treats as a removal.
   if (deleted?.wasLive) afterPublish(deleted.slug, deleted.slug);
-  revalidatePath("/posts");
+  revalidatePath("/studio/posts");
   redirect("/posts");
 }
 
@@ -79,9 +80,11 @@ export async function uploadMediaAction(form: FormData): Promise<Result<{ media:
   try {
     const m = await saveUpload(file, String(form.get("alt") ?? ""), me.id);
     await audit(me.id, "media.upload", String(m.id));
-    revalidatePath("/media");
+    revalidatePath("/studio/media");
     return { ok: true, media: { id: m.id, url: m.url, alt: m.alt, width: m.width, height: m.height } };
   } catch (e) {
+    // Friendly message for the UI, real cause for Vercel logs.
+    console.error("media: upload action failed", { user: me.id, name: file.name, size: file.size, type: file.type, error: e instanceof Error ? e.message : String(e), cause: e instanceof Error ? e.cause : undefined });
     if (e instanceof UploadError) return { ok: false, error: e.message };
     throw e;
   }
@@ -92,7 +95,7 @@ export async function deleteMediaAction(id: number): Promise<Result> {
   try {
     await deleteMedia(id);
     await audit(me.id, "media.delete", String(id));
-    revalidatePath("/media");
+    revalidatePath("/studio/media");
     return { ok: true };
   } catch (e) {
     if (e instanceof UploadError) return { ok: false, error: e.message };
@@ -107,7 +110,7 @@ export async function addCategoryAction(form: FormData) {
   const n = name.parse(form.get("name"));
   await db.insert(categories).values({ name: n, slug: slugify(n) || "category", description: String(form.get("description") ?? "").slice(0, 300) }).onConflictDoNothing();
   await audit(me.id, "category.add", n);
-  revalidatePath("/taxonomy");
+  revalidatePath("/studio/taxonomy");
 }
 
 export async function addTagAction(form: FormData) {
@@ -115,7 +118,7 @@ export async function addTagAction(form: FormData) {
   const n = name.parse(form.get("name"));
   await db.insert(tags).values({ name: n, slug: slugify(n) || "tag" }).onConflictDoNothing();
   await audit(me.id, "tag.add", n);
-  revalidatePath("/taxonomy");
+  revalidatePath("/studio/taxonomy");
 }
 
 export async function deleteTaxonomyAction(form: FormData) {
@@ -124,7 +127,7 @@ export async function deleteTaxonomyAction(form: FormData) {
   if (form.get("kind") === "tag") await db.delete(tags).where(eq(tags.id, id));
   else await db.delete(categories).where(eq(categories.id, id));
   await audit(me.id, "taxonomy.delete", `${form.get("kind")}:${id}`);
-  revalidatePath("/taxonomy");
+  revalidatePath("/studio/taxonomy");
 }
 
 const authorInput = z.object({
@@ -158,7 +161,7 @@ export async function saveAuthorAction(form: FormData) {
     await db.insert(authors).values({ name: d.name, bio: d.bio, credentials: d.credentials, sameAs, slug }).onConflictDoNothing();
   }
   await audit(me.id, "author.save", d.name);
-  revalidatePath("/authors");
+  revalidatePath("/studio/authors");
   revalidatePath("/blog", "layout");
 }
 
@@ -181,7 +184,7 @@ export async function createUserAction(form: FormData): Promise<Result> {
   await db.insert(account).values({ id: crypto.randomUUID(), accountId: id, providerId: "credential", userId: id, password: await hashPassword(d.password) });
   await db.insert(authors).values({ userId: id, name: d.name, slug: slugify(d.name) || id.slice(0, 8) }).onConflictDoNothing();
   await audit(me.id, "user.create", `${d.email}:${d.role}`);
-  revalidatePath("/users");
+  revalidatePath("/studio/users");
   return { ok: true };
 }
 
@@ -191,7 +194,7 @@ export async function setRoleAction(form: FormData) {
   if (d.id === me.id) return;
   await db.update(user).set({ role: d.role }).where(eq(user.id, d.id));
   await audit(me.id, "user.role", `${d.id}:${d.role}`);
-  revalidatePath("/users");
+  revalidatePath("/studio/users");
 }
 
 export async function deleteAuthorAction(form: FormData) {
@@ -200,7 +203,7 @@ export async function deleteAuthorAction(form: FormData) {
   // Posts keep their content; author_id/reviewer_id fall back to null via the FK.
   const [row] = await db.delete(authors).where(eq(authors.id, id)).returning({ name: authors.name });
   await audit(me.id, "author.delete", row?.name ?? String(id));
-  revalidatePath("/authors");
+  revalidatePath("/studio/authors");
   revalidatePath("/blog", "layout");
 }
 
@@ -211,5 +214,5 @@ export async function deleteUserAction(form: FormData) {
   // Sessions and the password row cascade; their author byline stays, unlinked.
   const [row] = await db.delete(user).where(eq(user.id, id)).returning({ email: user.email });
   await audit(me.id, "user.delete", row?.email ?? id);
-  revalidatePath("/users");
+  revalidatePath("/studio/users");
 }

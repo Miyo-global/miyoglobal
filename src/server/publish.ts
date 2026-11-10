@@ -4,7 +4,7 @@ import { after } from "next/server";
 import { SITE_URL } from "@/lib/seo";
 
 export function afterPublish(slug: string, previousSlug: string) {
-  for (const path of ["/blog", "/sitemap.xml", "/posts-sitemap.xml", "/feed.xml", "/llms.txt"]) revalidatePath(path);
+  for (const path of ["/blog", "/sitemap.xml", "/pages-sitemap.xml", "/posts-sitemap.xml", "/feed.xml", "/llms.txt"]) revalidatePath(path);
   revalidatePath(`/blog/${slug}`);
   if (previousSlug !== slug) revalidatePath(`/blog/${previousSlug}`);
   revalidatePath("/blog/category/[slug]", "page");
@@ -21,7 +21,13 @@ export function afterPublish(slug: string, previousSlug: string) {
         host,
         key,
         keyLocation: `${SITE_URL}/indexnow-key.txt`,
-        urlList: [`${SITE_URL}/blog/${slug}`, `${SITE_URL}/blog`],
+        urlList: [
+          `${SITE_URL}/blog/${slug}`,
+          ...(previousSlug && previousSlug !== slug ? [`${SITE_URL}/blog/${previousSlug}`] : []),
+          `${SITE_URL}/blog`,
+          `${SITE_URL}/pages-sitemap.xml`,
+          `${SITE_URL}/posts-sitemap.xml`,
+        ],
       }),
       signal: AbortSignal.timeout(5000),
     }).catch(() => null),

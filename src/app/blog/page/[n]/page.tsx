@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { notFound, redirect } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import { BlogIndex } from "@/components/blog-index";
 
 export const revalidate = 300;
@@ -12,6 +12,6 @@ export async function generateMetadata({ params }: { params: Promise<{ n: string
 export default async function BlogPageN({ params }: { params: Promise<{ n: string }> }) {
   const n = Number((await params).n);
   if (!Number.isInteger(n) || n < 1) notFound();
-  if (n === 1) redirect("/blog");
+  if (n === 1) permanentRedirect("/blog");
   return <BlogIndex page={n} />;
 }

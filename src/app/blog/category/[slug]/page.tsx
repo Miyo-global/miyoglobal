@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { PostCard } from "@/components/post-card";
-import { byCategoryId, getCategory } from "@/server/services/public";
+import { byCategoryId, countByCategory, getCategory } from "@/server/services/public";
 
 export const revalidate = 300;
 
@@ -12,6 +12,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     title: `${c.name} articles | MIYO Global`,
     description: c.description || `Articles about ${c.name.toLowerCase()} from MIYO Global.`,
     alternates: { canonical: `/blog/category/${c.slug}` },
+    ...((await countByCategory(c.id)) ? {} : { robots: { index: false, follow: true } }),
   };
 }
 

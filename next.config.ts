@@ -1,8 +1,11 @@
+import { statSync } from "node:fs";
 import type { NextConfig } from "next";
 import { ADMIN_HOST, ADMIN_URL } from "./src/lib/hosts";
-import { REWRITTEN_PAGES } from "./src/lib/pages";
+import { REWRITTEN_PAGES, STATIC_PAGES } from "./src/lib/pages";
 
 const pages = REWRITTEN_PAGES;
+// ponytail: file mtime is the checkout time on CI/Vercel clones; switch to `git log -1 --format=%cs <file>` with a full-depth clone if dates must track edits.
+const lastmods = Object.fromEntries(STATIC_PAGES.map((p) => [p.path, statSync(p.file).mtime.toISOString().slice(0, 10)]));
 const mediaUrl = process.env.NEXT_PUBLIC_MEDIA_URL ? new URL(process.env.NEXT_PUBLIC_MEDIA_URL) : null;
 
 const csp = [
@@ -30,6 +33,7 @@ const baseHeaders = [
 const config: NextConfig = {
   trailingSlash: false,
   poweredByHeader: false,
+  env: { STATIC_LASTMOD: JSON.stringify(lastmods) },
   experimental: { serverActions: { bodySizeLimit: "5mb", allowedOrigins: [new URL(ADMIN_URL).host] } },
   images: {
     formats: ["image/avif", "image/webp"],
@@ -37,6 +41,7 @@ const config: NextConfig = {
   },
   async headers() {
     const edge = "public, s-maxage=300, stale-while-revalidate=600";
+    const feed = "public, s-maxage=60, must-revalidate";
     return [
       {
         source: "/:path*",
@@ -61,6 +66,8 @@ const config: NextConfig = {
       { source: "/blog", headers: [{ key: "Cache-Control", value: edge }] },
       { source: "/blog/page/:n", headers: [{ key: "Cache-Control", value: edge }] },
       { source: "/blog/:kind(category|tag|author)/:slug", headers: [{ key: "Cache-Control", value: edge }] },
+      { source: "/blog/:slug((?!category$|tag$|author$|page$|search$)[a-z0-9-]+)", headers: [{ key: "Cache-Control", value: edge }] },
+      { source: "/:file(sitemap.xml|pages-sitemap.xml|posts-sitemap.xml|feed.xml|llms.txt)", headers: [{ key: "Cache-Control", value: feed }] },
     ];
   },
   async redirects() {

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { PAGE_SIZE, listPosts } from "@/server/services/posts";
 import { requireStaff } from "@/server/guards";
 import { Icon } from "../../icons";
+import { PendingButton } from "../../ui";
 import { createPostAction } from "../actions";
 
 export const metadata: Metadata = { title: "Posts" };
@@ -26,7 +27,7 @@ export default async function PostsPage({ searchParams }: { searchParams: Promis
           <p className="muted">Write, schedule and publish articles for /blog.</p>
         </div>
         <form action={createPostAction}>
-          <button className="btn primary"><Icon name="plus" size={16} />New post</button>
+          <PendingButton className="btn primary" pendingLabel="Creating…"><Icon name="plus" size={16} />New post</PendingButton>
         </form>
       </div>
       <form className="card filters" method="get" role="search">

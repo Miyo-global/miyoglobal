@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { BlogIndex } from "@/components/blog-index";
+import { jsonLdScript, siteGraph, SITE_URL } from "@/lib/seo";
 
 export const revalidate = 300;
 
@@ -11,6 +12,35 @@ export const metadata: Metadata = {
   twitter: { card: "summary_large_image" },
 };
 
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@graph": [
+    ...siteGraph(),
+    {
+      "@type": ["CollectionPage", "Blog"],
+      "@id": `${SITE_URL}/blog#blog`,
+      url: `${SITE_URL}/blog`,
+      name: "MIYO Journal",
+      description: "Practical guides on GCC build-outs, technology staffing and digital delivery from the MIYO Global team.",
+      isPartOf: { "@id": "https://www.miyoglobal.com/#website" },
+      publisher: { "@id": "https://www.miyoglobal.com/#organization" },
+      inLanguage: "en",
+    },
+    {
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        { "@type": "ListItem", position: 1, name: "Home", item: "https://www.miyoglobal.com/" },
+        { "@type": "ListItem", position: 2, name: "Blog", item: `${SITE_URL}/blog` },
+      ],
+    },
+  ],
+};
+
 export default function BlogPage() {
-  return <BlogIndex page={1} />;
+  return (
+    <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdScript(jsonLd) }} />
+      <BlogIndex page={1} />
+    </>
+  );
 }

@@ -13,6 +13,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     title: `${a.name}, author | MIYO Global`,
     description: a.bio.slice(0, 160) || `Articles by ${a.name} on the MIYO Global blog.`,
     alternates: { canonical: `/blog/author/${a.slug}` },
+    ...((await byAuthorId(a.id, 1)).length ? {} : { robots: { index: false, follow: true } }),
   };
 }
 

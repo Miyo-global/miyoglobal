@@ -1,5 +1,5 @@
 import { STATIC_PAGES } from "@/lib/pages";
-import { SITE_URL } from "@/lib/seo";
+import { FEED_CACHE, SITE_URL } from "@/lib/seo";
 import { sitemapEntries } from "@/server/services/public";
 
 export const dynamic = "force-dynamic";
@@ -12,6 +12,8 @@ export async function GET() {
     "> Enterprise staffing and digital delivery from India and the UAE: GCC build-outs, technology staffing, executive search and managed digital services.",
     "",
     "## Pages",
+    `- [home](${SITE_URL}/)`,
+    `- [blog](${SITE_URL}/blog)`,
     ...STATIC_PAGES.filter((p) => p.path !== "/").map((p) => `- [${p.path.slice(1).replace(/-/g, " ")}](${SITE_URL}${p.path})`),
     "",
     "## Latest articles",
@@ -22,5 +24,5 @@ export async function GET() {
     `- [Sitemap](${SITE_URL}/sitemap.xml)`,
     "",
   ].join("\n");
-  return new Response(body, { headers: { "Content-Type": "text/plain; charset=utf-8", "Cache-Control": "public, s-maxage=60" } });
+  return new Response(body, { headers: { "Content-Type": "text/plain; charset=utf-8", "Cache-Control": FEED_CACHE } });
 }

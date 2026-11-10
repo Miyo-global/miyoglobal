@@ -109,7 +109,7 @@ export function PostEditor(props: Props) {
         setDirty(false);
         if (intent === "draft") setForm((f) => ({ ...f, scheduledAt: null }));
         if (res.slug !== form.slug) setForm((f) => ({ ...f, slug: res.slug }));
-        setNote(silent ? `Autosaved ${new Date().toLocaleTimeString()}` : `Saved as ${res.status}`);
+        setNote(silent ? `Autosaved ${new Date().toLocaleTimeString("en-IN", { timeZone: "Asia/Kolkata", hour: "2-digit", minute: "2-digit" })} IST` : `Saved as ${res.status}`);
       }),
     [form, props.id],
   );
