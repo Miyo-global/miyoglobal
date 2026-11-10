@@ -1,11 +1,27 @@
-import { statSync } from "node:fs";
+import { execFileSync } from "node:child_process";
+import { existsSync, readFileSync, statSync } from "node:fs";
 import type { NextConfig } from "next";
 import { ADMIN_HOST, ADMIN_URL } from "./src/lib/hosts";
 import { REWRITTEN_PAGES, STATIC_PAGES } from "./src/lib/pages";
 
 const pages = REWRITTEN_PAGES;
-// ponytail: file mtime is the checkout time on CI/Vercel clones; switch to `git log -1 --format=%cs <file>` with a full-depth clone if dates must track edits.
-const lastmods = Object.fromEntries(STATIC_PAGES.map((p) => [p.path, statSync(p.file).mtime.toISOString().slice(0, 10)]));
+const git = (...args: string[]) => {
+  try {
+    return execFileSync("git", args, { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] }).trim();
+  } catch {
+    return "";
+  }
+};
+// Shallow clones (Vercel) graft history at a boundary commit that looks like it touched every file: treat those dates as unknown.
+const shallowFile = git("rev-parse", "--git-path", "shallow");
+const shallow = new Set(shallowFile && existsSync(shallowFile) ? readFileSync(shallowFile, "utf8").split("\n").filter(Boolean) : []);
+// Last commit date per public/*.html; falls back to file mtime (checkout time on CI) when git history is missing.
+const lastmod = (file: string) => {
+  const [hash, date] = git("log", "-1", "--format=%H %cI", "--", file).split(" ");
+  const when = hash && !shallow.has(hash) ? new Date(date) : statSync(file).mtime;
+  return when.toISOString().slice(0, 10);
+};
+const lastmods = Object.fromEntries(STATIC_PAGES.map((p) => [p.path, lastmod(p.file)]));
 const mediaUrl = process.env.NEXT_PUBLIC_MEDIA_URL ? new URL(process.env.NEXT_PUBLIC_MEDIA_URL) : null;
 
 const csp = [
@@ -82,7 +98,6 @@ const config: NextConfig = {
     return {
       beforeFiles: [
         { source: "/", destination: "/index.html" },
-        { source: "/favicon.ico", destination: "/favicon.svg" },
         { source: `/:page(${pages.join("|")})`, destination: "/:page.html" },
       ],
       afterFiles: [],

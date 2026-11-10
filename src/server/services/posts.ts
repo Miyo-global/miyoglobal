@@ -45,6 +45,17 @@ export async function getPost(id: number) {
   return { ...post, tagIds: tagRows.map((t) => t.tagId) };
 }
 
+/** Newest draft by this author if it is still blank (no title, no text), so reloading /posts/new reuses it. */
+export async function untouchedDraft(authorId: number) {
+  const [last] = await db
+    .select({ id: posts.id, blank: sql<boolean>`${posts.title} = '' and not jsonb_path_exists(${posts.content}, '$.**.text')` })
+    .from(posts)
+    .where(and(eq(posts.authorId, authorId), eq(posts.status, "draft")))
+    .orderBy(desc(posts.id))
+    .limit(1);
+  return last?.blank ? last.id : null;
+}
+
 export async function createDraft(authorId: number | null) {
   const [row] = await db
     .insert(posts)

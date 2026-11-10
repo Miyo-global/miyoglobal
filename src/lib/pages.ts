@@ -14,7 +14,7 @@ export const STATIC_PAGES = [
 
 export const REWRITTEN_PAGES = STATIC_PAGES.map((p) => p.path.slice(1)).filter(Boolean);
 
-/** Per-page lastmod (YYYY-MM-DD), read from each public/*.html mtime at build time by next.config.ts. */
+/** Per-page lastmod (YYYY-MM-DD), last git commit date of each public/*.html (mtime fallback), computed at build time by next.config.ts. */
 export function staticLastmods(): Record<string, string> {
   try {
     return JSON.parse(process.env.STATIC_LASTMOD ?? "{}");
