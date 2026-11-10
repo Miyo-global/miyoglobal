@@ -4,7 +4,7 @@ import { useState } from "react";
 import { authClient } from "@/lib/auth-client";
 import { useUi } from "../../ui";
 
-export function PasswordForm() {
+export function PasswordForm({ email }: { email: string }) {
   const ui = useUi();
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
@@ -29,6 +29,7 @@ export function PasswordForm() {
   return (
     <form className="card" onSubmit={submit}>
       <h2>Change password</h2>
+      <input type="text" name="username" autoComplete="username" value={email} readOnly hidden />
       <div className="grid-2">
         <div className="field"><label htmlFor="pw-current">Current password</label><input id="pw-current" name="current" type="password" required autoComplete="current-password" maxLength={128} /></div>
         <div className="field"><label htmlFor="pw-next">New password (12+ characters)</label><input id="pw-next" name="next" type="password" required minLength={12} maxLength={128} autoComplete="new-password" /></div>

@@ -22,7 +22,7 @@ export default async function SettingsPage() {
           <dt>Role</dt><dd><span className="pill">{me.role}</span></dd>
         </dl>
       </div>
-      <PasswordForm />
+      <PasswordForm email={me.email} />
     </>
   );
 }

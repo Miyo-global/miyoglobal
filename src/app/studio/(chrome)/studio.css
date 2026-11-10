@@ -258,6 +258,14 @@
   .studio .card-head,.studio .card-foot,.studio .list li{padding-left:var(--s4);padding-right:var(--s4)}
 }
 @media (max-width:900px) and (prefers-reduced-motion:reduce){.studio .sidebar{transition:none}}
+/* table.stack: rows become cards on phones so every control stays visible */
+@media (max-width:640px){
+  .studio .table.stack thead{display:none}
+  .studio .table.stack,.studio .table.stack tbody,.studio .table.stack tr,.studio .table.stack td{display:block;width:100%}
+  .studio .table.stack tr{padding:var(--s3) 0;border-bottom:1px solid var(--border)}
+  .studio .table.stack tbody tr:last-child{border-bottom:0}
+  .studio .table.stack td{border:0;padding:var(--s1) var(--s4);overflow-wrap:anywhere}
+}
 @media (max-width:520px){
   .studio .who-text{display:none}
   .studio .cards{grid-template-columns:1fr}

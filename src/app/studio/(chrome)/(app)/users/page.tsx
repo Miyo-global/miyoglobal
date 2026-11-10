@@ -21,7 +21,7 @@ export default async function UsersPage() {
         </div>
       </div>
       <div className="card flush scroll">
-        <table className="table">
+        <table className="table stack">
           <thead><tr><th scope="col">Name</th><th scope="col">Email</th><th scope="col">Role</th><th scope="col"><span className="sr-only">Actions</span></th></tr></thead>
           <tbody>
             {rows.map((u) => (

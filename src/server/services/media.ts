@@ -5,7 +5,7 @@ import sharp from "sharp";
 import { detectImage, MAX_UPLOAD_BYTES, MIN_UPLOAD_WIDTH, validateAlt } from "@/lib/image-type";
 import { db } from "../db";
 import { media, posts } from "../db/schema";
-import { removeObject, store } from "../storage";
+import { describeError, removeObject, store } from "../storage";
 
 export class UploadError extends Error {}
 
@@ -28,30 +28,36 @@ export async function saveUpload(file: File, alt: string, userId: string) {
   const og = await base.clone().resize(1200, 630, { fit: "cover" }).webp({ quality: 80 }).toBuffer();
   const blur = await base.clone().resize(16).webp({ quality: 40 }).toBuffer();
 
-  const [url, avifUrl, ogUrl] = await Promise.all([
-    store(`${id}.webp`, main.data, "image/webp"),
-    store(`${id}-avif.avif`, avif, "image/avif"),
-    store(`${id}-og.webp`, og, "image/webp"),
-  ]).catch((e) => {
-    console.error("media: upload failed", e instanceof Error ? e.message : e);
-    throw new UploadError("Could not store the image. Please try again.");
-  });
-
-  const [row] = await db
-    .insert(media)
-    .values({
-      url,
-      avifUrl,
-      ogUrl,
-      width: main.info.width,
-      height: main.info.height,
-      blurDataUrl: `data:image/webp;base64,${blur.toString("base64")}`,
-      alt: alt.trim(),
-      bytes: main.info.size,
-      uploadedBy: userId,
-    })
-    .returning();
-  return row;
+  // Sequential, not parallel: concurrent PUTs to R2 were the intermittent failure. Each store() retries.
+  const variants = [
+    [`${id}.webp`, main.data, "image/webp"],
+    [`${id}-avif.avif`, avif, "image/avif"],
+    [`${id}-og.webp`, og, "image/webp"],
+  ] as const;
+  const stored: string[] = [];
+  try {
+    for (const [name, body, type] of variants) stored.push(await store(name, body, type));
+    const [url, avifUrl, ogUrl] = stored;
+    const [row] = await db
+      .insert(media)
+      .values({
+        url,
+        avifUrl,
+        ogUrl,
+        width: main.info.width,
+        height: main.info.height,
+        blurDataUrl: `data:image/webp;base64,${blur.toString("base64")}`,
+        alt: alt.trim(),
+        bytes: main.info.size,
+        uploadedBy: userId,
+      })
+      .returning();
+    return row;
+  } catch (e) {
+    console.error("media: upload failed", { id, stored: stored.length, ...describeError(e) });
+    await Promise.all(stored.map((u) => removeObject(u).catch(() => null)));
+    throw new UploadError("Could not store the image. Nothing was saved. Please try again.");
+  }
 }
 
 export async function deleteMedia(id: number) {
