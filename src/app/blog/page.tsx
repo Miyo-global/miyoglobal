@@ -1,14 +1,14 @@
 import type { Metadata } from "next";
 import { BlogIndex } from "@/components/blog-index";
-import { jsonLdScript, siteGraph, SITE_URL } from "@/lib/seo";
+import { BLOG_NAME, BLOG_TITLE, jsonLdScript, siteGraph, SITE_NAME, SITE_URL } from "@/lib/seo";
 
 export const revalidate = 300;
 
 export const metadata: Metadata = {
-  title: "Blog | MIYO Global",
+  title: { absolute: BLOG_TITLE },
   description: "Practical guides on GCC build-outs, technology staffing and digital delivery from the MIYO Global team.",
   alternates: { canonical: "/blog", types: { "application/rss+xml": "/feed.xml" } },
-  openGraph: { title: "MIYO Journal", description: "Practical guides on GCC build-outs, technology staffing and digital delivery.", type: "website", url: "/blog", siteName: "MIYO Global", images: [{ url: "/images/og/blog.webp", width: 1200, height: 630, alt: "MIYO Global team collaborating on an enterprise staffing and delivery plan" }] },
+  openGraph: { title: BLOG_TITLE, description: "Practical guides on GCC build-outs, technology staffing and digital delivery.", type: "website", url: "/blog", siteName: SITE_NAME, images: [{ url: "/images/og/blog.webp", width: 1200, height: 630, alt: "MIYO Global team collaborating on an enterprise staffing and delivery plan" }] },
   twitter: { card: "summary_large_image" },
 };
 
@@ -20,7 +20,7 @@ const jsonLd = {
       "@type": ["CollectionPage", "Blog"],
       "@id": `${SITE_URL}/blog#blog`,
       url: `${SITE_URL}/blog`,
-      name: "MIYO Journal",
+      name: BLOG_NAME,
       description: "Practical guides on GCC build-outs, technology staffing and digital delivery from the MIYO Global team.",
       isPartOf: { "@id": "https://www.miyoglobal.com/#website" },
       publisher: { "@id": "https://www.miyoglobal.com/#organization" },

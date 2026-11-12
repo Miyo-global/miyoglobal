@@ -1,8 +1,10 @@
 import { eq } from "drizzle-orm";
 import { NextResponse, type NextRequest } from "next/server";
+import { parseBlogPath } from "@/lib/blog-path";
 import { ADMIN_HOST, normalizeHost } from "@/lib/hosts";
 import { db } from "@/server/db";
 import { redirects } from "@/server/db/schema";
+import { blogTargetExists } from "@/server/services/public";
 
 const adminOnly = /^\/(studio|api\/auth)(\/|$)/;
 const shared = /^\/(_next|media\/|images\/|favicon\.(svg|ico))/;
@@ -35,6 +37,12 @@ export async function proxy(req: NextRequest) {
     if (postPath.test(pathname)) {
       const to = await findRedirect(pathname).catch(() => null);
       if (to) return tag(NextResponse.redirect(new URL(to, req.url), 301));
+    }
+    // Unknown blog URLs get the branded static 404 (real <title>, status 404). Next 16 serves an empty
+    // error shell when a dynamic page calls notFound(), so the check runs here, before the page renders.
+    const target = parseBlogPath(pathname);
+    if (target && !(await blogTargetExists(target).catch(() => true))) {
+      return tag(NextResponse.rewrite(new URL("/not-found-html", req.url)));
     }
     return tag(NextResponse.next());
   }

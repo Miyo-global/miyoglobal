@@ -59,6 +59,8 @@ a.b-chip:hover{background:#F6E6BF}
 .b-body blockquote{border-left:4px solid var(--gold);background:var(--bg2);padding:14px 20px;border-radius:0 12px 12px 0;margin:0 0 1.2em}
 .b-body pre{background:var(--navy);color:#E7ECF4;padding:16px;border-radius:12px;overflow-x:auto;margin:0 0 1.2em;font-size:.9rem}
 .b-body code{font-family:ui-monospace,monospace;font-size:.9em}
+.b-body :not(pre)>code{background:var(--bg2);padding:.1em .35em;border-radius:6px}
+.b-body u{text-underline-offset:3px}
 .b-body figure{margin:1.6em 0}
 .b-body img{max-width:100%;height:auto;border-radius:14px}
 .b-body hr{border:0;border-top:1px solid var(--border);margin:2em 0}

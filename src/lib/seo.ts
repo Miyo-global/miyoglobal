@@ -1,5 +1,8 @@
 export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.miyoglobal.com").replace(/\/$/, "");
 export const SITE_NAME = "MIYO Global";
+/** The blog's one name: <title>, og:title, JSON-LD and the RSS channel all use it. */
+export const BLOG_NAME = "MIYO Journal";
+export const BLOG_TITLE = `${BLOG_NAME} | ${SITE_NAME}`;
 
 export const FEED_CACHE = "public, s-maxage=60, must-revalidate";
 

@@ -1,10 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { canonical, headingIds, readingMinutes, renderHtml, safeUrl, sanitizeDoc, wordCount, type Doc } from "./content";
+import { parseBlogPath } from "./blog-path";
+import { canonical, headingIds, isPublished, readingMinutes, renderHtml, safeUrl, sanitizeDoc, wordCount, type Doc } from "./content";
 import { checkHealth } from "./health";
 import { planRedirect } from "./redirects";
 import { fromIstInput, toIstInput } from "./ist";
 import { normalizeHost } from "./hosts";
-import { jsonLdScript, parseCustomJsonLd, titleFor } from "./seo";
+import { BLOG_NAME, BLOG_TITLE, jsonLdScript, parseCustomJsonLd, titleFor } from "./seo";
 import { isValidSlug, slugify } from "./slug";
 
 const p = (text: string) => ({ type: "paragraph", content: [{ type: "text", text }] });
@@ -193,5 +194,73 @@ describe("json-ld", () => {
     expect(parseCustomJsonLd('{"@type":"Product"}').ok).toBe(false);
     expect(parseCustomJsonLd("5").ok).toBe(false);
     expect(parseCustomJsonLd('{"@type":"Organization"}').ok).toBe(true);
+  });
+});
+
+describe("editor marks and tables (MG-213, MG-4)", () => {
+  const p = (...marks: string[]): Doc => ({ type: "doc", content: [{ type: "paragraph", content: [{ type: "text", text: "x", marks: marks.map((type) => ({ type })) }] }] });
+
+  it("keeps underline and inline code through sanitize and renders them", () => {
+    const doc = sanitizeDoc(p("underline", "code", "strike")) as Doc;
+    expect(doc.content?.[0].content?.[0].marks).toEqual([{ type: "underline" }, { type: "code" }]);
+    expect(renderHtml(doc)).toBe("<p><code><u>x</u></code></p>");
+  });
+
+  const cell = (type: string, text: string, attrs: Record<string, unknown> = {}) => ({ type, attrs, content: [{ type: "paragraph", content: [{ type: "text", text }] }] });
+
+  it("keeps a TipTap table through sanitize and renders colwidth as a colgroup", () => {
+    const table: Doc = {
+      type: "doc",
+      content: [{
+        type: "table",
+        content: [
+          { type: "tableRow", content: [cell("tableHeader", "A", { colspan: 1, rowspan: 1, colwidth: [120] }), cell("tableHeader", "B", { colspan: 2, rowspan: 1, colwidth: [80, null] })] },
+          { type: "tableRow", content: [cell("tableCell", "1"), cell("tableCell", "2", { colspan: 2 })] },
+        ],
+      }],
+    };
+    const html = renderHtml(sanitizeDoc(table) as Doc);
+    expect(html).toContain('<colgroup><col style="width:120px"><col><col></colgroup>');
+    expect(html).toContain('<th><p>A</p></th><th colspan="2"><p>B</p></th>');
+    expect(html).toContain('<td colspan="2"><p>2</p></td>');
+  });
+
+  it("emits no colgroup when no widths are set", () => {
+    const html = renderHtml({ type: "doc", content: [{ type: "table", content: [{ type: "tableRow", content: [cell("tableCell", "1")] }] }] });
+    expect(html).not.toContain("colgroup");
+    expect(html).toContain('<div class="b-table"');
+  });
+});
+
+describe("byline status (MG-8)", () => {
+  const at = new Date("2026-01-01");
+  it("only says Published for published posts, or archived ones with a publish date", () => {
+    expect(isPublished({ status: "published", publishedAt: at })).toBe(true);
+    expect(isPublished({ status: "archived", publishedAt: at })).toBe(true);
+    expect(isPublished({ status: "scheduled", publishedAt: at })).toBe(false);
+    expect(isPublished({ status: "draft", publishedAt: at })).toBe(false);
+    expect(isPublished({ status: "published", publishedAt: null })).toBe(false);
+  });
+});
+
+describe("blog paths checked before render (MG-212)", () => {
+  it("maps DB-backed blog URLs and ignores the rest", () => {
+    expect(parseBlogPath("/blog/gcc-guide")).toEqual({ kind: "post", slug: "gcc-guide" });
+    expect(parseBlogPath("/blog/author/miyo-admin")).toEqual({ kind: "author", slug: "miyo-admin" });
+    expect(parseBlogPath("/blog/category/staffing")).toEqual({ kind: "category", slug: "staffing" });
+    expect(parseBlogPath("/blog/tag/ai")).toEqual({ kind: "tag", slug: "ai" });
+    expect(parseBlogPath("/blog/page/2")).toEqual({ kind: "page", n: 2 });
+    expect(parseBlogPath("/blog/page/x")).toEqual({ kind: "page", n: NaN });
+    expect(parseBlogPath("/blog/search")).toBeNull();
+    expect(parseBlogPath("/blog")).toBeNull();
+    expect(parseBlogPath("/blog/gcc-guide/og")).toBeNull();
+    expect(parseBlogPath("/about")).toBeNull();
+  });
+});
+
+describe("blog name (MG-217)", () => {
+  it("uses one name for the title and structured data", () => {
+    expect(BLOG_NAME).toBe("MIYO Journal");
+    expect(BLOG_TITLE).toBe("MIYO Journal | MIYO Global");
   });
 });

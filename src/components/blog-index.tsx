@@ -2,11 +2,11 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { PostCard } from "@/components/post-card";
 import { Pager } from "@/components/pager";
-import { PER_PAGE, categoriesWithPosts, byCategoryId, countLive, latest } from "@/server/services/public";
+import { BLOG_NAME } from "@/lib/seo";
+import { PER_PAGE, blogPages, categoriesWithPosts, byCategoryId, latest } from "@/server/services/public";
 
 export async function BlogIndex({ page }: { page: number }) {
-  const [total, cats] = await Promise.all([countLive(), categoriesWithPosts()]);
-  const pages = Math.max(1, Math.ceil(Math.max(total - 1, 0) / PER_PAGE));
+  const [pages, cats] = await Promise.all([blogPages(), categoriesWithPosts()]);
   if (page > pages) notFound();
   const posts = await latest(PER_PAGE + (page === 1 ? 1 : 0), page === 1 ? 0 : PER_PAGE * (page - 1) + 1);
   const featured = page === 1 ? posts[0] : null;
@@ -16,7 +16,7 @@ export async function BlogIndex({ page }: { page: number }) {
     <>
       <section className="b-hero">
         <div className="b-wrap">
-          <span className="eyebrow">The MIYO Journal</span>
+          <span className="eyebrow">The {BLOG_NAME}</span>
           <h1>Straight answers on building global teams</h1>
           <p>Practical guides on GCC build-outs, technology staffing and digital delivery, written by the people who do the work.</p>
           <form className="b-search" action="/blog/search" role="search">

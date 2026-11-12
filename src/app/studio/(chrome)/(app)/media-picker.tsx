@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
+import { MIN_UPLOAD_WIDTH } from "@/lib/image-type";
 import { Icon } from "../icons";
 import { useUi } from "../ui";
 import { deleteMediaAction, uploadMediaAction } from "./actions";
@@ -17,6 +18,10 @@ export function MediaPicker({ items, onPick, canDelete = false }: { items: Media
   const [pending, start] = useTransition();
   const [op, setOp] = useState<number | "upload">("upload");
   const [hasFile, setHasFile] = useState(false);
+  const [q, setQ] = useState("");
+  const needle = q.trim().toLowerCase();
+  const fileName = (url: string) => decodeURIComponent(url.split("/").pop() ?? "");
+  const shown = needle ? list.filter((m) => m.alt.toLowerCase().includes(needle) || fileName(m.url).toLowerCase().includes(needle)) : list;
   const idp = onPick ? "pick" : "lib";
 
   function upload(e: React.FormEvent<HTMLFormElement>) {
@@ -56,9 +61,9 @@ export function MediaPicker({ items, onPick, canDelete = false }: { items: Media
     <div className="media">
       <form onSubmit={upload} className="upload">
         <div className="field">
-          <label htmlFor={`${idp}-file`}>Image (JPEG, PNG, WebP or AVIF, min 1200px wide, max 4MB)</label>
+          <label htmlFor={`${idp}-file`}>Image (JPEG, PNG, WebP or AVIF, at least {MIN_UPLOAD_WIDTH}px wide, max 4MB)</label>
           <input id={`${idp}-file`} name="file" type="file" accept="image/jpeg,image/png,image/webp,image/avif" required aria-describedby={hasFile ? undefined : `${idp}-file-hint`} onChange={(e) => { setHasFile(!!e.target.files?.length); setError(""); }} />
-          {!hasFile && <span id={`${idp}-file-hint`} className="muted small">Select a file to upload.</span>}
+          {!hasFile && <span id={`${idp}-file-hint`} className="muted small">Select a file to upload. Images narrower than {MIN_UPLOAD_WIDTH}px are rejected.</span>}
         </div>
         <div className="field">
           <label htmlFor={`${idp}-alt`}>Alt text (8-20 words describing the subject and context)</label>
@@ -67,9 +72,15 @@ export function MediaPicker({ items, onPick, canDelete = false }: { items: Media
         {error && <p className="error" role="alert">{error}</p>}
         <button className="btn primary" disabled={pending || !hasFile}><Icon name="upload" size={16} />{pending && op === "upload" ? "Uploading…" : "Upload"}</button>
       </form>
-      {list.length ? (
+      {list.length > 0 && (
+        <div className="field media-search">
+          <label htmlFor={`${idp}-q`} className="sr-only">Search images</label>
+          <input id={`${idp}-q`} type="search" placeholder="Search by alt text or file name" value={q} onChange={(e) => setQ(e.target.value)} />
+        </div>
+      )}
+      {shown.length ? (
         <div className="media-grid">
-          {list.map((m) => (
+          {shown.map((m) => (
             <figure key={m.id}>
               <Image src={m.url} alt={m.alt} width={320} height={240} unoptimized />
               <figcaption>
@@ -92,7 +103,13 @@ export function MediaPicker({ items, onPick, canDelete = false }: { items: Media
           ))}
         </div>
       ) : (
-        <div className="empty"><p><b>No images yet.</b> Upload one above.</p></div>
+        <div className="empty">
+          {list.length ? (
+            <p><b>No images match “{q.trim()}”.</b> Try other words from the alt text or file name.</p>
+          ) : (
+            <p><b>The media library is empty.</b> Upload an image above (at least {MIN_UPLOAD_WIDTH}px wide){onPick ? " and it will be inserted right away" : ""}.</p>
+          )}
+        </div>
       )}
     </div>
   );

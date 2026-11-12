@@ -1,7 +1,7 @@
 import { formatIst } from "@/lib/ist";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { PAGE_SIZE, listPosts } from "@/server/services/posts";
+import { PAGE_SIZE, SORTS, listPosts, type Sort } from "@/server/services/posts";
 import { requireStaff } from "@/server/guards";
 import { Icon } from "../../icons";
 import { PendingButton } from "../../ui";
@@ -11,14 +11,25 @@ export const metadata: Metadata = { title: "Posts" };
 
 const STATUSES = ["draft", "scheduled", "published", "archived"];
 
-export default async function PostsPage({ searchParams }: { searchParams: Promise<{ q?: string; status?: string; page?: string }> }) {
+const COLUMNS: { key: Sort; label: string }[] = [
+  { key: "title", label: "Title" },
+  { key: "status", label: "Status" },
+  { key: "updated", label: "Updated" },
+  { key: "published", label: "Published" },
+];
+
+export default async function PostsPage({ searchParams }: { searchParams: Promise<{ q?: string; status?: string; page?: string; sort?: string; dir?: string }> }) {
   await requireStaff();
   const sp = await searchParams;
   const page = Math.max(1, Number(sp.page) || 1);
-  const rows = await listPosts({ q: sp.q?.slice(0, 80), status: sp.status, page });
+  const sort: Sort = sp.sort && sp.sort in SORTS ? (sp.sort as Sort) : "updated";
+  const dir = sp.dir === "asc" || sp.dir === "desc" ? sp.dir : sort === "title" || sort === "status" ? "asc" : "desc";
+  const rows = await listPosts({ q: sp.q?.slice(0, 80), status: sp.status, page, sort, dir });
   const more = rows.length > PAGE_SIZE;
   const filtered = !!(sp.q || sp.status);
-  const qs = (p: number) => `/posts?${new URLSearchParams({ ...(sp.q ? { q: sp.q } : {}), ...(sp.status ? { status: sp.status } : {}), page: String(p) })}`;
+  const href = (o: { page?: number; sort?: Sort; dir?: string }) =>
+    `/posts?${new URLSearchParams({ ...(sp.q ? { q: sp.q } : {}), ...(sp.status ? { status: sp.status } : {}), sort: o.sort ?? sort, dir: o.dir ?? dir, page: String(o.page ?? 1) })}`;
+  const qs = (p: number) => href({ page: p });
   return (
     <>
       <div className="page-head">
@@ -51,7 +62,16 @@ export default async function PostsPage({ searchParams }: { searchParams: Promis
         {rows.length ? (
           <table className="table">
             <thead>
-              <tr><th scope="col">Title</th><th scope="col">Status</th><th scope="col">Updated</th></tr>
+              <tr>
+                {COLUMNS.map((c) => (
+                  <th key={c.key} scope="col" aria-sort={sort === c.key ? (dir === "asc" ? "ascending" : "descending") : undefined}>
+                    <Link className="th-sort" href={href({ sort: c.key, dir: sort === c.key && dir === "asc" ? "desc" : sort === c.key ? "asc" : c.key === "title" || c.key === "status" ? "asc" : "desc" })}>
+                      {c.label}
+                      {sort === c.key ? (dir === "asc" ? " ▲" : " ▼") : ""}
+                    </Link>
+                  </th>
+                ))}
+              </tr>
             </thead>
             <tbody>
               {rows.slice(0, PAGE_SIZE).map((p) => (
@@ -62,6 +82,7 @@ export default async function PostsPage({ searchParams }: { searchParams: Promis
                   </td>
                   <td><span className={`pill ${p.status}`}>{p.status}</span></td>
                   <td className="muted nowrap"><time dateTime={p.updatedAt.toISOString()}>{formatIst(p.updatedAt)}</time></td>
+                  <td className="muted nowrap">{p.publishedAt ? <time dateTime={p.publishedAt.toISOString()}>{formatIst(p.publishedAt)}</time> : "—"}</td>
                 </tr>
               ))}
             </tbody>

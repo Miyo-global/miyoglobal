@@ -14,7 +14,12 @@ export class PostError extends Error {}
 
 export const PAGE_SIZE = 20;
 
-export async function listPosts(opts: { q?: string; status?: string; page?: number }) {
+export const SORTS = { title: posts.title, status: posts.status, updated: posts.updatedAt, published: posts.publishedAt } as const;
+export type Sort = keyof typeof SORTS;
+
+export async function listPosts(opts: { q?: string; status?: string; page?: number; sort?: Sort; dir?: "asc" | "desc" }) {
+  const col = SORTS[opts.sort ?? "updated"];
+  const order = opts.dir === "asc" ? sql`${col} asc nulls last` : sql`${col} desc nulls last`;
   const page = Math.max(1, opts.page ?? 1);
   const filters = [
     opts.status && ["draft", "scheduled", "published", "archived"].includes(opts.status)
@@ -33,7 +38,7 @@ export async function listPosts(opts: { q?: string; status?: string; page?: numb
     })
     .from(posts)
     .where(filters.length ? and(...filters) : undefined)
-    .orderBy(desc(posts.updatedAt))
+    .orderBy(order, desc(posts.id))
     .limit(PAGE_SIZE + 1)
     .offset((page - 1) * PAGE_SIZE);
 }

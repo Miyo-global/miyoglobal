@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { notFoundMetadata } from "@/components/not-found-view";
 import { PostCard } from "@/components/post-card";
 import { absolute, jsonLdScript } from "@/lib/seo";
 import { byAuthorId, getAuthor } from "@/server/services/public";
@@ -8,7 +9,7 @@ export const revalidate = 300;
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const a = await getAuthor((await params).slug);
-  if (!a) return {};
+  if (!a) return notFoundMetadata;
   return {
     title: `${a.name}, author | MIYO Global`,
     description: a.bio.slice(0, 160) || `Articles by ${a.name} on the MIYO Global blog.`,

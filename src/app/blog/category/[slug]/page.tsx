@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { notFoundMetadata } from "@/components/not-found-view";
 import { PostCard } from "@/components/post-card";
 import { byCategoryId, countByCategory, getCategory } from "@/server/services/public";
 
@@ -7,7 +8,7 @@ export const revalidate = 300;
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const c = await getCategory((await params).slug);
-  if (!c) return {};
+  if (!c) return notFoundMetadata;
   return {
     title: `${c.name} articles | MIYO Global`,
     description: c.description || `Articles about ${c.name.toLowerCase()} from MIYO Global.`,

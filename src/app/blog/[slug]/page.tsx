@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { cache } from "react";
 import { notFound } from "next/navigation";
+import { notFoundMetadata } from "@/components/not-found-view";
 import { PostView } from "@/components/post-view";
 import { absolute, SITE_NAME, titleFor } from "@/lib/seo";
 import { getPostBySlug } from "@/server/services/public";
@@ -15,7 +16,7 @@ const load = cache(getPostBySlug);
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const data = await load((await params).slug);
-  if (!data) return {};
+  if (!data) return notFoundMetadata;
   const { post, cover } = data;
   const url = absolute(`/blog/${post.slug}`);
   const description = post.metaDescription || post.excerpt;

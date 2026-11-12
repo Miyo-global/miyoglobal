@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { PostCard, fmtDate } from "@/components/post-card";
+import { isPublished } from "@/lib/content";
 import { headingIds, renderHtml, wordCount, type Doc } from "@/lib/content";
 import { absolute, jsonLdScript, parseCustomJsonLd, SITE_NAME, SITE_URL } from "@/lib/seo";
 import { related, type PostData } from "@/server/services/public";
@@ -75,9 +76,9 @@ export async function PostView({ data, preview = false }: { data: PostData; prev
         <p className="b-byline">
           {author && <span>By <b><Link href={`${base}/blog/author/${author.slug}`}>{author.name}</Link></b></span>}
           {reviewer && <span>Reviewed by <b><Link href={`${base}/blog/author/${reviewer.slug}`}>{reviewer.name}</Link></b></span>}
-          {post.status === "scheduled" && post.scheduledAt ? (
-            <span>Scheduled for <time dateTime={post.scheduledAt.toISOString()}>{fmtDate(post.scheduledAt)}</time>, not published</span>
-          ) : post.publishedAt && post.status !== "draft" ? (
+          {post.status === "scheduled" ? (
+            post.scheduledAt ? <span>Scheduled for <time dateTime={post.scheduledAt.toISOString()}>{fmtDate(post.scheduledAt)}</time>, not published</span> : <span>Scheduled, not published</span>
+          ) : isPublished(post) ? (
             <>
               <span>Published <time dateTime={published.toISOString()}>{fmtDate(published)}</time></span>
               {post.updatedAt.getTime() - published.getTime() > 86_400_000 && <span>Updated <time dateTime={post.updatedAt.toISOString()}>{fmtDate(post.updatedAt)}</time></span>}

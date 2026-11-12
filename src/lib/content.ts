@@ -34,6 +34,11 @@ export function nodeText(node: DocNode): string {
   return (node.content ?? []).map(nodeText).join(INLINE_PARENTS.has(node.type) ? "" : " ");
 }
 
+/** Only published posts, or archived ones that were once published, may say "Published". */
+export function isPublished(p: { status: string; publishedAt: Date | null }): boolean {
+  return !!p.publishedAt && (p.status === "published" || p.status === "archived");
+}
+
 export function plainText(doc: Doc): string {
   return (doc.content ?? []).map(nodeText).join("\n");
 }
@@ -109,7 +114,7 @@ const NODE_ATTRS: Record<string, ((a: Record<string, unknown>) => Record<string,
 };
 
 function cleanMark(m: Mark): Mark | null {
-  if (m.type === "bold" || m.type === "italic" || m.type === "code") return { type: m.type };
+  if (m.type === "bold" || m.type === "italic" || m.type === "underline" || m.type === "code") return { type: m.type };
   if (m.type === "link") {
     const href = safeUrl(m.attrs?.href);
     return href ? { type: "link", attrs: { href } } : null;
@@ -145,6 +150,7 @@ function marks(text: string, ms: Mark[] = []): string {
   return ms.reduce((html, m) => {
     if (m.type === "bold") return `<strong>${html}</strong>`;
     if (m.type === "italic") return `<em>${html}</em>`;
+    if (m.type === "underline") return `<u>${html}</u>`;
     if (m.type === "code") return `<code>${html}</code>`;
     if (m.type === "link") {
       const href = safeUrl(m.attrs?.href);
@@ -170,6 +176,15 @@ export function renderHtml(doc: Doc): string {
     const v = int(n.attrs?.[attr], 2, 50);
     return v ? ` ${attr}="${v}"` : "";
   };
+  // Column widths live on the cells (TipTap colwidth); the first row defines them for the whole table.
+  const colgroup = (t: DocNode) => {
+    const cols = (t.content?.[0]?.content ?? []).flatMap((c) => {
+      const span = int(c.attrs?.colspan, 1, 50) ?? 1;
+      const w = Array.isArray(c.attrs?.colwidth) ? c.attrs.colwidth : [];
+      return Array.from({ length: span }, (_, i) => int(w[i], 1, 4000));
+    });
+    return cols.some((w) => w) ? `<colgroup>${cols.map((w) => (w ? `<col style="width:${w}px">` : "<col>")).join("")}</colgroup>` : "";
+  };
   const block = (n: DocNode): string => {
     switch (n.type) {
       case "paragraph":
@@ -182,7 +197,7 @@ export function renderHtml(doc: Doc): string {
         return `<h${level} id="${esc(id)}">${inlines(n)}</h${level}>`;
       }
       case "table":
-        return `<div class="b-table" role="region" aria-label="Table" tabindex="0"><table><tbody>${kids(n)}</tbody></table></div>`;
+        return `<div class="b-table" role="region" aria-label="Table" tabindex="0"><table>${colgroup(n)}<tbody>${kids(n)}</tbody></table></div>`;
       case "tableRow":
         return `<tr>${kids(n)}</tr>`;
       case "tableHeader":

@@ -3,6 +3,7 @@ import { eq } from "drizzle-orm";
 import { db } from "../src/server/db/index";
 import { account, user } from "../src/server/db/auth-schema";
 import { authors, categories } from "../src/server/db/schema";
+import { slugify } from "../src/lib/slug";
 
 const email = process.env.SEED_ADMIN_EMAIL;
 const password = process.env.SEED_ADMIN_PASSWORD;
@@ -24,7 +25,8 @@ if (existing.length === 0) {
     userId: id,
     password: await hashPassword(password),
   });
-  await db.insert(authors).values({ userId: id, slug: "miyo-global-team", name }).onConflictDoNothing();
+  // Slug follows the display name, so /blog/author/<slug> shows the same name the byline links from.
+  await db.insert(authors).values({ userId: id, slug: slugify(name) || "miyo-admin", name }).onConflictDoNothing();
 }
 
 await db

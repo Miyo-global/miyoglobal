@@ -2,18 +2,20 @@
 
 import Image from "@tiptap/extension-image";
 import { TableKit } from "@tiptap/extension-table";
-import { EditorContent, useEditor, useEditorState } from "@tiptap/react";
+import { Plugin } from "@tiptap/pm/state";
+import { EditorContent, Extension, useEditor, useEditorState } from "@tiptap/react";
 import NextImage from "next/image";
 import StarterKit from "@tiptap/starter-kit";
-import { useCallback, useEffect, useMemo, useState, useTransition } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { canonical, sanitizeDoc, type Doc } from "@/lib/content";
 import { checkHealth } from "@/lib/health";
 import { postInput, type Intent, type PostInput } from "@/lib/post-schema";
-import { fromIstInput, toIstInput } from "@/lib/ist";
-import { parseCustomJsonLd, titleFor } from "@/lib/seo";
+import { formatIst, fromIstInput, toIstInput } from "@/lib/ist";
+import { parseCustomJsonLd, SITE_URL, titleFor } from "@/lib/seo";
 import { slugify } from "@/lib/slug";
 import { checkLinksAction, deletePostAction, savePostAction } from "../../actions";
 import { useUi } from "../../../ui";
+import { useLeaveGuard } from "../../leave-guard";
 import { MediaPicker, type MediaItem } from "../../media-picker";
 
 type Opt = { id: number; name: string };
@@ -34,6 +36,22 @@ type Props = {
 const BodyImage = Image.extend({
   addAttributes() {
     return { ...this.parent?.(), width: { default: null }, height: { default: null } };
+  },
+});
+
+/** Enter starts the new block without inherited marks (bold, italic, ...). Marks toggled on purpose before Enter are kept. */
+const NoMarkCarry = Extension.create({
+  name: "noMarkCarry",
+  addProseMirrorPlugins() {
+    return [
+      new Plugin({
+        appendTransaction: (trs, old, state) => {
+          const { empty, $from } = state.selection;
+          if (!state.storedMarks || old.storedMarks || !empty || $from.parent.content.size || !trs.some((t) => t.docChanged)) return null;
+          return state.tr.setStoredMarks(null);
+        },
+      }),
+    ];
   },
 });
 
@@ -71,11 +89,11 @@ export function PostEditor(props: Props) {
       StarterKit.configure({
         heading: { levels: [...LEVELS] },
         link: { openOnClick: false, autolink: false },
-        underline: false,
         strike: false,
       }),
       BodyImage,
       TableKit.configure({ table: { resizable: false } }),
+      NoMarkCarry,
     ],
     content: props.initial.content,
     editorProps: { attributes: { class: "tiptap", "aria-label": "Post body" } },
@@ -86,6 +104,11 @@ export function PostEditor(props: Props) {
     selector: ({ editor: e }) => ({
       level: e ? (LEVELS.find((l) => e.isActive("heading", { level: l })) ?? 0) : 0,
       inTable: !!e?.isActive("table"),
+      bold: !!e?.isActive("bold"),
+      italic: !!e?.isActive("italic"),
+      underline: !!e?.isActive("underline"),
+      code: !!e?.isActive("code"),
+      link: !!e?.isActive("link"),
     }),
   });
 
@@ -109,7 +132,16 @@ export function PostEditor(props: Props) {
   const jsonLdError = form.customJsonLd ? (() => { const r = parseCustomJsonLd(form.customJsonLd); return r.ok ? "" : r.error; })() : "";
 
   const submit = useCallback(
-    (intent: Intent) =>
+    async (intent: Intent) => {
+      if (intent === "publish" || intent === "schedule") {
+        const what = form.title.trim() || "Untitled";
+        const url = `${SITE_URL}/blog/${form.slug}`;
+        const text =
+          intent === "schedule"
+            ? `Schedule "${what}" to go live at ${url} on ${form.scheduledAt ? formatIst(new Date(form.scheduledAt)) : "the chosen time"}?`
+            : `${status === "published" ? "Update the live post" : "Publish"} "${what}" at ${url} now? It will be public immediately.`;
+        if (!(await ui.confirm(text, intent === "schedule" ? "Schedule" : status === "published" ? "Update" : "Publish"))) return;
+      }
       start(async () => {
         setError("");
         const res = await savePostAction(props.id, JSON.stringify(form), intent);
@@ -126,8 +158,9 @@ export function PostEditor(props: Props) {
         // Show the stored values, except fields edited while the save was in flight.
         setForm((f) => Object.fromEntries((Object.keys(next) as (keyof PostInput)[]).map((k) => [k, f[k] === form[k] ? next[k] : f[k]])) as PostInput);
         setNote(`Saved as ${res.status} at ${new Date().toLocaleTimeString("en-IN", { timeZone: "Asia/Kolkata", hour: "2-digit", minute: "2-digit" })} IST`);
-      }),
-    [form, props.id],
+      });
+    },
+    [form, props.id, status, ui],
   );
 
   const discard = async () => {
@@ -138,18 +171,35 @@ export function PostEditor(props: Props) {
     setNote("Changes discarded");
   };
 
+  useLeaveGuard(dirty, ui.confirm);
+
+  const pickerDialog = useRef<HTMLDialogElement>(null);
   useEffect(() => {
-    if (!dirty) return;
-    const warn = (e: BeforeUnloadEvent) => e.preventDefault();
-    window.addEventListener("beforeunload", warn);
-    return () => window.removeEventListener("beforeunload", warn);
-  }, [dirty]);
+    const d = pickerDialog.current;
+    if (picker && d && !d.open) d.showModal();
+    if (!picker && d?.open) d.close();
+  }, [picker]);
 
   const insertTable = () => {
     if (!table) return;
     const clamp = (n: number) => Math.min(20, Math.max(1, Math.trunc(n) || 1));
-    editor?.chain().focus().insertTable({ rows: clamp(table.rows), cols: clamp(table.cols), withHeaderRow: table.header }).run();
+    const ok = editor?.chain().focus().insertTable({ rows: clamp(table.rows), cols: clamp(table.cols), withHeaderRow: table.header }).run();
+    if (!ok) return setError("A table can't be inserted here. Click into the post body (outside a heading or code block) and try again.");
+    setError("");
     setTable(null);
+  };
+
+  const editLink = () => {
+    if (!editor) return;
+    const current = (editor.getAttributes("link").href as string | undefined) ?? "";
+    const href = window.prompt("Link URL (https://… or /path). Leave empty to remove the link.", current);
+    if (href === null) return;
+    const url = href.trim();
+    const chain = editor.chain().focus().extendMarkRange("link");
+    if (!url) return void chain.unsetLink().run();
+    // Nothing selected and not inside a link: insert the URL itself as the link text.
+    if (editor.state.selection.empty && !editor.isActive("link")) return void chain.insertContent({ type: "text", text: url, marks: [{ type: "link", attrs: { href: url } }] }).run();
+    chain.setLink({ href: url }).run();
   };
 
   const link = (title: string, href: string) =>
@@ -159,6 +209,7 @@ export function PostEditor(props: Props) {
     setMedia((list) => (list.some((x) => x.id === m.id) ? list : [m, ...list]));
     if (picker === "cover") set("coverMediaId", m.id);
     if (picker === "body") editor?.chain().focus().setImage({ src: m.url, alt: m.alt, width: m.width, height: m.height } as never).run();
+    if (picker === "body") ui.toast("Image inserted");
     setPicker(null);
   };
 
@@ -167,8 +218,8 @@ export function PostEditor(props: Props) {
     start(() => deletePostAction(props.id));
   };
 
-  const btn = (label: string, active: boolean, on: () => void) => (
-    <button type="button" className={active ? "on" : ""} aria-pressed={active} onMouseDown={(e) => e.preventDefault()} onClick={on}>{label}</button>
+  const btn = (label: string, active: boolean, on: () => void, title?: string) => (
+    <button type="button" className={active ? "on" : ""} aria-pressed={active} aria-label={title} title={title} onMouseDown={(e) => e.preventDefault()} onClick={on}>{label}</button>
   );
 
   const clusters = [...new Set(props.siblings.map((s) => s.cluster).filter(Boolean))];
@@ -208,8 +259,10 @@ export function PostEditor(props: Props) {
               <textarea id="post-quick" name="quickAnswer" value={form.quickAnswer} maxLength={600} onChange={(e) => set("quickAnswer", e.target.value)} />
             </div>
             <div className="toolbar" role="toolbar" aria-label="Formatting">
-              {btn("B", !!editor?.isActive("bold"), () => editor?.chain().focus().toggleBold().run())}
-              {btn("I", !!editor?.isActive("italic"), () => editor?.chain().focus().toggleItalic().run())}
+              {btn("B", !!tb?.bold, () => editor?.chain().focus().toggleBold().run(), "Bold (Ctrl+B)")}
+              {btn("I", !!tb?.italic, () => editor?.chain().focus().toggleItalic().run(), "Italic (Ctrl+I)")}
+              {btn("U", !!tb?.underline, () => editor?.chain().focus().toggleUnderline().run(), "Underline (Ctrl+U)")}
+              {btn("</>", !!tb?.code, () => editor?.chain().focus().toggleCode().run(), "Inline code")}
               <select
                 aria-label="Heading"
                 className="tb-select"
@@ -227,12 +280,7 @@ export function PostEditor(props: Props) {
               {btn("• List", !!editor?.isActive("bulletList"), () => editor?.chain().focus().toggleBulletList().run())}
               {btn("1. List", !!editor?.isActive("orderedList"), () => editor?.chain().focus().toggleOrderedList().run())}
               {btn("Quote", !!editor?.isActive("blockquote"), () => editor?.chain().focus().toggleBlockquote().run())}
-              {btn("Link", !!editor?.isActive("link"), () => {
-                const href = window.prompt("Link URL (https://… or /path)", "");
-                if (href === null) return;
-                if (href === "") editor?.chain().focus().unsetLink().run();
-                else editor?.chain().focus().setLink({ href }).run();
-              })}
+              {btn("Link", !!tb?.link, editLink)}
               {btn("Image", false, () => setPicker("body"))}
               {btn("Table", !!table, () => setTable(table ? null : { rows: 3, cols: 3, header: true }))}
               {btn("Undo", false, () => editor?.chain().focus().undo().run())}
@@ -262,15 +310,17 @@ export function PostEditor(props: Props) {
             <EditorContent editor={editor} />
           </section>
 
-          {picker && (
-            <section className="card picker">
-              <div className="card-head">
-                <h2>{picker === "cover" ? "Choose cover image" : "Insert image"}</h2>
-                <button type="button" className="btn ghost sm" onClick={() => setPicker(null)}>Close</button>
-              </div>
-              <MediaPicker items={media} onPick={pick} />
-            </section>
-          )}
+          <dialog ref={pickerDialog} className="picker-dialog" aria-labelledby="picker-title" onClose={() => setPicker(null)}>
+            {picker && (
+              <section className="card picker">
+                <div className="card-head">
+                  <h2 id="picker-title">{picker === "cover" ? "Choose cover image" : "Insert image"}</h2>
+                  <button type="button" className="btn ghost sm" onClick={() => setPicker(null)}>Close</button>
+                </div>
+                <MediaPicker items={media} onPick={pick} />
+              </section>
+            )}
+          </dialog>
 
           <section className="card">
             <h2><label htmlFor="post-excerpt">Excerpt</label></h2>

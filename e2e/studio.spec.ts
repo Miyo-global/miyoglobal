@@ -13,7 +13,16 @@ const ALT = "A recruiter reviewing candidate resumes at a bright modern office d
 let page: Page;
 let slug = "gcc-staffing-guide-2026";
 
-const confirmDialog = () => page.getByRole("dialog").getByRole("button", { name: "Delete" }).click();
+const confirmDialog = (name = "Delete") => page.getByRole("dialog").getByRole("button", { name }).click();
+/** Publish, Update and Schedule all ask first; confirm with the same label. */
+const publish = async (name: "Publish" | "Update" | "Schedule") => {
+  await page.getByRole("button", { name, exact: true }).click();
+  await expect(page.getByRole("dialog")).toContainText("/blog/");
+  await confirmDialog(name);
+};
+/** Answer the next window.prompt with `value` and return the prompt's default value. */
+const answerPrompt = (value: string) =>
+  new Promise<string>((resolve) => page.once("dialog", async (d) => { resolve(d.defaultValue()); await d.accept(value); }));
 
 async function login(page: Page) {
   await page.goto(`${ADMIN}/login`);
@@ -56,6 +65,7 @@ test.describe.serial("studio to public flow", () => {
     await page.getByRole("link", { name: "Posts" }).click();
     await page.getByRole("button", { name: "New post" }).click();
     await expect(page).toHaveURL(/\/posts\/\d+$/);
+    await expect(page.locator(".tiptap")).toBeVisible(); // client-only editor: page is hydrated, so fills stick
 
     await page.getByLabel("Title (H1)").fill("GCC staffing guide for 2026");
     await page.getByLabel("Quick answer / TL;DR").fill("A GCC staffing plan starts with scope, then hiring waves.");
@@ -71,6 +81,46 @@ test.describe.serial("studio to public flow", () => {
     await page.keyboard.type("Hiring waves");
     await expect(page.getByLabel("Heading", { exact: true })).toHaveValue("4");
     await page.keyboard.press("Enter");
+
+    // MG-216: bold does not carry into the next paragraph after Enter.
+    await page.getByRole("button", { name: "Bold (Ctrl+B)" }).click();
+    await page.keyboard.type("Bold lead");
+    await page.keyboard.press("Enter");
+    await page.keyboard.type("plain follow-up");
+    await expect(page.locator(".tiptap p", { hasText: "plain follow-up" }).locator("strong")).toHaveCount(0);
+    await expect(page.locator(".tiptap strong")).toHaveText("Bold lead");
+    // MG-213: underline (button and Ctrl/Cmd+U) and inline code.
+    await page.keyboard.press("Enter");
+    await page.keyboard.press("ControlOrMeta+u");
+    await page.keyboard.type("underlined");
+    await page.keyboard.press("ControlOrMeta+u");
+    await page.keyboard.type(" then ");
+    await page.getByRole("button", { name: "Inline code" }).click();
+    await page.keyboard.type("npm ci");
+    await page.getByRole("button", { name: "Inline code" }).click();
+    await expect(page.locator(".tiptap u")).toHaveText("underlined");
+    await expect(page.locator(".tiptap code")).toHaveText("npm ci");
+    // MG-211: Link inserts, prefills the current href, updates, and removes on empty.
+    await page.keyboard.type(" ");
+    let shown = answerPrompt("https://example.com/a");
+    await page.getByRole("button", { name: "Link", exact: true }).click();
+    expect(await shown).toBe("");
+    const a = page.locator('.tiptap a[href="https://example.com/a"]');
+    await expect(a).toHaveText("https://example.com/a");
+    await a.click();
+    shown = answerPrompt("https://example.com/b");
+    await page.getByRole("button", { name: "Link", exact: true }).click();
+    expect(await shown).toBe("https://example.com/a");
+    await expect(page.locator('.tiptap a[href="https://example.com/b"]')).toHaveText("https://example.com/a");
+    await page.locator(".tiptap a").click();
+    shown = answerPrompt("");
+    await page.getByRole("button", { name: "Link", exact: true }).click();
+    expect(await shown).toBe("https://example.com/b");
+    await expect(page.locator(".tiptap a")).toHaveCount(0);
+    await page.locator(".tiptap p", { hasText: "underlined" }).click();
+    await page.keyboard.press("End");
+    await page.keyboard.press("Enter");
+
     await page.getByRole("button", { name: "Table", exact: true }).click();
     await page.getByRole("button", { name: "Insert table" }).click();
     await expect(page.locator(".tiptap")).toBeFocused();
@@ -86,13 +136,58 @@ test.describe.serial("studio to public flow", () => {
     await page.getByLabel("Category").selectOption({ label: "Staffing" });
     await page.getByLabel("Slug", { exact: true }).fill(slug);
 
-    await page.getByRole("button", { name: "Publish" }).click();
+    // MG-7: in-app navigation while dirty asks first; Cancel keeps the edits.
+    await page.getByRole("link", { name: "Dashboard" }).click();
+    await expect(page.getByRole("dialog")).toContainText("Leave without saving?");
+    await confirmDialog("Cancel");
+    await expect(page).toHaveURL(/\/posts\/\d+$/);
+    await expect(page.getByLabel("Title (H1)")).toHaveValue("GCC staffing guide for 2026");
+    await page.evaluate(() => history.back());
+    await expect(page.getByRole("dialog")).toContainText("Leave without saving?");
+    await confirmDialog("Cancel");
+    await expect(page).toHaveURL(/\/posts\/\d+$/);
+    await expect(page.getByLabel("Title (H1)")).toHaveValue("GCC staffing guide for 2026");
+
+    // Publish asks for confirmation, showing the title and URL; Cancel does nothing.
+    await page.getByRole("button", { name: "Publish", exact: true }).click();
+    await expect(page.getByRole("dialog")).toContainText(`"GCC staffing guide for 2026" at http://localhost:3111/blog/${slug}`);
+    await confirmDialog("Cancel");
+    await expect(page.locator("h1 .pill")).toHaveText("draft");
+    await publish("Publish");
     await expect(page.getByText("Saved as published")).toBeVisible();
     await expect(page.locator("h1 .pill")).toHaveText("published");
   });
 
+  test("leaving a dirty editor: confirm leaves, clean editor leaves without asking", async () => {
+    await page.getByRole("link", { name: "Posts" }).click();
+    await expect(page).toHaveURL(/\/posts$/);
+    await expect(page.getByRole("dialog")).toBeHidden();
+    await page.getByRole("link", { name: "GCC staffing guide for 2026" }).click();
+    await page.getByLabel("Quick answer / TL;DR").fill("Edited but not saved.");
+    await page.getByRole("link", { name: "Dashboard" }).click();
+    await confirmDialog("Leave");
+    await expect(page.getByRole("heading", { name: /Welcome/ })).toBeVisible();
+    await page.goto(`${ADMIN}/posts`);
+    await page.getByRole("link", { name: "GCC staffing guide for 2026" }).click();
+    await expect(page.getByLabel("Quick answer / TL;DR")).toHaveValue("A GCC staffing plan starts with scope, then hiring waves.");
+  });
+
+  test("posts list sorts by column with state in the URL", async () => {
+    await page.goto(`${ADMIN}/posts`);
+    await page.getByRole("link", { name: "Title", exact: true }).click();
+    await expect(page).toHaveURL(/sort=title&dir=asc/);
+    await expect(page.getByRole("columnheader", { name: /Title/ })).toHaveAttribute("aria-sort", "ascending");
+    await page.getByRole("link", { name: /^Title/ }).click();
+    await expect(page).toHaveURL(/sort=title&dir=desc/);
+    await page.getByRole("link", { name: "Published", exact: true }).click();
+    await expect(page).toHaveURL(/sort=published&dir=desc/);
+    await expect(page.getByRole("columnheader", { name: /Published/ })).toHaveAttribute("aria-sort", "descending");
+  });
+
   test("cover upload enforces alt text and image rules", async () => {
     await page.getByRole("link", { name: "Media" }).click();
+    await expect(page.getByText("The media library is empty.")).toBeVisible();
+    await expect(page.getByText(/at least 1200px wide/).first()).toBeVisible();
 
     const png = await sharp({ create: { width: 1600, height: 900, channels: 3, background: "#336699" } }).png().toBuffer();
     const small = await sharp({ create: { width: 300, height: 200, channels: 3, background: "#996633" } }).png().toBuffer();
@@ -119,10 +214,21 @@ test.describe.serial("studio to public flow", () => {
     await page.getByRole("link", { name: "GCC staffing guide for 2026" }).click();
     await page.getByRole("button", { name: /Choose cover/ }).click();
     await page.getByRole("button", { name: "Use this image" }).first().click();
-    await page.getByRole("button", { name: "Update" }).click();
+    // MG-210: Image opens the picker as a dialog and inserts the chosen image with its alt text.
+    await page.locator(".tiptap p").last().click();
+    await page.getByRole("button", { name: "Image", exact: true }).click();
+    await expect(page.getByRole("dialog", { name: "Insert image" })).toBeVisible();
+    await page.getByRole("dialog", { name: "Insert image" }).getByRole("button", { name: "Use this image" }).first().click();
+    await expect(page.getByRole("dialog", { name: "Insert image" })).toBeHidden();
+    await expect(page.locator(`.tiptap img[alt="${ALT}"]`)).toHaveCount(1);
+    await publish("Update");
     await expect(page.getByText("Saved as published")).toBeVisible();
 
     await page.goto(`/blog/${slug}`);
+    await expect(page.locator(`.b-body img[alt="${ALT}"]`)).toHaveCount(1);
+    await expect(page.locator(".b-body u")).toHaveText("underlined");
+    await expect(page.locator(".b-body code")).toHaveText("npm ci");
+    await expect(page.locator(".b-body p", { hasText: "plain follow-up" }).locator("strong")).toHaveCount(0);
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("GCC staffing guide for 2026");
     await expect(page.getByRole("navigation", { name: "In this article" })).toContainText("What is GCC staffing?");
     await expect(page.locator("#what-is-gcc-staffing")).toBeVisible();
@@ -151,6 +257,11 @@ test.describe.serial("studio to public flow", () => {
 
     await page.goto("/blog");
     await expect(page.getByRole("link", { name: "GCC staffing guide for 2026" }).first()).toBeVisible();
+    // MG-217: one blog name everywhere.
+    await expect(page).toHaveTitle("MIYO Journal | MIYO Global");
+    await expect(page.locator('meta[property="og:title"]')).toHaveAttribute("content", "MIYO Journal | MIYO Global");
+    const blogLd = (await page.locator('script[type="application/ld+json"]').allInnerTexts()).map((t) => JSON.parse(t));
+    expect(JSON.stringify(blogLd)).toContain('"name":"MIYO Journal"');
     await page.goto("/blog/search?q=GCC");
     await expect(page.getByText("1 result for")).toBeVisible();
     await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", /noindex/);
@@ -184,11 +295,11 @@ test.describe.serial("studio to public flow", () => {
     await page.goto(`${ADMIN}/posts`);
     await page.getByRole("link", { name: "GCC staffing guide for 2026" }).click();
     await page.getByLabel("Slug", { exact: true }).fill("search");
-    await page.getByRole("button", { name: "Update" }).click();
+    await publish("Update");
     await expect(page.locator('p.error[role="alert"]')).toContainText("Slug must be");
     const next = "gcc-staffing-guide-updated";
     await page.getByLabel("Slug", { exact: true }).fill(next);
-    await page.getByRole("button", { name: "Update" }).click();
+    await publish("Update");
     await expect(page.getByText("Saved as published")).toBeVisible();
     const old = await request.get(`/blog/${slug}`, { maxRedirects: 0 });
     expect(old.status()).toBe(301);
@@ -201,7 +312,7 @@ test.describe.serial("studio to public flow", () => {
     await page.goto(`${ADMIN}/posts`);
     await page.getByRole("link", { name: "GCC staffing guide for 2026" }).click();
     await page.getByLabel(/noindex/).check();
-    await page.getByRole("button", { name: "Update" }).click();
+    await publish("Update");
     await expect(page.getByText("Saved as published")).toBeVisible();
     expect(await (await request.get("/posts-sitemap.xml")).text()).not.toContain(`/blog/${slug}`);
     await page.goto(`/blog/${slug}`);
@@ -213,6 +324,7 @@ test.describe.serial("studio to public flow", () => {
     await page.goto(`${ADMIN}/posts`);
     await page.getByRole("button", { name: "New post" }).click();
     await expect(page).toHaveURL(/\/posts\/\d+$/);
+    await expect(page.locator(".tiptap")).toBeVisible(); // client-only editor: page is hydrated, so fills stick
     const id = page.url().split("/").pop();
     await expect(page.getByRole("button", { name: "Save", exact: true })).toBeDisabled();
     await page.getByLabel("Title (H1)").fill("Discard me");
@@ -230,7 +342,9 @@ test.describe.serial("studio to public flow", () => {
     await expect(page.getByRole("status")).toContainText("draft");
     await expect(page.locator(".b-byline")).toContainText("Draft, not published");
     await expect(page.locator(".b-byline")).not.toContainText(/Published|min read/);
-    await expect(page.locator(".b-byline a").first()).toHaveAttribute("href", /^http:\/\/localhost:3111\/blog\/author\//);
+    // MG-6: the author link uses the author's own slug, which matches the display name.
+    await expect(page.locator(".b-byline a").first()).toHaveAttribute("href", "http://localhost:3111/blog/author/miyo-admin");
+    await expect(page.locator(".b-byline a").first()).toHaveText("MIYO Admin");
     await expect(page.locator(".b-crumbs").getByRole("link", { name: "Blog" })).toHaveAttribute("href", "http://localhost:3111/blog");
     await expect(page.locator('meta[name="robots"]').first()).toHaveAttribute("content", /noindex/);
     const anon = await request.get(`${ADMIN}/preview/${id}`, { maxRedirects: 0, headers: { Cookie: "" } });
@@ -241,6 +355,8 @@ test.describe.serial("studio to public flow", () => {
       await page.goto(`${ADMIN}/posts/${id}`);
       await page.getByLabel("Schedule for (IST)").fill("2099-01-15T10:30");
       await page.getByRole("button", { name: "Schedule", exact: true }).click();
+      await expect(page.getByRole("dialog")).toContainText("2099-01-15 10:30 IST");
+      await confirmDialog("Schedule");
       await expect(page.locator("h1 .pill")).toHaveText("scheduled");
     };
     await schedule();
@@ -296,6 +412,12 @@ test.describe.serial("studio to public flow", () => {
     await page.getByRole("button", { name: "Upload" }).click();
     await expect(page.locator(".media-grid figure")).toHaveCount(2);
     expect(mockCalls()).toMatch(/R2 PUT \/e2e-public\/[a-f0-9-]+-avif\.avif/);
+    // MG-215: search by alt text or file name.
+    await page.getByPlaceholder("Search by alt text or file name").fill("recruiter reviewing");
+    await expect(page.locator(".media-grid figure")).toHaveCount(2);
+    await page.getByPlaceholder("Search by alt text or file name").fill("no such picture");
+    await expect(page.getByText(/No images match/)).toBeVisible();
+    await page.getByPlaceholder("Search by alt text or file name").fill("");
     await page.getByRole("button", { name: "Delete" }).first().click();
     await confirmDialog();
     await expect(page.locator(".media-grid figure")).toHaveCount(1);
@@ -372,6 +494,18 @@ test("static pages keep their URLs", async ({ request }) => {
   const missing = await request.get("/nope");
   expect(missing.status()).toBe(404);
   expect(await missing.text()).toContain("Page not found");
+});
+
+test("unknown blog URLs serve the branded 404 with a title and 404 status", async ({ request }) => {
+  for (const p of ["/blog/no-such-post", "/blog/author/nobody", "/blog/category/nothing", "/blog/tag/nothing", "/blog/page/99", "/blog/page/x"]) {
+    const res = await request.get(p);
+    expect(res.status(), p).toBe(404);
+    const html = await res.text();
+    expect(html, p).toMatch(/<title>Page not found[^<]*<\/title>/);
+    expect(html, p).toContain("Page not <span");
+  }
+  expect((await request.get("/blog/author/miyo-admin")).status()).toBe(200);
+  expect((await request.get("/blog/category/staffing")).status()).toBe(200);
 });
 
 test("sign-in is rate limited and accounts lock after repeated failures", async ({ request }) => {

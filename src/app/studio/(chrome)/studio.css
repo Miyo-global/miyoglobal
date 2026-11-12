@@ -202,6 +202,7 @@
 .studio .tiptap{min-height:420px;padding:var(--s4);border:1px solid #D3DAE6;border-radius:var(--r);background:#fff;font-size:1.05rem;line-height:1.7}
 .studio .tiptap:focus{outline:none;border-color:var(--gold-deep);box-shadow:0 0 0 3px rgba(224,180,88,.35)}
 .studio .tiptap > *:first-child{margin-top:0}
+.studio .tiptap :not(pre)>code{font-family:ui-monospace,monospace;font-size:.9em;background:#EEF1F6;padding:.1em .35em;border-radius:6px}
 .studio .tiptap h2{font-size:1.35rem;margin:1.2em 0 .4em}
 .studio .tiptap h3{font-size:1.12rem;margin:1em 0 .3em}
 .studio .tiptap blockquote{border-left:3px solid var(--gold);margin:1em 0;padding-left:1em;color:var(--muted)}
@@ -240,6 +241,12 @@
 .studio .suggest{list-style:none;padding:0!important}
 .studio .suggest li{display:flex;align-items:center;justify-content:space-between;gap:var(--s2);color:var(--ink)}
 .studio .picker{border-color:var(--gold)}
+.studio .picker-dialog{border:0;padding:0;background:none;width:min(960px,calc(100vw - 32px));max-height:calc(100dvh - 32px);overflow:auto}
+.studio .picker-dialog::backdrop{background:rgba(11,25,47,.45)}
+.studio .picker-dialog .card{margin:0}
+.studio .media-search{margin:var(--s4) 0 0}
+.studio .th-sort{color:inherit;text-decoration:none;white-space:nowrap}
+.studio .th-sort:hover{text-decoration:underline}
 
 /* toasts + confirm */
 .studio .toasts{position:fixed;right:var(--s5);bottom:var(--s5);z-index:100;display:grid;gap:var(--s2);max-width:min(380px,calc(100vw - 32px))}

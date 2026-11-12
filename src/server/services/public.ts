@@ -1,5 +1,6 @@
 import "server-only";
 import { and, desc, eq, ilike, inArray, ne, or, sql } from "drizzle-orm";
+import type { BlogTarget } from "@/lib/blog-path";
 import { db } from "../db";
 import { authors, categories, media, postTags, posts, tags } from "../db/schema";
 
@@ -49,6 +50,20 @@ export async function countLive(where?: ReturnType<typeof and>) {
 
 export function byCategoryId(categoryId: number, limit = PER_PAGE, offset = 0) {
   return cards(eq(posts.categoryId, categoryId), limit, offset);
+}
+
+/** False when a DB-backed blog URL has nothing to show (unknown slug, page past the end). */
+export async function blogTargetExists(t: BlogTarget): Promise<boolean> {
+  if (t.kind === "page") return Number.isInteger(t.n) && t.n >= 1 && t.n <= (await blogPages());
+  const table = { post: posts, author: authors, category: categories, tag: tags }[t.kind];
+  const where = t.kind === "post" ? and(live(), eq(posts.slug, t.slug)) : eq(table.slug, t.slug);
+  const rows = await db.select({ one: sql`1` }).from(table).where(where).limit(1);
+  return rows.length > 0;
+}
+
+/** Number of /blog index pages: page 1 holds a featured post plus PER_PAGE cards. */
+export async function blogPages() {
+  return Math.max(1, Math.ceil(Math.max((await countLive()) - 1, 0) / PER_PAGE));
 }
 
 export const countByCategory = (categoryId: number) => countLive(eq(posts.categoryId, categoryId));
