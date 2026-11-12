@@ -18,7 +18,7 @@ export default async function PreviewPage({ params }: { params: Promise<{ id: st
       <p role="status" style={{ background: "#0B192F", color: "#fff", padding: "10px 28px", textAlign: "center" }}>
         Preview of saved version. Status: {data.post.status}
       </p>
-      <main id="main"><PostView data={data} /></main>
+      <main id="main"><PostView data={data} preview /></main>
     </>
   );
 }

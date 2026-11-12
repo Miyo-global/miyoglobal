@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { headingIds, readingMinutes, renderHtml, safeUrl, type Doc } from "./content";
+import { canonical, headingIds, readingMinutes, renderHtml, safeUrl, sanitizeDoc, wordCount, type Doc } from "./content";
 import { checkHealth } from "./health";
 import { planRedirect } from "./redirects";
 import { fromIstInput, toIstInput } from "./ist";
@@ -49,6 +49,65 @@ describe("content", () => {
   });
   it("computes reading time", () => {
     expect(readingMinutes({ type: "doc", content: [p("word ".repeat(441))] })).toBe(3);
+    expect(readingMinutes({ type: "doc", content: [p("one")] })).toBe(1);
+    expect(readingMinutes({ type: "doc", content: [{ type: "paragraph" }] })).toBe(0);
+    const br: Doc = { type: "doc", content: [{ type: "paragraph", content: [{ type: "text", text: "one" }, { type: "hardBreak" }, { type: "text", text: "two" }, { type: "text", text: "three", marks: [{ type: "bold" }] }] }] };
+    expect(wordCount(br)).toBe(2);
+  });
+
+  const cell = (type: string, text: string, attrs: Record<string, unknown> = { colspan: 1, rowspan: 1, colwidth: null }) => ({ type, attrs, content: [p(text)] });
+  const table: Doc = {
+    type: "table",
+    content: [
+      { type: "tableRow", content: [cell("tableHeader", "Role"), cell("tableHeader", "Rate")] },
+      { type: "tableRow", content: [cell("tableCell", "Engineer"), cell("tableCell", "<b>high</b>", { colspan: 2, rowspan: 1, colwidth: null })] },
+    ],
+  };
+
+  it("renders H4-H6 without TOC ids and keeps H2/H3 ids", () => {
+    const d: Doc = { type: "doc", content: [h(2, "Intro"), h(4, "Four"), h(5, "Five"), h(6, "Six"), h(3, "Sub")] };
+    const html = renderHtml(d);
+    expect(html).toContain('<h2 id="intro">Intro</h2>');
+    expect(html).toContain("<h4>Four</h4><h5>Five</h5><h6>Six</h6>");
+    expect(html).toContain('<h3 id="sub">Sub</h3>');
+    expect(headingIds(d).map((t) => t.text)).toEqual(["Intro", "Sub"]);
+    expect(renderHtml({ type: "doc", content: [h(7, "x")] })).toBe("<p>x</p>");
+  });
+
+  it("renders tables in a scroll wrapper with escaped cells", () => {
+    const html = renderHtml({ type: "doc", content: [table] });
+    expect(html).toMatch(/^<div class="b-table"[^>]*><table><tbody><tr><th><p>Role<\/p><\/th>/);
+    expect(html).toContain('<td colspan="2"><p>&lt;b&gt;high&lt;/b&gt;</p></td>');
+    expect(wordCount({ type: "doc", content: [table] })).toBe(4);
+  });
+
+  it("sanitizes docs on save", () => {
+    const dirty = {
+      type: "doc",
+      content: [
+        { type: "heading", attrs: { level: 1, onclick: "x" }, content: [{ type: "text", text: "Title" }] },
+        { type: "heading", attrs: { level: 4 }, content: [{ type: "text", text: "Four", marks: [{ type: "link", attrs: { href: "javascript:x", class: "y" } }, { type: "bold" }, { type: "evil" }] }] },
+        { type: "iframe", attrs: { src: "https://evil" } },
+        { type: "image", attrs: { src: "data:x", alt: "a" } },
+        { type: "table", attrs: { style: "x" }, content: [{ type: "tableRow", content: [{ type: "tableCell", attrs: { colspan: 999, rowspan: "2", colwidth: ["a"], style: "x" }, content: [p("c")] }] }] },
+        { type: "paragraph", content: [{ type: "text", text: "go", marks: [{ type: "link", attrs: { href: "/blog", target: "_blank" } }] }] },
+      ],
+    };
+    expect(sanitizeDoc(dirty)).toEqual({
+      type: "doc",
+      content: [
+        { type: "paragraph", content: [{ type: "text", text: "Title" }] },
+        { type: "heading", attrs: { level: 4 }, content: [{ type: "text", text: "Four", marks: [{ type: "bold" }] }] },
+        { type: "table", content: [{ type: "tableRow", content: [{ type: "tableCell", attrs: { colspan: 1, rowspan: 2, colwidth: null }, content: [p("c")] }] }] },
+        { type: "paragraph", content: [{ type: "text", text: "go", marks: [{ type: "link", attrs: { href: "/blog" } }] }] },
+      ],
+    });
+    expect(sanitizeDoc({ type: "script" })).toBeNull();
+  });
+
+  it("compares JSON independent of key order", () => {
+    expect(canonical({ b: 1, a: { d: [1, { y: 1, x: 2 }], c: null } })).toBe(canonical({ a: { c: null, d: [1, { x: 2, y: 1 }] }, b: 1 }));
+    expect(canonical({ a: [1, 2] })).not.toBe(canonical({ a: [2, 1] }));
   });
 });
 

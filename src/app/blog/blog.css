@@ -62,6 +62,16 @@ a.b-chip:hover{background:#F6E6BF}
 .b-body figure{margin:1.6em 0}
 .b-body img{max-width:100%;height:auto;border-radius:14px}
 .b-body hr{border:0;border-top:1px solid var(--border);margin:2em 0}
+.b-body h4{font-family:var(--serif);font-size:1.2rem;margin:1.6em 0 .5em}
+.b-body h5{font-size:1.05rem;margin:1.4em 0 .4em}
+.b-body h6{font-size:.92rem;margin:1.4em 0 .4em;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.b-table{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:0 0 1.4em;border:1px solid var(--border);border-radius:12px}
+.b-table table{width:100%;border-collapse:collapse;font-size:1rem;line-height:1.5}
+.b-table th,.b-table td{padding:10px 14px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top;min-width:120px}
+.b-table th{background:var(--bg2);font-weight:700;color:var(--ink)}
+.b-table tr:last-child td{border-bottom:0}
+.b-table p{margin:0}
+.b-table p+p{margin-top:.5em}
 .b-box{border:1px solid var(--border);border-radius:16px;padding:22px 24px;margin:32px 0;background:#fff}
 .b-box h2{font-family:var(--serif);font-size:1.4rem;margin-bottom:12px}
 .b-box ul{margin-left:1.2em}
@@ -81,7 +91,7 @@ a.b-chip:hover{background:#F6E6BF}
 .b-prose h2{font-family:var(--serif);margin:1.6em 0 .5em}
 .b-prose p,.b-prose li{color:var(--muted);margin-bottom:.9em}
 @media (max-width:1000px){.b-grid{grid-template-columns:repeat(2,1fr)}.b-card.large{grid-template-columns:1fr}.b-card.large .b-card-img{min-height:240px;aspect-ratio:16/10}.b-layout{grid-template-columns:minmax(0,1fr)}.b-toc{position:static;order:-1}}
-@media (max-width:640px){.b-grid{grid-template-columns:1fr}.b-wrap{padding:0 20px}.b-hero{padding:48px 0 24px}.b-card.large .b-card-body{padding:24px}.b-body{font-size:1.06rem}.b-search{flex-direction:column}}
+@media (max-width:640px){.b-grid{grid-template-columns:1fr}.b-wrap{padding:0 20px}.b-hero{padding:48px 0 24px}.b-card.large .b-card-body{padding:24px}.b-body{font-size:1.06rem}.b-table table{font-size:.95rem}.b-search{flex-direction:column}}
 .b-card-body .b-chip{align-self:flex-start}
 .b-cover img{max-height:560px;object-fit:cover}
 .b-author a{text-decoration:none;color:var(--ink)}

@@ -1,6 +1,6 @@
 import "server-only";
 import { and, desc, eq, ilike, inArray, or, sql } from "drizzle-orm";
-import { readingMinutes, type Doc } from "@/lib/content";
+import { canonical, readingMinutes, sanitizeDoc, type Doc } from "@/lib/content";
 import { checkHealth, type Issue } from "@/lib/health";
 import { can } from "@/lib/roles";
 import { isValidSlug, slugify } from "@/lib/slug";
@@ -130,6 +130,41 @@ export async function savePost(id: number, userId: string, role: string, input: 
   const wasLive = existing.status === "published" || existing.status === "archived" || !!existing.publishedAt;
   const slugChanged = wasLive && existing.slug !== input.slug;
 
+  const next = {
+    title: input.title,
+    slug: input.slug,
+    metaTitle: input.metaTitle,
+    metaDescription: input.metaDescription,
+    excerpt: input.excerpt,
+    quickAnswer: input.quickAnswer,
+    content: input.content,
+    sources: input.sources,
+    faq: input.faq,
+    customJsonLd: input.customJsonLd || null,
+    focusKeyword: input.focusKeyword,
+    cluster: input.cluster,
+    noindex: input.noindex,
+    nofollow: input.nofollow,
+    ogTitle: input.ogTitle,
+    ogDescription: input.ogDescription,
+    authorId: input.authorId,
+    reviewerId: input.reviewerId,
+    categoryId: input.categoryId,
+    coverMediaId: input.coverMediaId,
+    readingMinutes: readingMinutes(input.content as Doc),
+  };
+  const oldTags = (await db.select({ tagId: postTags.tagId }).from(postTags).where(eq(postTags.postId, id))).map((t) => t.tagId);
+  // Only a real edit moves updated_at and writes a revision; status-only changes keep the edit time.
+  const before = { ...existing, content: sanitizeDoc(existing.content as Doc) };
+  const contentChanged =
+    (Object.keys(next) as (keyof typeof next)[]).some((k) => canonical(next[k]) !== canonical(before[k])) ||
+    [...oldTags].sort().join() !== [...input.tagIds].sort().join();
+  const changed =
+    contentChanged ||
+    status !== existing.status ||
+    publishedAt?.getTime() !== existing.publishedAt?.getTime() ||
+    scheduledAt?.getTime() !== existing.scheduledAt?.getTime();
+
   await db.transaction(async (tx) => {
     if (slugChanged) {
       const rows = await tx.select({ fromPath: redirects.fromPath, toPath: redirects.toPath }).from(redirects);
@@ -142,35 +177,10 @@ export async function savePost(id: number, userId: string, role: string, input: 
           .onConflictDoUpdate({ target: redirects.fromPath, set: { toPath: r.toPath } });
       }
     }
+    if (!changed) return;
     await tx
       .update(posts)
-      .set({
-        title: input.title,
-        slug: input.slug,
-        metaTitle: input.metaTitle,
-        metaDescription: input.metaDescription,
-        excerpt: input.excerpt,
-        quickAnswer: input.quickAnswer,
-        content: input.content,
-        sources: input.sources,
-        faq: input.faq,
-        customJsonLd: input.customJsonLd || null,
-        focusKeyword: input.focusKeyword,
-        cluster: input.cluster,
-        noindex: input.noindex,
-        nofollow: input.nofollow,
-        ogTitle: input.ogTitle,
-        ogDescription: input.ogDescription,
-        authorId: input.authorId,
-        reviewerId: input.reviewerId,
-        categoryId: input.categoryId,
-        coverMediaId: input.coverMediaId,
-        readingMinutes: readingMinutes(input.content as Doc),
-        status,
-        publishedAt,
-        scheduledAt,
-        updatedAt: new Date(),
-      })
+      .set({ ...next, status, publishedAt, scheduledAt, ...(contentChanged ? { updatedAt: new Date() } : {}) })
       .where(eq(posts.id, id));
     await tx.delete(postTags).where(eq(postTags.postId, id));
     if (input.tagIds.length) await tx.insert(postTags).values(input.tagIds.map((tagId) => ({ postId: id, tagId })));
@@ -181,7 +191,7 @@ export async function savePost(id: number, userId: string, role: string, input: 
       .where(eq(revisions.postId, id))
       .orderBy(desc(revisions.createdAt))
       .limit(1);
-    if (intent !== "save" || !last || Date.now() - last.createdAt.getTime() > 5 * 60 * 1000) {
+    if (contentChanged && (intent !== "save" || !last || Date.now() - last.createdAt.getTime() > 5 * 60 * 1000)) {
       await tx.insert(revisions).values({ postId: id, title: input.title, content: input.content, userId });
     }
   });

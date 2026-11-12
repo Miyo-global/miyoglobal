@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "@tiptap/extension-image": "^3.32.2",
+    "@tiptap/extension-table": "3.32.2",
     "@tiptap/pm": "^3.32.2",
     "@tiptap/react": "^3.32.2",
     "@tiptap/starter-kit": "^3.32.2",

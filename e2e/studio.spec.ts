@@ -62,10 +62,23 @@ test.describe.serial("studio to public flow", () => {
     await page.locator(".tiptap").click();
     await page.keyboard.type("A GCC staffing programme needs a clear plan. ");
     await page.keyboard.press("Enter");
-    await page.getByRole("button", { name: "H2", exact: true }).click();
+    await page.getByLabel("Heading", { exact: true }).selectOption("2");
     await page.keyboard.type("What is GCC staffing?");
     await page.keyboard.press("Enter");
     await page.keyboard.type("It is the hiring of teams for a global capability centre.");
+    await page.keyboard.press("Enter");
+    await page.getByLabel("Heading", { exact: true }).selectOption("4");
+    await page.keyboard.type("Hiring waves");
+    await expect(page.getByLabel("Heading", { exact: true })).toHaveValue("4");
+    await page.keyboard.press("Enter");
+    await page.getByRole("button", { name: "Table", exact: true }).click();
+    await page.getByRole("button", { name: "Insert table" }).click();
+    await expect(page.locator(".tiptap")).toBeFocused();
+    await page.keyboard.type("Wave");
+    await page.keyboard.press("Tab");
+    await page.keyboard.type("Roles");
+    await page.getByRole("button", { name: "+ Row below" }).click();
+    await expect(page.locator(".tiptap tr")).toHaveCount(4);
 
     await page.getByLabel("Focus keyword").fill("GCC staffing");
     await page.getByLabel(/^Meta title/).fill("GCC staffing guide for 2026 | MIYO");
@@ -114,6 +127,9 @@ test.describe.serial("studio to public flow", () => {
     await expect(page.getByRole("navigation", { name: "In this article" })).toContainText("What is GCC staffing?");
     await expect(page.locator("#what-is-gcc-staffing")).toBeVisible();
     await expect(page.locator(".b-quick")).toContainText("Quick answer");
+    await expect(page.locator(".b-body h4")).toHaveText("Hiring waves");
+    await expect(page.locator(".b-table th").nth(1)).toHaveText("Roles");
+    await expect(page.locator(".b-table tr")).toHaveCount(4);
     await expect(page.locator('link[rel="canonical"]')).toHaveAttribute("href", `http://localhost:3111/blog/${slug}`);
     await expect(page.locator('meta[property="og:type"]')).toHaveAttribute("content", "article");
     await expect(page.locator('meta[name="twitter:card"]')).toHaveAttribute("content", "summary_large_image");
@@ -157,7 +173,8 @@ test.describe.serial("studio to public flow", () => {
     const robots = await (await request.get("/robots.txt")).text();
     expect(robots).toContain("Disallow: /blog/search");
     expect(robots).toContain("GPTBot");
-    expect(robots).toContain("posts-sitemap.xml");
+    expect(robots).toContain("Sitemap: http://localhost:3111/sitemap.xml");
+    expect(robots).not.toContain("posts-sitemap.xml");
     expect(robots).not.toContain("uploads");
     expect(await (await request.get("/indexnow-key.txt")).text()).toBe("e2ekey1234567890");
     expect(mockCalls()).toMatch(/INDEXNOW .*\/blog\/gcc-staffing-guide-2026/);
@@ -197,6 +214,12 @@ test.describe.serial("studio to public flow", () => {
     await page.getByRole("button", { name: "New post" }).click();
     await expect(page).toHaveURL(/\/posts\/\d+$/);
     const id = page.url().split("/").pop();
+    await expect(page.getByRole("button", { name: "Save", exact: true })).toBeDisabled();
+    await page.getByLabel("Title (H1)").fill("Discard me");
+    await expect(page.getByText("Unsaved changes")).toBeVisible();
+    await page.getByRole("button", { name: "Discard changes" }).click();
+    await page.getByRole("dialog").getByRole("button", { name: "Discard" }).click();
+    await expect(page.getByLabel("Title (H1)")).toHaveValue("");
     await page.getByLabel("Title (H1)").fill("Scheduled flow post");
     await page.getByLabel("Slug", { exact: true }).fill(draftSlug);
     await page.getByRole("button", { name: "Save", exact: true }).click();
@@ -205,6 +228,10 @@ test.describe.serial("studio to public flow", () => {
     await page.goto(`${ADMIN}/preview/${id}`);
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Scheduled flow post");
     await expect(page.getByRole("status")).toContainText("draft");
+    await expect(page.locator(".b-byline")).toContainText("Draft, not published");
+    await expect(page.locator(".b-byline")).not.toContainText(/Published|min read/);
+    await expect(page.locator(".b-byline a").first()).toHaveAttribute("href", /^http:\/\/localhost:3111\/blog\/author\//);
+    await expect(page.locator(".b-crumbs").getByRole("link", { name: "Blog" })).toHaveAttribute("href", "http://localhost:3111/blog");
     await expect(page.locator('meta[name="robots"]').first()).toHaveAttribute("content", /noindex/);
     const anon = await request.get(`${ADMIN}/preview/${id}`, { maxRedirects: 0, headers: { Cookie: "" } });
     expect(anon.status()).not.toBe(200);
@@ -258,6 +285,8 @@ test.describe.serial("studio to public flow", () => {
 
   test("media in use is protected and deletes remove R2 objects", async () => {
     await page.goto(`${ADMIN}/media`);
+    await expect(page.getByRole("button", { name: "Upload" })).toBeDisabled();
+    await expect(page.getByText("Select a file to upload.")).toBeVisible();
     await page.getByRole("button", { name: "Delete" }).first().click();
     await confirmDialog();
     await expect(page.locator('p.error[role="alert"]')).toContainText("used by a post");

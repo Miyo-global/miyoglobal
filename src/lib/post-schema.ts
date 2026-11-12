@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { sanitizeDoc, type Doc } from "./content";
 import { isValidSlug } from "./slug";
 
 const text = (max: number) => z.string().trim().max(max);
@@ -28,7 +29,9 @@ export const postInput = z.strictObject({
   scheduledAt: z.iso.datetime().nullable(),
   content: z
     .custom<Record<string, unknown>>((v) => !!v && typeof v === "object" && (v as { type?: unknown }).type === "doc")
-    .refine((v) => JSON.stringify(v).length < 400_000, "Content is too large"),
+    .refine((v) => JSON.stringify(v).length < 400_000, "Content is too large")
+    // Whitelist nodes, marks and attrs before anything is stored (render whitelists again).
+    .transform((v) => sanitizeDoc(v as Doc) as Record<string, unknown>),
 });
 
 export type PostInput = z.infer<typeof postInput>;

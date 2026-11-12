@@ -1,15 +1,19 @@
 import Image from "next/image";
 import Link from "next/link";
 import { PostCard, fmtDate } from "@/components/post-card";
-import { headingIds, renderHtml, type Doc } from "@/lib/content";
-import { absolute, jsonLdScript, parseCustomJsonLd, SITE_NAME } from "@/lib/seo";
+import { headingIds, renderHtml, wordCount, type Doc } from "@/lib/content";
+import { absolute, jsonLdScript, parseCustomJsonLd, SITE_NAME, SITE_URL } from "@/lib/seo";
 import { related, type PostData } from "@/server/services/public";
 
-export async function PostView({ data }: { data: PostData }) {
+/** `preview`: rendered on the admin host, so site links point at NEXT_PUBLIC_SITE_URL instead of relative paths. */
+export async function PostView({ data, preview = false }: { data: PostData; preview?: boolean }) {
   const { post, author, reviewer, cover, categoryName, categorySlug, tags } = data;
   const doc = post.content as Doc;
   const toc = headingIds(doc);
-  const html = renderHtml(doc);
+  const base = preview ? SITE_URL : "";
+  const rendered = renderHtml(doc);
+  const html = preview ? rendered.replaceAll('href="/', `href="${SITE_URL}/`) : rendered;
+  const minutes = wordCount(doc) ? Math.max(1, post.readingMinutes) : 0;
   const published = post.publishedAt ?? post.createdAt;
   const url = absolute(`/blog/${post.slug}`);
   const more = await related(post.id, post.categoryId, tags.map((t) => t.id));
@@ -59,21 +63,29 @@ export async function PostView({ data }: { data: PostData }) {
       ))}
       <nav className="b-crumbs" aria-label="Breadcrumb">
         <ol>
-          <li><a href="/">Home</a></li>
-          <li><Link href="/blog">Blog</Link></li>
-          {categoryName && categorySlug && <li><Link href={`/blog/category/${categorySlug}`}>{categoryName}</Link></li>}
+          <li><a href={`${base}/`}>Home</a></li>
+          <li><Link href={`${base}/blog`}>Blog</Link></li>
+          {categoryName && categorySlug && <li><Link href={`${base}/blog/category/${categorySlug}`}>{categoryName}</Link></li>}
           <li aria-current="page">{post.title}</li>
         </ol>
       </nav>
       <header className="b-post-head" style={{ position: "static", background: "none", backdropFilter: "none", border: 0 }}>
-        {categoryName && categorySlug && <Link className="b-chip" href={`/blog/category/${categorySlug}`}>{categoryName}</Link>}
+        {categoryName && categorySlug && <Link className="b-chip" href={`${base}/blog/category/${categorySlug}`}>{categoryName}</Link>}
         <h1>{post.title}</h1>
         <p className="b-byline">
-          {author && <span>By <b><Link href={`/blog/author/${author.slug}`}>{author.name}</Link></b></span>}
-          {reviewer && <span>Reviewed by <b><Link href={`/blog/author/${reviewer.slug}`}>{reviewer.name}</Link></b></span>}
-          <span>Published <time dateTime={published.toISOString()}>{fmtDate(published)}</time></span>
-          {post.updatedAt.getTime() - published.getTime() > 86_400_000 && <span>Updated <time dateTime={post.updatedAt.toISOString()}>{fmtDate(post.updatedAt)}</time></span>}
-          <span>{post.readingMinutes} min read</span>
+          {author && <span>By <b><Link href={`${base}/blog/author/${author.slug}`}>{author.name}</Link></b></span>}
+          {reviewer && <span>Reviewed by <b><Link href={`${base}/blog/author/${reviewer.slug}`}>{reviewer.name}</Link></b></span>}
+          {post.status === "scheduled" && post.scheduledAt ? (
+            <span>Scheduled for <time dateTime={post.scheduledAt.toISOString()}>{fmtDate(post.scheduledAt)}</time>, not published</span>
+          ) : post.publishedAt && post.status !== "draft" ? (
+            <>
+              <span>Published <time dateTime={published.toISOString()}>{fmtDate(published)}</time></span>
+              {post.updatedAt.getTime() - published.getTime() > 86_400_000 && <span>Updated <time dateTime={post.updatedAt.toISOString()}>{fmtDate(post.updatedAt)}</time></span>}
+            </>
+          ) : (
+            <span>Draft, not published</span>
+          )}
+          {minutes > 0 && <span>{minutes} min read</span>}
         </p>
       </header>
       {cover && (
@@ -114,12 +126,12 @@ export async function PostView({ data }: { data: PostData }) {
             <a href={`https://twitter.com/intent/tweet?url=${share}&text=${shareTitle}`} target="_blank" rel="noopener noreferrer">X</a>
             <a href={`mailto:?subject=${shareTitle}&body=${share}`}>Email</a>
           </div>
-          {tags.length > 0 && <p className="b-tags">{tags.map((t) => <Link key={t.id} href={`/blog/tag/${t.slug}`}>#{t.name}</Link>)}</p>}
+          {tags.length > 0 && <p className="b-tags">{tags.map((t) => <Link key={t.id} href={`${base}/blog/tag/${t.slug}`}>#{t.name}</Link>)}</p>}
           {author && (
             <aside className="b-box b-author" aria-label="About the author">
               <div className="b-avatar" aria-hidden="true">{author.name.slice(0, 1)}</div>
               <div>
-                <h3><Link href={`/blog/author/${author.slug}`}>{author.name}</Link></h3>
+                <h3><Link href={`${base}/blog/author/${author.slug}`}>{author.name}</Link></h3>
                 {author.credentials && <p><b>{author.credentials}</b></p>}
                 {author.bio && <p>{author.bio}</p>}
               </div>
@@ -140,7 +152,7 @@ export async function PostView({ data }: { data: PostData }) {
       {more.length > 0 && (
         <section className="b-sec" aria-labelledby="related">
           <h2 id="related">Related articles</h2>
-          <div className="b-grid">{more.map((p) => <PostCard key={p.id} post={p} />)}</div>
+          <div className="b-grid">{more.map((p) => <PostCard key={p.id} post={p} base={base} />)}</div>
         </section>
       )}
     </article>

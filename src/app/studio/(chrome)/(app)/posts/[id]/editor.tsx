@@ -1,13 +1,14 @@
 "use client";
 
 import Image from "@tiptap/extension-image";
-import { EditorContent, useEditor } from "@tiptap/react";
+import { TableKit } from "@tiptap/extension-table";
+import { EditorContent, useEditor, useEditorState } from "@tiptap/react";
 import NextImage from "next/image";
 import StarterKit from "@tiptap/starter-kit";
-import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from "react";
-import type { Doc } from "@/lib/content";
+import { useCallback, useEffect, useMemo, useState, useTransition } from "react";
+import { canonical, sanitizeDoc, type Doc } from "@/lib/content";
 import { checkHealth } from "@/lib/health";
-import type { Intent, PostInput } from "@/lib/post-schema";
+import { postInput, type Intent, type PostInput } from "@/lib/post-schema";
 import { fromIstInput, toIstInput } from "@/lib/ist";
 import { parseCustomJsonLd, titleFor } from "@/lib/seo";
 import { slugify } from "@/lib/slug";
@@ -36,6 +37,8 @@ const BodyImage = Image.extend({
   },
 });
 
+const LEVELS = [2, 3, 4, 5, 6] as const;
+
 const SERVICES = [
   { label: "Staffing solutions", href: "/staffing-solutions" },
   { label: "Digital solutions", href: "/digital-solutions" },
@@ -44,37 +47,46 @@ const SERVICES = [
 
 export function PostEditor(props: Props) {
   const ui = useUi();
-  const [form, setForm] = useState<PostInput>(props.initial);
+  // Content is normalised the same way onUpdate does, so an untouched post never looks dirty.
+  const [initial] = useState<PostInput>(() => ({ ...props.initial, content: sanitizeDoc(props.initial.content as Doc) as Record<string, unknown> }));
+  const [form, setForm] = useState<PostInput>(initial);
+  const [saved, setSaved] = useState<PostInput>(initial);
+  const [table, setTable] = useState<{ rows: number; cols: number; header: boolean } | null>(null);
   const [status, setStatus] = useState(props.status);
   const [media, setMedia] = useState(props.media);
   const [note, setNote] = useState("");
   const [error, setError] = useState("");
-  const [dirty, setDirty] = useState(false);
   const [broken, setBroken] = useState<string[] | null>(null);
   const [picker, setPicker] = useState<"cover" | "body" | null>(null);
   const [pending, start] = useTransition();
-  const first = useRef(true);
   const live = status === "published" || status === "archived";
 
-  const set = useCallback(<K extends keyof PostInput>(key: K, value: PostInput[K]) => {
-    setForm((f) => ({ ...f, [key]: value }));
-    setDirty(true);
-  }, []);
+  const set = useCallback(<K extends keyof PostInput>(key: K, value: PostInput[K]) => setForm((f) => ({ ...f, [key]: value })), []);
+  // Nothing is persisted until Save/Publish; dirty = differs from the last saved version.
+  const dirty = useMemo(() => canonical(form) !== canonical(saved), [form, saved]);
 
   const editor = useEditor({
     immediatelyRender: false,
     extensions: [
       StarterKit.configure({
-        heading: { levels: [2, 3] },
+        heading: { levels: [...LEVELS] },
         link: { openOnClick: false, autolink: false },
         underline: false,
         strike: false,
       }),
       BodyImage,
+      TableKit.configure({ table: { resizable: false } }),
     ],
     content: props.initial.content,
     editorProps: { attributes: { class: "tiptap", "aria-label": "Post body" } },
-    onUpdate: ({ editor: ed }) => set("content", ed.getJSON() as Record<string, unknown>),
+    onUpdate: ({ editor: ed }) => set("content", sanitizeDoc(ed.getJSON() as Doc) as Record<string, unknown>),
+  });
+  const tb = useEditorState({
+    editor,
+    selector: ({ editor: e }) => ({
+      level: e ? (LEVELS.find((l) => e.isActive("heading", { level: l })) ?? 0) : 0,
+      inTable: !!e?.isActive("table"),
+    }),
   });
 
   const cover = media.find((m) => m.id === form.coverMediaId) ?? null;
@@ -97,7 +109,7 @@ export function PostEditor(props: Props) {
   const jsonLdError = form.customJsonLd ? (() => { const r = parseCustomJsonLd(form.customJsonLd); return r.ok ? "" : r.error; })() : "";
 
   const submit = useCallback(
-    (intent: Intent, silent = false) =>
+    (intent: Intent) =>
       start(async () => {
         setError("");
         const res = await savePostAction(props.id, JSON.stringify(form), intent);
@@ -106,23 +118,39 @@ export function PostEditor(props: Props) {
           return;
         }
         setStatus(res.status);
-        setDirty(false);
-        if (intent === "draft") setForm((f) => ({ ...f, scheduledAt: null }));
-        if (res.slug !== form.slug) setForm((f) => ({ ...f, slug: res.slug }));
-        setNote(silent ? `Autosaved ${new Date().toLocaleTimeString("en-IN", { timeZone: "Asia/Kolkata", hour: "2-digit", minute: "2-digit" })} IST` : `Saved as ${res.status}`);
+        // Snapshot what savePost stored: same schema parse (trimmed text, sanitized content), server slug, empty JSON-LD as null.
+        const parsed = postInput.safeParse(form);
+        const stored = parsed.success ? parsed.data : form;
+        const next: PostInput = { ...stored, customJsonLd: stored.customJsonLd || null, slug: res.slug, scheduledAt: intent === "draft" ? null : form.scheduledAt };
+        setSaved(next);
+        // Show the stored values, except fields edited while the save was in flight.
+        setForm((f) => Object.fromEntries((Object.keys(next) as (keyof PostInput)[]).map((k) => [k, f[k] === form[k] ? next[k] : f[k]])) as PostInput);
+        setNote(`Saved as ${res.status} at ${new Date().toLocaleTimeString("en-IN", { timeZone: "Asia/Kolkata", hour: "2-digit", minute: "2-digit" })} IST`);
       }),
     [form, props.id],
   );
 
+  const discard = async () => {
+    if (!(await ui.confirm("Discard all unsaved changes and go back to the last saved version?", "Discard"))) return;
+    setForm(saved);
+    editor?.commands.setContent(saved.content, { emitUpdate: false });
+    setError("");
+    setNote("Changes discarded");
+  };
+
   useEffect(() => {
-    if (first.current) {
-      first.current = false;
-      return;
-    }
-    if (!dirty || live) return;
-    const t = setTimeout(() => submit("save", true), 2000);
-    return () => clearTimeout(t);
-  }, [form, dirty, live, submit]);
+    if (!dirty) return;
+    const warn = (e: BeforeUnloadEvent) => e.preventDefault();
+    window.addEventListener("beforeunload", warn);
+    return () => window.removeEventListener("beforeunload", warn);
+  }, [dirty]);
+
+  const insertTable = () => {
+    if (!table) return;
+    const clamp = (n: number) => Math.min(20, Math.max(1, Math.trunc(n) || 1));
+    editor?.chain().focus().insertTable({ rows: clamp(table.rows), cols: clamp(table.cols), withHeaderRow: table.header }).run();
+    setTable(null);
+  };
 
   const link = (title: string, href: string) =>
     editor?.chain().focus().insertContent({ type: "text", text: title, marks: [{ type: "link", attrs: { href } }] }).run();
@@ -154,12 +182,13 @@ export function PostEditor(props: Props) {
         <div className="editor-title">
           <h1>Edit post <span className={`pill ${status}`}>{status}</span></h1>
           <span className={`save-state ${saveState}`} role="status">
-            {pending ? "Saving…" : dirty ? (live ? "Unsaved changes" : "Unsaved") : note || "No changes"}
+            {pending ? "Saving…" : dirty ? "Unsaved changes" : note || "No changes"}
           </span>
         </div>
         <div className="row nowrap">
           <a className="btn ghost sm" href={`/preview/${props.id}`} target="_blank" rel="noopener">Preview</a>
-          <button type="button" className="btn secondary" disabled={pending} onClick={() => submit("save")}>Save</button>
+          {dirty && <button type="button" className="btn ghost sm" disabled={pending} onClick={discard}>Discard changes</button>}
+          <button type="button" className="btn secondary" disabled={pending || !dirty} onClick={() => submit("save")}>Save</button>
           <button type="button" className="btn primary" disabled={pending || errors.length > 0} onClick={() => submit("publish")}>
             {status === "published" ? "Update" : "Publish"}
           </button>
@@ -181,8 +210,20 @@ export function PostEditor(props: Props) {
             <div className="toolbar" role="toolbar" aria-label="Formatting">
               {btn("B", !!editor?.isActive("bold"), () => editor?.chain().focus().toggleBold().run())}
               {btn("I", !!editor?.isActive("italic"), () => editor?.chain().focus().toggleItalic().run())}
-              {btn("H2", !!editor?.isActive("heading", { level: 2 }), () => editor?.chain().focus().toggleHeading({ level: 2 }).run())}
-              {btn("H3", !!editor?.isActive("heading", { level: 3 }), () => editor?.chain().focus().toggleHeading({ level: 3 }).run())}
+              <select
+                aria-label="Heading"
+                className="tb-select"
+                value={tb?.level ?? 0}
+                onChange={(e) => {
+                  const level = Number(e.target.value);
+                  const chain = editor?.chain().focus();
+                  if (level) chain?.setHeading({ level: level as (typeof LEVELS)[number] }).run();
+                  else chain?.setParagraph().run();
+                }}
+              >
+                <option value={0}>Paragraph</option>
+                {LEVELS.map((l) => <option key={l} value={l}>Heading {l}</option>)}
+              </select>
               {btn("• List", !!editor?.isActive("bulletList"), () => editor?.chain().focus().toggleBulletList().run())}
               {btn("1. List", !!editor?.isActive("orderedList"), () => editor?.chain().focus().toggleOrderedList().run())}
               {btn("Quote", !!editor?.isActive("blockquote"), () => editor?.chain().focus().toggleBlockquote().run())}
@@ -193,9 +234,31 @@ export function PostEditor(props: Props) {
                 else editor?.chain().focus().setLink({ href }).run();
               })}
               {btn("Image", false, () => setPicker("body"))}
+              {btn("Table", !!table, () => setTable(table ? null : { rows: 3, cols: 3, header: true }))}
               {btn("Undo", false, () => editor?.chain().focus().undo().run())}
               {btn("Redo", false, () => editor?.chain().focus().redo().run())}
             </div>
+            {table && (
+              <div className="toolbar table-form" role="group" aria-label="Insert table">
+                <label>Rows <input type="number" min={1} max={20} value={table.rows} onChange={(e) => setTable({ ...table, rows: Number(e.target.value) })} /></label>
+                <label>Columns <input type="number" min={1} max={20} value={table.cols} onChange={(e) => setTable({ ...table, cols: Number(e.target.value) })} /></label>
+                <label className="check"><input type="checkbox" checked={table.header} onChange={(e) => setTable({ ...table, header: e.target.checked })} /> Header row</label>
+                <button type="button" className="btn secondary sm" onClick={insertTable}>Insert table</button>
+                <button type="button" className="btn ghost sm" onClick={() => setTable(null)}>Cancel</button>
+              </div>
+            )}
+            {tb?.inTable && (
+              <div className="toolbar" role="toolbar" aria-label="Table">
+                {btn("+ Row above", false, () => editor?.chain().focus().addRowBefore().run())}
+                {btn("+ Row below", false, () => editor?.chain().focus().addRowAfter().run())}
+                {btn("− Row", false, () => editor?.chain().focus().deleteRow().run())}
+                {btn("+ Col left", false, () => editor?.chain().focus().addColumnBefore().run())}
+                {btn("+ Col right", false, () => editor?.chain().focus().addColumnAfter().run())}
+                {btn("− Col", false, () => editor?.chain().focus().deleteColumn().run())}
+                {btn("Header row", false, () => editor?.chain().focus().toggleHeaderRow().run())}
+                {btn("Delete table", false, () => editor?.chain().focus().deleteTable().run())}
+              </div>
+            )}
             <EditorContent editor={editor} />
           </section>
 
@@ -252,7 +315,7 @@ export function PostEditor(props: Props) {
               {status === "scheduled" && <button type="button" className="btn secondary sm" disabled={pending} onClick={() => submit("draft")}>Cancel schedule</button>}
               {status !== "archived" && <button type="button" className="btn secondary sm" disabled={pending} onClick={() => submit("archive")}>Archive</button>}
             </div>
-            {live && <p className="muted small">Live posts are not autosaved. Use Update to publish changes.</p>}
+            <p className="muted small">{live ? "Save keeps edits in the database; use Update to publish them." : "Changes are only stored when you press Save, Schedule or Publish."}</p>
             {props.canDelete && (
               <div className="danger-zone">
                 <button type="button" className="btn danger sm" disabled={pending} onClick={remove}>Delete post</button>

@@ -16,12 +16,15 @@ export function MediaPicker({ items, onPick, canDelete = false }: { items: Media
   const router = useRouter();
   const [pending, start] = useTransition();
   const [op, setOp] = useState<number | "upload">("upload");
+  const [hasFile, setHasFile] = useState(false);
   const idp = onPick ? "pick" : "lib";
 
   function upload(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const form = e.currentTarget;
     const data = new FormData(form);
+    const file = data.get("file");
+    if (!(file instanceof File) || !file.size) return setError("Select a file to upload");
     setError("");
     setOp("upload");
     start(async () => {
@@ -29,6 +32,7 @@ export function MediaPicker({ items, onPick, canDelete = false }: { items: Media
       if (!res.ok) return setError(res.error);
       setList((l) => [res.media, ...l]);
       form.reset();
+      setHasFile(false);
       ui.toast("Image uploaded");
       onPick?.(res.media);
       router.refresh();
@@ -53,14 +57,15 @@ export function MediaPicker({ items, onPick, canDelete = false }: { items: Media
       <form onSubmit={upload} className="upload">
         <div className="field">
           <label htmlFor={`${idp}-file`}>Image (JPEG, PNG, WebP or AVIF, min 1200px wide, max 4MB)</label>
-          <input id={`${idp}-file`} name="file" type="file" accept="image/jpeg,image/png,image/webp,image/avif" required />
+          <input id={`${idp}-file`} name="file" type="file" accept="image/jpeg,image/png,image/webp,image/avif" required aria-describedby={hasFile ? undefined : `${idp}-file-hint`} onChange={(e) => { setHasFile(!!e.target.files?.length); setError(""); }} />
+          {!hasFile && <span id={`${idp}-file-hint`} className="muted small">Select a file to upload.</span>}
         </div>
         <div className="field">
           <label htmlFor={`${idp}-alt`}>Alt text (8-20 words describing the subject and context)</label>
           <textarea id={`${idp}-alt`} name="alt" required maxLength={200} rows={2} />
         </div>
         {error && <p className="error" role="alert">{error}</p>}
-        <button className="btn primary" disabled={pending}><Icon name="upload" size={16} />{pending && op === "upload" ? "Uploading…" : "Upload"}</button>
+        <button className="btn primary" disabled={pending || !hasFile}><Icon name="upload" size={16} />{pending && op === "upload" ? "Uploading…" : "Upload"}</button>
       </form>
       {list.length ? (
         <div className="media-grid">

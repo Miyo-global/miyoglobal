@@ -5,11 +5,12 @@ import type { CardPost } from "@/server/services/public";
 export const fmtDate = (d: Date | null) =>
   d ? d.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" }) : "";
 
-export function PostCard({ post, large = false }: { post: CardPost; large?: boolean }) {
+/** `base` prefixes links (the Studio preview passes the public site URL so links leave the admin host). */
+export function PostCard({ post, large = false, base = "" }: { post: CardPost; large?: boolean; base?: string }) {
   const date = post.publishedAt;
   return (
     <article className={`b-card${large ? " large" : ""}`}>
-      <Link href={`/blog/${post.slug}`} className="b-card-img" tabIndex={-1} aria-hidden="true">
+      <Link href={`${base}/blog/${post.slug}`} className="b-card-img" tabIndex={-1} aria-hidden="true">
         {post.coverUrl ? (
           <Image
             src={post.coverUrl}
@@ -28,12 +29,12 @@ export function PostCard({ post, large = false }: { post: CardPost; large?: bool
       </Link>
       <div className="b-card-body">
         {post.categoryName && post.categorySlug && (
-          <Link href={`/blog/category/${post.categorySlug}`} className="b-chip">{post.categoryName}</Link>
+          <Link href={`${base}/blog/category/${post.categorySlug}`} className="b-chip">{post.categoryName}</Link>
         )}
-        <h3><Link href={`/blog/${post.slug}`}>{post.title}</Link></h3>
+        <h3><Link href={`${base}/blog/${post.slug}`}>{post.title}</Link></h3>
         {post.excerpt && <p className="b-excerpt">{post.excerpt}</p>}
         <p className="b-meta">
-          <time dateTime={date?.toISOString()}>{fmtDate(date)}</time> · {post.readingMinutes} min read
+          <time dateTime={date?.toISOString()}>{fmtDate(date)}</time>{post.readingMinutes > 0 && ` · ${post.readingMinutes} min read`}
         </p>
       </div>
     </article>
