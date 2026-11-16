@@ -267,6 +267,7 @@
 .studio .confirm{border:0;border-radius:var(--r);padding:var(--s5);max-width:420px;width:calc(100vw - 32px);box-shadow:0 24px 60px rgba(11,25,47,.25);color:var(--ink)}
 .studio .confirm::backdrop{background:rgba(11,25,47,.45)}
 .studio .confirm p{font-weight:500;margin-bottom:var(--s5)}
+.studio .confirm .confirm-input{margin:calc(-1 * var(--s3)) 0 var(--s5)}
 
 /* responsive */
 @media (max-width:1100px){

@@ -191,10 +191,10 @@ export function PostEditor(props: Props) {
     setTable(null);
   };
 
-  const editLink = () => {
+  const editLink = async () => {
     if (!editor) return;
     const current = (editor.getAttributes("link").href as string | undefined) ?? "";
-    const href = window.prompt("Link URL (https://… or /path). Leave empty to remove the link.", current);
+    const href = await ui.prompt("Link URL (https://… or /path). Leave empty to remove the link.", current, "Apply");
     if (href === null) return;
     const url = href.trim();
     const chain = editor.chain().focus().extendMarkRange("link");

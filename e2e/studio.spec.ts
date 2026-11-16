@@ -20,9 +20,17 @@ const publish = async (name: "Publish" | "Update" | "Schedule") => {
   await expect(page.getByRole("dialog")).toContainText("/blog/");
   await confirmDialog(name);
 };
-/** Answer the next window.prompt with `value` and return the prompt's default value. */
-const answerPrompt = (value: string) =>
-  new Promise<string>((resolve) => page.once("dialog", async (d) => { resolve(d.defaultValue()); await d.accept(value); }));
+/** Click Link, answer the in-app link dialog with `value` and return the URL it was prefilled with. */
+const editLink = async (value: string) => {
+  await page.getByRole("button", { name: "Link", exact: true }).click();
+  const box = page.getByRole("dialog").getByRole("textbox");
+  await expect(box).toBeFocused();
+  const shown = await box.inputValue();
+  await box.fill(value);
+  await page.getByRole("dialog").getByRole("button", { name: "Apply" }).click();
+  await expect(page.getByRole("dialog")).toBeHidden();
+  return shown;
+};
 
 async function login(page: Page) {
   await page.goto(`${ADMIN}/login`);
@@ -102,20 +110,14 @@ test.describe.serial("studio to public flow", () => {
     await expect(page.locator(".tiptap code")).toHaveText("npm ci");
     // MG-211: Link inserts, prefills the current href, updates, and removes on empty.
     await page.keyboard.type(" ");
-    let shown = answerPrompt("https://example.com/a");
-    await page.getByRole("button", { name: "Link", exact: true }).click();
-    expect(await shown).toBe("");
+    expect(await editLink("https://example.com/a")).toBe("");
     const a = page.locator('.tiptap a[href="https://example.com/a"]');
     await expect(a).toHaveText("https://example.com/a");
     await a.click();
-    shown = answerPrompt("https://example.com/b");
-    await page.getByRole("button", { name: "Link", exact: true }).click();
-    expect(await shown).toBe("https://example.com/a");
+    expect(await editLink("https://example.com/b")).toBe("https://example.com/a");
     await expect(page.locator('.tiptap a[href="https://example.com/b"]')).toHaveText("https://example.com/a");
     await page.locator(".tiptap a").click();
-    shown = answerPrompt("");
-    await page.getByRole("button", { name: "Link", exact: true }).click();
-    expect(await shown).toBe("https://example.com/b");
+    expect(await editLink("")).toBe("https://example.com/b");
     await expect(page.locator(".tiptap a")).toHaveCount(0);
     await page.locator(".tiptap p", { hasText: "underlined" }).click();
     await page.keyboard.press("End");

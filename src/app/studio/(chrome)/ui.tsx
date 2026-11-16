@@ -5,10 +5,14 @@ import { createContext, useCallback, useContext, useRef, useState, useTransition
 import { useFormStatus } from "react-dom";
 
 type Toast = { id: number; text: string; kind: "ok" | "error" };
-type Ask = { text: string; confirmLabel: string; resolve: (ok: boolean) => void };
-type Ui = { toast: (text: string, kind?: Toast["kind"]) => void; confirm: (text: string, confirmLabel?: string) => Promise<boolean> };
+type Ask = { text: string; confirmLabel: string; value?: string; resolve: (value: string | null) => void };
+type Ui = {
+  toast: (text: string, kind?: Toast["kind"]) => void;
+  confirm: (text: string, confirmLabel?: string) => Promise<boolean>;
+  prompt: (text: string, value?: string, confirmLabel?: string) => Promise<string | null>;
+};
 
-const UiContext = createContext<Ui>({ toast: () => {}, confirm: async (text) => window.confirm(text) });
+const UiContext = createContext<Ui>({ toast: () => {}, confirm: async (text) => window.confirm(text), prompt: async (text, value) => window.prompt(text, value) });
 
 export const useUi = () => useContext(UiContext);
 
@@ -16,6 +20,7 @@ export function UiProvider({ children }: { children: React.ReactNode }) {
   const [toasts, setToasts] = useState<Toast[]>([]);
   const [ask, setAsk] = useState<Ask | null>(null);
   const dialog = useRef<HTMLDialogElement>(null);
+  const input = useRef<HTMLInputElement>(null);
   const seq = useRef(0);
 
   const toast = useCallback((text: string, kind: Toast["kind"] = "ok") => {
@@ -24,23 +29,29 @@ export function UiProvider({ children }: { children: React.ReactNode }) {
     setTimeout(() => setToasts((t) => t.filter((x) => x.id !== id)), 4500);
   }, []);
 
-  const confirm = useCallback(
-    (text: string, confirmLabel = "Delete") =>
-      new Promise<boolean>((resolve) => {
-        setAsk({ text, confirmLabel, resolve });
-        requestAnimationFrame(() => dialog.current?.showModal());
+  const open = useCallback(
+    (a: Omit<Ask, "resolve">) =>
+      new Promise<string | null>((resolve) => {
+        setAsk({ ...a, resolve });
+        requestAnimationFrame(() => {
+          dialog.current?.showModal();
+          input.current?.select();
+        });
       }),
     [],
   );
+  const confirm = useCallback((text: string, confirmLabel = "Delete") => open({ text, confirmLabel }).then((v) => v !== null), [open]);
+  const prompt = useCallback((text: string, value = "", confirmLabel = "Save") => open({ text, confirmLabel, value }), [open]);
 
   const close = (ok: boolean) => {
-    ask?.resolve(ok);
+    ask?.resolve(ok ? (input.current?.value ?? "") : null);
     dialog.current?.close();
     setAsk(null);
   };
+  const asking = ask?.value !== undefined;
 
   return (
-    <UiContext.Provider value={{ toast, confirm }}>
+    <UiContext.Provider value={{ toast, confirm, prompt }}>
       {children}
       <div className="toasts" aria-live="polite">
         {toasts.map((t) => (
@@ -48,11 +59,14 @@ export function UiProvider({ children }: { children: React.ReactNode }) {
         ))}
       </div>
       <dialog ref={dialog} className="confirm" aria-labelledby="confirm-text" onCancel={() => close(false)}>
-        <p id="confirm-text">{ask?.text}</p>
-        <div className="row end">
-          <button type="button" className="btn secondary" onClick={() => close(false)}>Cancel</button>
-          <button type="button" className="btn danger" onClick={() => close(true)} autoFocus>{ask?.confirmLabel ?? "Delete"}</button>
-        </div>
+        <form onSubmit={(e) => { e.preventDefault(); close(true); }}>
+          <p id="confirm-text">{ask?.text}</p>
+          {asking && <input ref={input} className="confirm-input" defaultValue={ask?.value} aria-labelledby="confirm-text" />}
+          <div className="row end">
+            <button type="button" className="btn secondary" onClick={() => close(false)}>Cancel</button>
+            <button type="submit" className={asking ? "btn primary" : "btn danger"} autoFocus={!asking}>{ask?.confirmLabel ?? "Delete"}</button>
+          </div>
+        </form>
       </dialog>
     </UiContext.Provider>
   );
