@@ -424,6 +424,92 @@ test.describe.serial("studio to public flow", () => {
     expect(mockCalls().match(/R2 DELETE/g)).toHaveLength(3);
   });
 
+  test("headings change only the caret's block; toolbar stays pinned on long posts", async () => {
+    await page.setViewportSize({ width: 1280, height: 720 });
+    await page.goto(`${ADMIN}/posts`);
+    await page.getByRole("button", { name: "New post" }).click();
+    await expect(page).toHaveURL(/\/posts\/\d+$/);
+    const body = page.locator(".tiptap");
+    await expect(body).toBeVisible();
+    await body.click();
+    for (let i = 1; i <= 25; i++) {
+      await page.keyboard.type(`Para ${i}`);
+      if (i < 25) await page.keyboard.press("Enter");
+    }
+    const blocks = body.locator(":scope > *");
+    await expect(blocks).toHaveCount(25); // Enter makes real paragraphs, not <br> inside one
+    const heading = page.getByLabel("Heading", { exact: true });
+    const tags = () => blocks.evaluateAll((els) => els.map((e) => e.tagName.toLowerCase()));
+    /** Put the DOM selection (anchor -> focus) inside paragraphs, wait for the editor to pick it up, then choose a level the way a user does (focus leaves the editor). */
+    const select = async (a: [number, number], f: [number, number]) => {
+      await body.focus();
+      await body.evaluate((el, [a, f]) => {
+        const text = (n: number) => el.children[n - 1].firstChild!;
+        getSelection()!.setBaseAndExtent(text(a[0]), a[1], text(f[0]), f[1]);
+      }, [a, f]);
+      await page.waitForFunction(([a, f]) => {
+        const s = getSelection()!;
+        const el = document.querySelector(".tiptap")!;
+        return s.anchorNode === el.children[a[0] - 1].firstChild && s.focusNode === el.children[f[0] - 1].firstChild && el.classList.contains("ProseMirror-focused");
+      }, [a, f]);
+      await page.waitForTimeout(50); // ProseMirror reads selectionchange asynchronously
+    };
+    const choose = async (value: string) => {
+      await heading.focus();
+      await heading.selectOption(value);
+    };
+    /** Paragraphs `n` (1-based) are `tag`, every other block is still a <p>. */
+    const expectOnly = async (tag: string, n: number[]) =>
+      expect(await tags()).toEqual(Array.from({ length: 25 }, (_, i) => (n.includes(i + 1) ? tag : "p")));
+
+    for (const level of ["3", "2", "4"]) {
+      await select([21, 3], [21, 3]); // caret inside #21
+      await choose(level);
+      await expectOnly(`h${level}`, [21]);
+      await choose("0");
+      await expectOnly("p", []);
+    }
+    // Root cause: a "caret" at the start of #21 that is really the range end-of-#20 -> start-of-#21 (tiny drag, Shift+click).
+    await select([20, "Para 20".length], [21, 0]);
+    await choose("3");
+    await expectOnly("h3", [21]);
+    await choose("0");
+    // A real multi-block selection converts every selected block, for headings, lists and quotes.
+    await select([20, 2], [22, 3]);
+    await choose("5");
+    await expectOnly("h5", [20, 21, 22]);
+    await choose("0");
+    await select([20, 7], [22, 0]);
+    await page.getByRole("button", { name: "• List" }).click();
+    await expect(body.locator("ul li")).toHaveText(["Para 21"]);
+    await page.getByRole("button", { name: "• List" }).click();
+    await select([21, 7], [22, 0]); // no text selected: the caret (head) is at the start of #22
+    await page.getByRole("button", { name: "Quote" }).click();
+    await expect(body.locator("blockquote")).toHaveText("Para 22");
+    await page.getByRole("button", { name: "Quote" }).click();
+    await expect(blocks).toHaveCount(25);
+
+    // MG-218: the formatting toolbar stays visible below the sticky editor bar while the body scrolls, at every width.
+    for (const width of [1280, 768, 375]) {
+      await page.setViewportSize({ width, height: 720 });
+      await body.evaluate((el) => el.lastElementChild!.scrollIntoView({ block: "end" }));
+      const measure = () => page.evaluate(() => {
+        const t = document.querySelector('[role="toolbar"][aria-label="Formatting"]')!.getBoundingClientRect();
+        const bar = document.querySelector(".editor-bar")!.getBoundingClientRect();
+        const title = document.getElementById("post-title")!.getBoundingClientRect();
+        return { top: t.top, bottom: t.bottom, barBottom: bar.bottom, titleBottom: title.bottom, vh: innerHeight, overflow: document.documentElement.scrollWidth > innerWidth };
+      });
+      // The editor bar re-wraps on resize; the dock offset follows on the next frame (ResizeObserver).
+      await expect.poll(async () => { const b = await measure(); return b.top - b.barBottom; }, { message: `${width}: toolbar below the editor bar` }).toBeGreaterThanOrEqual(-1);
+      const box = await measure();
+      expect(box.titleBottom, `${width}: page is scrolled past the title`).toBeLessThan(0);
+      expect(box.bottom, `${width}: toolbar inside the viewport`).toBeLessThan(box.vh);
+      expect(box.overflow, `${width}: no horizontal scroll`).toBe(false);
+      await expect(page.getByRole("button", { name: "Undo" })).toBeVisible();
+    }
+    await page.setViewportSize({ width: 1280, height: 720 });
+  });
+
   test("editor cannot reach admin-only pages", async () => {
     await page.goto(`${ADMIN}/users`);
     await page.getByLabel("Name").fill("Edie Editor");

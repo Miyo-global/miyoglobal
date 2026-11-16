@@ -196,6 +196,16 @@
 .studio .editor-side .card{padding:var(--s4)}
 .studio .title-input{font-size:1.25rem!important;font-weight:600!important}
 .studio .toolbar{display:flex;gap:var(--s1);flex-wrap:wrap;padding:6px;margin-bottom:var(--s2);border:1px solid var(--border);border-radius:var(--r);background:var(--bg2)}
+/* MG-218: formatting + table toolbars stay pinned under the topbar (64px) and the sticky editor bar on long posts.
+   Below the editor bar (z 10), topbar (z 20), sidebar/scrim and dialogs; above the editor content. */
+.studio .toolbar-dock{position:sticky;top:calc(64px + var(--editor-bar-h,72px));z-index:5;background:var(--card);padding:var(--s2) 0;margin-top:calc(-1 * var(--s2));margin-bottom:var(--s2);container-type:scroll-state}
+.studio .toolbar-dock .toolbar{margin-bottom:0}
+.studio .toolbar-dock .toolbar + .toolbar{margin-top:var(--s2)}
+@container scroll-state(stuck:top){.studio .toolbar-dock .toolbar{box-shadow:0 8px 14px -8px rgba(11,25,47,.3)}}
+@media (max-width:640px){
+  .studio .toolbar-dock .toolbar{flex-wrap:nowrap;overflow-x:auto}
+  .studio .toolbar-dock .toolbar > *{flex:none}
+}
 .studio .toolbar button{font:inherit;font-size:.85rem;font-weight:600;min-width:34px;padding:5px var(--s2);border:1px solid transparent;border-radius:var(--s2);background:transparent;color:var(--ink);cursor:pointer}
 .studio .toolbar button:hover{background:#fff;border-color:var(--border)}
 .studio .toolbar button.on{background:var(--navy);color:#fff}
@@ -216,7 +226,7 @@
 .studio .tiptap th{background:var(--bg2);font-weight:700;text-align:left}
 .studio .tiptap th p,.studio .tiptap td p{margin:0}
 .studio .tiptap .selectedCell::after{content:"";position:absolute;inset:0;background:rgba(224,180,88,.2);pointer-events:none}
-.studio .toolbar .tb-select{font:inherit;font-size:.85rem;font-weight:600;padding:4px var(--s2);border:1px solid var(--border);border-radius:var(--s2);background:#fff;color:var(--ink)}
+.studio .toolbar .tb-select{width:auto;font:inherit;font-size:.85rem;font-weight:600;padding:4px var(--s2);border:1px solid var(--border);border-radius:var(--s2);background:#fff;color:var(--ink)}
 .studio .table-form{align-items:center;gap:var(--s2)}
 .studio .table-form label{display:inline-flex;align-items:center;gap:6px;font-size:.85rem;font-weight:600;margin:0}
 .studio .table-form input[type=number]{width:64px;padding:4px 6px}
@@ -260,7 +270,7 @@
 
 /* responsive */
 @media (max-width:1100px){
-  .studio .editor-wrap{grid-template-columns:1fr}
+  .studio .editor-wrap{grid-template-columns:minmax(0,1fr)}
 }
 @media (max-width:900px){
   .studio .shell{grid-template-columns:1fr}
@@ -287,5 +297,6 @@
 }
 @media (max-width:520px){
   .studio .who-text{display:none}
+  .studio .editor-bar .row.nowrap{flex-wrap:wrap}
   .studio .cards{grid-template-columns:1fr}
 }

@@ -3,11 +3,12 @@
 import Image from "@tiptap/extension-image";
 import { TableKit } from "@tiptap/extension-table";
 import { Plugin } from "@tiptap/pm/state";
-import { EditorContent, Extension, useEditor, useEditorState } from "@tiptap/react";
+import { EditorContent, Extension, useEditor, useEditorState, type ChainedCommands } from "@tiptap/react";
 import NextImage from "next/image";
 import StarterKit from "@tiptap/starter-kit";
 import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { canonical, sanitizeDoc, type Doc } from "@/lib/content";
+import { trimBlockEdges } from "@/lib/editor-selection";
 import { checkHealth } from "@/lib/health";
 import { postInput, type Intent, type PostInput } from "@/lib/post-schema";
 import { formatIst, fromIstInput, toIstInput } from "@/lib/ist";
@@ -96,7 +97,8 @@ export function PostEditor(props: Props) {
       NoMarkCarry,
     ],
     content: props.initial.content,
-    editorProps: { attributes: { class: "tiptap", "aria-label": "Post body" } },
+    // ponytail: fixed top margin keeps the caret clear of the sticky topbar + editor bar + toolbar; measure them if it ever falls short.
+    editorProps: { attributes: { class: "tiptap", "aria-label": "Post body" }, scrollMargin: { top: 240, bottom: 24, left: 0, right: 0 }, scrollThreshold: { top: 240, bottom: 24, left: 0, right: 0 } },
     onUpdate: ({ editor: ed }) => set("content", sanitizeDoc(ed.getJSON() as Doc) as Record<string, unknown>),
   });
   const tb = useEditorState({
@@ -218,6 +220,21 @@ export function PostEditor(props: Props) {
     start(() => deletePostAction(props.id));
   };
 
+  /** Block-level change (heading, paragraph, list, quote) on the current block(s) only; see trimBlockEdges. */
+  const block = (run: (chain: ChainedCommands) => ChainedCommands) =>
+    editor && run(editor.chain().focus().command(({ tr }) => { tr.setSelection(trimBlockEdges(tr.selection)); return true; })).run();
+
+  // MG-218: the formatting dock sticks right below the sticky editor bar, whose height changes as it wraps.
+  const bar = useRef<HTMLDivElement>(null);
+  const dock = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const b = bar.current;
+    if (!b) return;
+    const ro = new ResizeObserver(() => dock.current?.style.setProperty("--editor-bar-h", `${b.offsetHeight}px`));
+    ro.observe(b);
+    return () => ro.disconnect();
+  }, []);
+
   const btn = (label: string, active: boolean, on: () => void, title?: string) => (
     <button type="button" className={active ? "on" : ""} aria-pressed={active} aria-label={title} title={title} onMouseDown={(e) => e.preventDefault()} onClick={on}>{label}</button>
   );
@@ -229,7 +246,7 @@ export function PostEditor(props: Props) {
 
   return (
     <>
-      <div className="editor-bar">
+      <div className="editor-bar" ref={bar}>
         <div className="editor-title">
           <h1>Edit post <span className={`pill ${status}`}>{status}</span></h1>
           <span className={`save-state ${saveState}`} role="status">
@@ -258,6 +275,7 @@ export function PostEditor(props: Props) {
               <label htmlFor="post-quick">Quick answer / TL;DR</label>
               <textarea id="post-quick" name="quickAnswer" value={form.quickAnswer} maxLength={600} onChange={(e) => set("quickAnswer", e.target.value)} />
             </div>
+            <div className="toolbar-dock" ref={dock}>
             <div className="toolbar" role="toolbar" aria-label="Formatting">
               {btn("B", !!tb?.bold, () => editor?.chain().focus().toggleBold().run(), "Bold (Ctrl+B)")}
               {btn("I", !!tb?.italic, () => editor?.chain().focus().toggleItalic().run(), "Italic (Ctrl+I)")}
@@ -268,18 +286,16 @@ export function PostEditor(props: Props) {
                 className="tb-select"
                 value={tb?.level ?? 0}
                 onChange={(e) => {
-                  const level = Number(e.target.value);
-                  const chain = editor?.chain().focus();
-                  if (level) chain?.setHeading({ level: level as (typeof LEVELS)[number] }).run();
-                  else chain?.setParagraph().run();
+                  const level = Number(e.target.value) as (typeof LEVELS)[number] | 0;
+                  block((c) => (level ? c.setHeading({ level }) : c.setParagraph()));
                 }}
               >
                 <option value={0}>Paragraph</option>
                 {LEVELS.map((l) => <option key={l} value={l}>Heading {l}</option>)}
               </select>
-              {btn("• List", !!editor?.isActive("bulletList"), () => editor?.chain().focus().toggleBulletList().run())}
-              {btn("1. List", !!editor?.isActive("orderedList"), () => editor?.chain().focus().toggleOrderedList().run())}
-              {btn("Quote", !!editor?.isActive("blockquote"), () => editor?.chain().focus().toggleBlockquote().run())}
+              {btn("• List", !!editor?.isActive("bulletList"), () => block((c) => c.toggleBulletList()))}
+              {btn("1. List", !!editor?.isActive("orderedList"), () => block((c) => c.toggleOrderedList()))}
+              {btn("Quote", !!editor?.isActive("blockquote"), () => block((c) => c.toggleBlockquote()))}
               {btn("Link", !!tb?.link, editLink)}
               {btn("Image", false, () => setPicker("body"))}
               {btn("Table", !!table, () => setTable(table ? null : { rows: 3, cols: 3, header: true }))}
@@ -307,6 +323,7 @@ export function PostEditor(props: Props) {
                 {btn("Delete table", false, () => editor?.chain().focus().deleteTable().run())}
               </div>
             )}
+            </div>
             <EditorContent editor={editor} />
           </section>
 
