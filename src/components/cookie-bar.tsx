@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState, useSyncExternalStore } from "react";
 
 const KEY = "miyo-consent";
@@ -22,7 +23,7 @@ export function CookieBar() {
   const [dismissed, setDismissed] = useState(false);
   return (
     <div className={`cookiebar${!consented && !dismissed ? " show" : ""}`} role="dialog" aria-label="Cookie notice">
-      <p>We use essential functionality only, no tracking or advertising cookies. Fonts load from Google Fonts. See our <a href="/privacy-policy">Privacy &amp; Cookie Policy</a>.</p>
+      <p>We use essential functionality only, no tracking or advertising cookies. Fonts load from Google Fonts. See our <Link href="/privacy-policy">Privacy &amp; Cookie Policy</Link>.</p>
       <button
         className="btn btn-gold"
         type="button"

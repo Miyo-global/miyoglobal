@@ -11,6 +11,7 @@ const shared = /^\/(_next|media\/|images\/|favicon\.(svg|ico))/;
 const postPath = /^\/blog\/(?!search$)[a-z0-9-]+$/;
 
 const PUBLIC_HOST = "www.miyoglobal.com";
+const NOT_FOUND_PATH = "/_not-found";
 
 function notFound() {
   return new NextResponse(null, { status: 404 });
@@ -38,11 +39,12 @@ export async function proxy(req: NextRequest) {
       const to = await findRedirect(pathname).catch(() => null);
       if (to) return tag(NextResponse.redirect(new URL(to, req.url), 301));
     }
-    // Unknown blog URLs get the branded static 404 (real <title>, status 404). Next 16 serves an empty
-    // error shell when a dynamic page calls notFound(), so the check runs here, before the page renders.
+    // Unknown blog URLs get the branded 404 (real <title>, status 404). Next 16 serves an empty error
+    // shell when a dynamic page calls notFound(), so the check runs here: rewriting to a path no route
+    // matches renders src/app/not-found.tsx.
     const target = parseBlogPath(pathname);
     if (target && !(await blogTargetExists(target).catch(() => true))) {
-      return tag(NextResponse.rewrite(new URL("/not-found-html", req.url)));
+      return tag(NextResponse.rewrite(new URL(NOT_FOUND_PATH, req.url)));
     }
     return tag(NextResponse.next());
   }

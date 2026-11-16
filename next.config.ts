@@ -2,9 +2,8 @@ import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync, statSync } from "node:fs";
 import type { NextConfig } from "next";
 import { ADMIN_HOST, ADMIN_URL } from "./src/lib/hosts";
-import { REWRITTEN_PAGES, STATIC_PAGES } from "./src/lib/pages";
+import { HTML_PAGE_NAMES, REWRITTEN_PAGES, STATIC_PAGES } from "./src/lib/pages";
 
-const pages = REWRITTEN_PAGES;
 const git = (...args: string[]) => {
   try {
     return execFileSync("git", args, { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] }).trim();
@@ -15,7 +14,7 @@ const git = (...args: string[]) => {
 // Shallow clones (Vercel) graft history at a boundary commit that looks like it touched every file: treat those dates as unknown.
 const shallowFile = git("rev-parse", "--git-path", "shallow");
 const shallow = new Set(shallowFile && existsSync(shallowFile) ? readFileSync(shallowFile, "utf8").split("\n").filter(Boolean) : []);
-// Last commit date per public/*.html; falls back to file mtime (checkout time on CI) when git history is missing.
+// Last commit date per page source file; falls back to file mtime (checkout time on CI) when git history is missing.
 const lastmod = (file: string) => {
   const [hash, date] = git("log", "-1", "--format=%H %cI", "--", file).split(" ");
   const when = hash && !shallow.has(hash) ? new Date(date) : statSync(file).mtime;
@@ -91,17 +90,14 @@ const config: NextConfig = {
       { source: "/index.html", destination: "/", permanent: true },
       { source: "/blogs", destination: "/blog", permanent: true },
       { source: "/blogs/:path*", destination: "/blog/:path*", permanent: true },
-      { source: `/:page(${pages.join("|")}).html`, destination: "/:page", permanent: true },
+      { source: `/:page(${HTML_PAGE_NAMES.join("|")}).html`, destination: "/:page", permanent: true },
     ];
   },
   async rewrites() {
     return {
-      beforeFiles: [
-        { source: "/", destination: "/index.html" },
-        { source: `/:page(${pages.join("|")})`, destination: "/:page.html" },
-      ],
+      beforeFiles: [{ source: `/:page(${REWRITTEN_PAGES.join("|")})`, destination: "/:page.html" }],
       afterFiles: [],
-      fallback: [{ source: "/:path*", destination: "/not-found-html" }],
+      fallback: [],
     };
   },
 };

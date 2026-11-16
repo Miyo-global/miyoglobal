@@ -19,17 +19,17 @@ export function SiteFooter() {
           </div>
           <div className="fcol">
             <h5>Company</h5>
-            <a href="/staffing-solutions">Staffing Solutions</a>
-            <a href="/digital-solutions">Digital Solutions</a>
-            <a href="/case-studies">Case studies</a>
+            <Link href="/staffing-solutions">Staffing Solutions</Link>
+            <Link href="/digital-solutions">Digital Solutions</Link>
+            <Link href="/case-studies">Case studies</Link>
             <a href="/referrals">Referrals</a>
             <Link href="/blog">Blog</Link>
-            <a href="/about">About us</a>
-            <a href="/contact">Contact</a>
-            <a href="/editorial-policy">Editorial policy</a>
-            <a href="/privacy-policy">Privacy &amp; Cookies</a>
-            <a href="/terms">Terms</a>
-            <a href="/disclosure">Disclosure</a>
+            <Link href="/about">About us</Link>
+            <Link href="/contact">Contact</Link>
+            <Link href="/editorial-policy">Editorial policy</Link>
+            <Link href="/privacy-policy">Privacy &amp; Cookies</Link>
+            <Link href="/terms">Terms</Link>
+            <Link href="/disclosure">Disclosure</Link>
           </div>
           <div className="fcol">
             <h5>Get in touch</h5>

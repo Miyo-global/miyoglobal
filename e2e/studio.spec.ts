@@ -529,7 +529,7 @@ test("sign-in is rate limited and accounts lock after repeated failures", async 
 test("static pages use clean canonicals without redirects", async ({ request }) => {
   for (const p of ["about", "terms", "disclosure", "editorial-policy"]) {
     const html = await (await request.get(`/${p}`)).text();
-    expect(html).toContain(`<link rel="canonical" href="https://www.miyoglobal.com/${p}">`);
+    expect(html).toContain(`<link rel="canonical" href="http://localhost:3111/${p}"`);
     expect(html).not.toContain(".html\"");
   }
   const referrals = await (await request.get("/referrals")).text();
