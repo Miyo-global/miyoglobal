@@ -68,7 +68,7 @@ export function MediaPicker({ items, onPick, canDelete = false }: { items: Media
     <div className="media">
       <form onSubmit={upload} className="upload">
         <div className="field">
-          <label htmlFor={`${idp}-file`}>Image (JPEG, PNG, WebP or AVIF, at least {MIN_UPLOAD_WIDTH}px wide; large files are compressed before upload)</label>
+          <label htmlFor={`${idp}-file`}>Image (JPEG, PNG, WebP or AVIF, at least {MIN_UPLOAD_WIDTH}px wide; large files are compressed automatically)</label>
           <input id={`${idp}-file`} name="file" type="file" accept="image/jpeg,image/png,image/webp,image/avif" required aria-describedby={hasFile ? undefined : `${idp}-file-hint`} onChange={(e) => { setHasFile(!!e.target.files?.length); setError(""); }} />
           {!hasFile && <span id={`${idp}-file-hint`} className="muted small">Select a file to upload. Images narrower than {MIN_UPLOAD_WIDTH}px are rejected.</span>}
         </div>
