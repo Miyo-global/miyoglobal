@@ -20,10 +20,12 @@ function storeFailure(e: unknown): string {
 async function encode(input: Buffer) {
   const base = sharp(input, { failOn: "error", limitInputPixels: 100_000_000 }).rotate();
   const fit = { width: 2560, withoutEnlargement: true };
-  const main = await base.clone().resize(fit).webp({ quality: 78 }).toBuffer({ resolveWithObject: true });
-  const avif = await base.clone().resize(fit).avif({ quality: 55, effort: 2 }).toBuffer();
-  const og = await base.clone().resize(1200, 630, { fit: "cover" }).webp({ quality: 80 }).toBuffer();
-  const blur = await base.clone().resize(16).webp({ quality: 40 }).toBuffer();
+  const [main, avif, og, blur] = await Promise.all([
+    base.clone().resize(fit).webp({ quality: 78 }).toBuffer({ resolveWithObject: true }),
+    base.clone().resize(fit).avif({ quality: 55, effort: 2 }).toBuffer(),
+    base.clone().resize(1200, 630, { fit: "cover" }).webp({ quality: 80 }).toBuffer(),
+    base.clone().resize(16).webp({ quality: 40 }).toBuffer(),
+  ]);
   return { main, avif, og, blur };
 }
 
@@ -42,6 +44,7 @@ export async function saveUpload(file: File, alt: string, userId: string) {
   if (width < MIN_UPLOAD_WIDTH) throw new UploadError(`Image must be at least ${MIN_UPLOAD_WIDTH}px wide (this one is ${width}px)`);
 
   const id = randomUUID();
+  const started = Date.now();
   const { main, avif, og, blur } = await encode(input).catch((e) => {
     console.error("media: encode failed", { id, ...describeError(e) });
     throw new UploadError("Could not process this image. The file may be damaged. Re-export it as JPEG or PNG and try again.");
@@ -55,7 +58,9 @@ export async function saveUpload(file: File, alt: string, userId: string) {
   ] as const;
   const stored: string[] = [];
   try {
+    const encoded = Date.now();
     for (const [name, body, type] of variants) stored.push(await store(name, body, type));
+    console.info("media: upload timings", { id, encodeMs: encoded - started, storeMs: Date.now() - encoded, bytes: variants.map(([, body]) => body.length) });
     const [url, avifUrl, ogUrl] = stored;
     const [row] = await db
       .insert(media)

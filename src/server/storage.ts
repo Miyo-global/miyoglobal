@@ -37,11 +37,18 @@ function r2() {
 
 async function put(name: string, body: Buffer, contentType: string) {
   const { client, objectUrl } = r2();
-  const res = await client.fetch(objectUrl(name), {
+  const bytes = new Uint8Array(body);
+  const signed = await client.sign(objectUrl(name), {
     method: "PUT",
-    body: new Uint8Array(body),
+    body: bytes,
     headers: { "Content-Type": contentType, "Cache-Control": CACHE },
-    signal: AbortSignal.timeout(15_000),
+  });
+  const res = await fetch(signed.url, {
+    method: "PUT",
+    headers: signed.headers,
+    body: bytes,
+    cache: "no-store",
+    signal: AbortSignal.timeout(30_000),
   });
   if (res.ok) return;
   const text = await res.text().catch(() => "");

@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
+import { randomBytes } from "node:crypto";
 import { readFileSync } from "node:fs";
 import pg from "pg";
 import sharp from "sharp";
@@ -424,6 +425,18 @@ test.describe.serial("studio to public flow", () => {
     await confirmDialog();
     await expect(page.locator(".media-grid figure")).toHaveCount(1);
     expect(mockCalls().match(/R2 DELETE/g)).toHaveLength(3);
+  });
+
+  test("a 7MB noise PNG is compressed in the browser and stored on R2 with Content-Length", async () => {
+    await page.goto(`${ADMIN}/media`);
+    const noise = await sharp(randomBytes(1800 * 1300 * 3), { raw: { width: 1800, height: 1300, channels: 3 } }).png().toBuffer();
+    expect(noise.length).toBeGreaterThan(6_500_000);
+    await page.locator('input[type="file"]').setInputFiles({ name: "noise.png", mimeType: "image/png", buffer: noise });
+    await page.getByLabel(/^Alt text/).fill(ALT);
+    await page.getByRole("button", { name: "Upload" }).click();
+    await expect(page.getByText("Image uploaded")).toBeVisible({ timeout: 60_000 });
+    await expect(page.locator(".media-grid figure")).toHaveCount(2);
+    expect(mockCalls()).not.toContain("R2 411");
   });
 
   test("headings change only the caret's block; toolbar stays pinned on long posts", async () => {
