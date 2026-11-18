@@ -1,5 +1,5 @@
 import { STATIC_PAGES, staticLastmods } from "@/lib/pages";
-import { SITE_URL, xml, xmlEscape } from "@/lib/seo";
+import { SITE_URL, contentLastmod, xml, xmlEscape } from "@/lib/seo";
 import { sitemapEntries } from "@/server/services/public";
 
 export const dynamic = "force-dynamic";
@@ -8,7 +8,10 @@ export async function GET() {
   const { posts, categories, tags, authors } = await sitemapEntries();
   const mtimes = staticLastmods();
   const newestPage = Object.values(mtimes).sort().at(-1);
-  const newestPost = posts.reduce<Date | null>((m, p) => (!m || p.updatedAt > m ? p.updatedAt : m), null);
+  const newestPost = posts.reduce<Date | null>((m, p) => {
+    const d = contentLastmod(p.updatedAt, p.publishedAt);
+    return !m || d > m ? d : m;
+  }, null);
   const last = newestPost?.toISOString().slice(0, 10);
   const urls = [
     ...STATIC_PAGES.map((p) => ({ loc: p.path, lastmod: mtimes[p.path] })),

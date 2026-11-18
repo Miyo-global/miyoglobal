@@ -23,6 +23,10 @@ export function siteGraph() {
   ];
 }
 
+export function contentLastmod(updatedAt: Date, publishedAt: Date | null | undefined): Date {
+  return publishedAt && publishedAt > updatedAt ? publishedAt : updatedAt;
+}
+
 export function absolute(path: string): string {
   return /^https?:\/\//i.test(path) ? path : `${SITE_URL}${path.startsWith("/") ? path : `/${path}`}`;
 }
