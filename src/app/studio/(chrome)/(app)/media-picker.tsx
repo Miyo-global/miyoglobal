@@ -7,6 +7,7 @@ import { MIN_UPLOAD_WIDTH } from "@/lib/image-type";
 import { Icon } from "../icons";
 import { useUi } from "../ui";
 import { deleteMediaAction, uploadMediaAction } from "./actions";
+import { PrepareError, prepareUpload } from "./prepare-upload";
 
 export type MediaItem = { id: number; url: string; alt: string; width: number; height: number };
 
@@ -33,7 +34,13 @@ export function MediaPicker({ items, onPick, canDelete = false }: { items: Media
     setError("");
     setOp("upload");
     start(async () => {
-      const res = await uploadMediaAction(data);
+      let res: Awaited<ReturnType<typeof uploadMediaAction>>;
+      try {
+        data.set("file", await prepareUpload(file));
+        res = await uploadMediaAction(data);
+      } catch (err) {
+        return setError(err instanceof PrepareError ? err.message : "The upload did not reach the server or the server stopped responding. Check your connection and try again with a smaller image.");
+      }
       if (!res.ok) return setError(res.error);
       setList((l) => [res.media, ...l]);
       form.reset();
@@ -61,7 +68,7 @@ export function MediaPicker({ items, onPick, canDelete = false }: { items: Media
     <div className="media">
       <form onSubmit={upload} className="upload">
         <div className="field">
-          <label htmlFor={`${idp}-file`}>Image (JPEG, PNG, WebP or AVIF, at least {MIN_UPLOAD_WIDTH}px wide, max 4MB)</label>
+          <label htmlFor={`${idp}-file`}>Image (JPEG, PNG, WebP or AVIF, at least {MIN_UPLOAD_WIDTH}px wide; large files are compressed automatically)</label>
           <input id={`${idp}-file`} name="file" type="file" accept="image/jpeg,image/png,image/webp,image/avif" required aria-describedby={hasFile ? undefined : `${idp}-file-hint`} onChange={(e) => { setHasFile(!!e.target.files?.length); setError(""); }} />
           {!hasFile && <span id={`${idp}-file-hint`} className="muted small">Select a file to upload. Images narrower than {MIN_UPLOAD_WIDTH}px are rejected.</span>}
         </div>
