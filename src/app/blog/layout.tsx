@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { CookieBar } from "@/components/cookie-bar";
+import { GoogleTag } from "@/components/google-tag";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { SITE_URL } from "@/lib/seo";
@@ -20,6 +21,7 @@ export default function BlogLayout({ children }: { children: React.ReactNode }) 
       <main id="main">{children}</main>
       <SiteFooter />
       <CookieBar />
+      <GoogleTag />
     </>
   );
 }

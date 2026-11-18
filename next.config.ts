@@ -23,20 +23,25 @@ const lastmod = (file: string) => {
 const lastmods = Object.fromEntries(STATIC_PAGES.map((p) => [p.path, lastmod(p.file)]));
 const mediaUrl = process.env.NEXT_PUBLIC_MEDIA_URL ? new URL(process.env.NEXT_PUBLIC_MEDIA_URL) : null;
 
-const csp = [
-  "default-src 'self'",
-  "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-  "font-src https://fonts.gstatic.com",
-  "script-src 'self' 'unsafe-inline'",
-  `img-src 'self' data:${mediaUrl ? ` ${mediaUrl.origin}` : ""}`,
-  "connect-src 'self'",
-  "frame-ancestors 'self'",
-  "base-uri 'self'",
-  "form-action 'self'",
-  "object-src 'self'",
-].join("; ");
+const policy = (google: boolean) => {
+  const gtm = google ? " https://*.googletagmanager.com" : "";
+  const ga = google ? " https://*.google-analytics.com https://*.analytics.google.com" : "";
+  return [
+    "default-src 'self'",
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+    "font-src https://fonts.gstatic.com",
+    `script-src 'self' 'unsafe-inline'${gtm}`,
+    `img-src 'self' data:${mediaUrl ? ` ${mediaUrl.origin}` : ""}${gtm}${google ? " https://*.google-analytics.com" : ""}`,
+    `connect-src 'self'${gtm}${ga}`,
+    `frame-ancestors ${google ? "'self'" : "'none'"}`,
+    "base-uri 'self'",
+    "form-action 'self'",
+    "object-src 'self'",
+  ].join("; ");
+};
 
-const adminCsp = csp.replace("frame-ancestors 'self'", "frame-ancestors 'none'");
+const csp = policy(true);
+const adminCsp = policy(false);
 
 const baseHeaders = [
   { key: "X-Content-Type-Options", value: "nosniff" },

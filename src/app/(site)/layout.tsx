@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { CookieBar } from "@/components/cookie-bar";
+import { GoogleTag } from "@/components/google-tag";
 import { SiteEffects } from "@/components/site-effects";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
@@ -26,6 +27,7 @@ export default function SiteLayout({ children }: { children: React.ReactNode }) 
       <main id="main">{children}</main>
       <SiteFooter />
       <CookieBar />
+      <GoogleTag />
       <SiteEffects />
     </>
   );
