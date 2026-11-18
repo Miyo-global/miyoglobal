@@ -2,31 +2,50 @@ import "server-only";
 import { randomUUID } from "node:crypto";
 import { desc, eq, sql } from "drizzle-orm";
 import sharp from "sharp";
-import { detectImage, MAX_UPLOAD_BYTES, MIN_UPLOAD_WIDTH, validateAlt } from "@/lib/image-type";
+import { detectImage, isHeic, MAX_UPLOAD_BYTES, MIN_UPLOAD_WIDTH, validateAlt } from "@/lib/image-type";
 import { db } from "../db";
 import { media, posts } from "../db/schema";
-import { describeError, removeObject, store } from "../storage";
+import { describeError, removeObject, StorageError, store } from "../storage";
 
 export class UploadError extends Error {}
 
+function storeFailure(e: unknown): string {
+  if (e instanceof StorageError && e.status) return `Image storage rejected the upload (R2 ${e.status}${e.code ? ` ${e.code}` : ""}). Nothing was saved.`;
+  if (e instanceof StorageError) return "Image storage is not configured on the server. Nothing was saved.";
+  if (e instanceof Error && (e.name === "TimeoutError" || e.name === "AbortError")) return "Image storage timed out. Nothing was saved. Please try again.";
+  if (e instanceof TypeError) return "Could not reach image storage. Nothing was saved. Please try again.";
+  return "Could not save the image record. Nothing was saved. Please try again.";
+}
+
+async function encode(input: Buffer) {
+  const base = sharp(input, { failOn: "error", limitInputPixels: 100_000_000 }).rotate();
+  const fit = { width: 2560, withoutEnlargement: true };
+  const main = await base.clone().resize(fit).webp({ quality: 78 }).toBuffer({ resolveWithObject: true });
+  const avif = await base.clone().resize(fit).avif({ quality: 55, effort: 2 }).toBuffer();
+  const og = await base.clone().resize(1200, 630, { fit: "cover" }).webp({ quality: 80 }).toBuffer();
+  const blur = await base.clone().resize(16).webp({ quality: 40 }).toBuffer();
+  return { main, avif, og, blur };
+}
+
 export async function saveUpload(file: File, alt: string, userId: string) {
   if (file.size === 0) throw new UploadError("Choose an image");
-  if (file.size > MAX_UPLOAD_BYTES) throw new UploadError("Image must be 4MB or smaller");
+  if (file.size > MAX_UPLOAD_BYTES) throw new UploadError(`Image must be ${MAX_UPLOAD_BYTES / 1024 / 1024}MB or smaller`);
   const altError = validateAlt(alt);
   if (altError) throw new UploadError(altError);
   const input = Buffer.from(await file.arrayBuffer());
+  if (isHeic(input)) throw new UploadError("HEIC photos are not supported. Export the photo as JPEG or PNG and upload that.");
   if (!detectImage(input)) throw new UploadError("Only JPEG, PNG, WebP or AVIF images are allowed");
 
-  const base = sharp(input, { failOn: "error", limitInputPixels: 100_000_000 }).rotate();
-  const meta = await base.metadata().catch(() => null);
-  if (!meta?.width || !meta.height) throw new UploadError("Could not read the image");
-  if (meta.width < MIN_UPLOAD_WIDTH) throw new UploadError(`Image must be at least ${MIN_UPLOAD_WIDTH}px wide`);
+  const meta = await sharp(input, { limitInputPixels: 100_000_000 }).metadata().catch(() => null);
+  if (!meta?.width || !meta.height) throw new UploadError("Could not read the image. The file may be damaged or too large in pixels.");
+  const width = meta.autoOrient?.width ?? meta.width;
+  if (width < MIN_UPLOAD_WIDTH) throw new UploadError(`Image must be at least ${MIN_UPLOAD_WIDTH}px wide (this one is ${width}px)`);
 
   const id = randomUUID();
-  const main = await base.clone().resize({ width: 2560, withoutEnlargement: true }).webp({ quality: 78 }).toBuffer({ resolveWithObject: true });
-  const avif = await base.clone().resize({ width: 2560, withoutEnlargement: true }).avif({ quality: 55 }).toBuffer();
-  const og = await base.clone().resize(1200, 630, { fit: "cover" }).webp({ quality: 80 }).toBuffer();
-  const blur = await base.clone().resize(16).webp({ quality: 40 }).toBuffer();
+  const { main, avif, og, blur } = await encode(input).catch((e) => {
+    console.error("media: encode failed", { id, ...describeError(e) });
+    throw new UploadError("Could not process this image. The file may be damaged. Re-export it as JPEG or PNG and try again.");
+  });
 
   // Sequential, not parallel: concurrent PUTs to R2 were the intermittent failure. Each store() retries.
   const variants = [
@@ -56,7 +75,7 @@ export async function saveUpload(file: File, alt: string, userId: string) {
   } catch (e) {
     console.error("media: upload failed", { id, stored: stored.length, ...describeError(e) });
     await Promise.all(stored.map((u) => removeObject(u).catch(() => null)));
-    throw new UploadError("Could not store the image. Nothing was saved. Please try again.");
+    throw new UploadError(storeFailure(e));
   }
 }
 
