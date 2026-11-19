@@ -44,7 +44,7 @@ export async function proxy(req: NextRequest) {
     // matches renders src/app/not-found.tsx.
     const target = parseBlogPath(pathname);
     if (target && !(await blogTargetExists(target).catch(() => true))) {
-      return tag(NextResponse.rewrite(new URL(NOT_FOUND_PATH, req.url)));
+      return tag(NextResponse.rewrite(new URL(NOT_FOUND_PATH, req.url), { status: 404 }));
     }
     return tag(NextResponse.next());
   }
