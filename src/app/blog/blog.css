@@ -1,3 +1,6 @@
+/* Layered below the ledger design system (src/app/ledger.css) so its utilities win where used. */
+@layer legacy, theme, base, components, utilities;
+@layer legacy {
 :root{--serif:'Fraunces',Georgia,'Times New Roman',serif;--bg2:#F7F8FB}
 .b-wrap{max-width:1200px;margin:0 auto;padding:0 28px}
 .b-hero{padding:72px 0 40px;background:radial-gradient(900px 420px at 88% -10%,#FBF3E2 0%,transparent 60%),#fff}
@@ -97,3 +100,4 @@ a.b-chip:hover{background:#F6E6BF}
 .b-card-body .b-chip{align-self:flex-start}
 .b-cover img{max-height:560px;object-fit:cover}
 .b-author a{text-decoration:none;color:var(--ink)}
+}

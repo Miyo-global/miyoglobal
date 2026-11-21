@@ -1,4 +1,7 @@
 /* Shared styles for the marketing pages, moved from the inline <style> of the old public/*.html files. Only the heading selectors changed (.frow h3, .legal h3 are now h2; .step h4 is now h3) so each page has a sequential heading order with the same look. */
+/* Layered below the ledger design system (src/app/ledger.css) so its utilities win where used. */
+@layer legacy, theme, base, components, utilities;
+@layer legacy {
 :root{
   --bg:#FFFFFF; --bg2:#F7F8FB; --card:#FFFFFF; --tint:#F3F5F9;
   --ink:#0B192F; --muted:#5B6B82; --soft:#66758C; --border:#E4E8F0;
@@ -36,17 +39,6 @@ section[id]{scroll-margin-top:86px}
 .btn-navy:hover{transform:translateY(-2px);box-shadow:0 12px 30px rgba(11,25,47,.28)}
 .btn-ghost{border:1.5px solid var(--border);color:var(--ink)}
 .btn-ghost:hover{border-color:var(--gold-deep);color:var(--gold-deep)}
-
-header{position:sticky;top:0;z-index:60;background:rgba(255,255,255,.85);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);transition:box-shadow .3s,background .3s}
-header.scrolled{background:rgba(255,255,255,.97);box-shadow:0 8px 26px rgba(11,25,47,.08)}
-.nav{display:flex;align-items:center;justify-content:space-between;height:74px}
-.brand{font-weight:800;font-size:1.2rem;padding:10px 0}
-.brand .g{color:var(--gold-deep)}
-.nav-links{display:flex;gap:28px;align-items:center}
-.nav-links a{font-size:.93rem;color:var(--muted);font-weight:500;transition:color .2s;padding:10px 2px}
-.nav-links a:hover,.nav-links a.active{color:var(--ink)}
-.nav-links a.active{font-weight:700}
-.menu-btn{display:none;background:none;border:1.5px solid var(--border);color:var(--ink);border-radius:9px;padding:.45em .65em;font-size:1.1rem;cursor:pointer}
 
 .gfx{position:relative;border-radius:var(--r);overflow:hidden;border:1px solid var(--border);background:
     radial-gradient(120% 120% at 82% 8%, #FDF6E7 0%, var(--bg2) 55%, #EEF1F7 100%);
@@ -188,24 +180,6 @@ ul.checks li::before{content:"";width:20px;height:20px;border-radius:50%;backgro
 .office address{font-style:normal;color:var(--muted);font-size:.92rem;line-height:1.5}
 .cinfo .office{margin-bottom:16px}
 
-footer{background:var(--navy);color:#fff;padding:64px 0 32px;margin-top:8px}
-.fcols{display:grid;grid-template-columns:1.6fr 1fr 1fr;gap:40px}
-.fbrand{font-weight:800;font-size:1.3rem;margin-bottom:14px;color:#fff}
-.fbrand .g{color:var(--gold)}
-.fdesc{color:#94A3B8;font-size:.94rem;max-width:42ch}
-.fsoc{display:flex;gap:12px;margin-top:20px}
-.fsoc a{width:40px;height:40px;border:1px solid #24344F;border-radius:10px;display:flex;align-items:center;justify-content:center;transition:border-color .2s,background .2s}
-.fsoc a:hover{border-color:var(--gold);background:#112240}
-.fsoc svg{width:18px;height:18px;stroke:#94A3B8;fill:none;stroke-width:2}
-.fcol h5{font-size:.75rem;letter-spacing:.14em;text-transform:uppercase;color:#7A8CA6;margin-bottom:16px;font-weight:700}
-.fcol a{display:block;color:#94A3B8;font-size:.93rem;padding:9px 0}
-.fcol p{display:block;color:#94A3B8;font-size:.93rem;margin-bottom:11px}
-.fcol a:hover{color:var(--gold)}
-.fnote{margin-top:34px;padding:16px 20px;border:1px solid #24344F;border-radius:12px;color:#94A3B8;font-size:.83rem;line-height:1.55}
-.fnote b{color:#E7ECF4}
-.fbot{border-top:1px solid #24344F;margin-top:44px;padding-top:24px;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;color:#7A8CA6;font-size:.82rem}
-.fbot .ent{max-width:60ch}
-
 .sec .legal h2{font-size:1.15rem;margin:30px 0 8px;letter-spacing:-.02em}
 .legal p{color:var(--muted);margin-bottom:6px;font-size:.98rem;line-height:1.65}
 .legal a{color:var(--gold-deep);font-weight:600;text-decoration:underline;display:inline-block;padding:7px 2px}
@@ -233,22 +207,17 @@ footer{background:var(--navy);color:#fff;padding:64px 0 32px;margin-top:8px}
   .gfx .ring.b{animation:pulse 6s ease-in-out infinite .8s}
 }
 
-@media (max-width:1040px){
-  .nav-links{display:none}
-  .nav-links.open{display:flex;position:absolute;top:74px;left:0;right:0;flex-direction:column;background:#fff;border-bottom:1px solid var(--border);padding:8px 0;box-shadow:var(--shadow-lg)}
-  .nav-links.open a{padding:14px 28px}.nav-links.open .btn{margin:10px 28px}
-  .menu-btn{display:inline-flex}
-}
 @media (max-width:980px){
   .hero-grid,.two,.frow,.frow.rev .fx,.proc,.contact-2{grid-template-columns:1fr;gap:34px}
   .frow.rev .fx{order:0}
   .g4,.g3{grid-template-columns:repeat(2,1fr)}
-  .fcols{grid-template-columns:1fr 1fr}
+
   .counters{grid-template-columns:repeat(2,1fr);gap:26px}
 }
 @media (max-width:640px){
-  .g2,.g3,.g4,.contact-2,ul.checks,.roles,.fcols,.cform{grid-template-columns:1fr}
+  .g2,.g3,.g4,.contact-2,ul.checks,.roles,.cform{grid-template-columns:1fr}
   .sec{padding:64px 0}.hero{padding:54px 0 20px}
   .navy-band{padding:34px 24px}
   .cform input,.cform textarea{font-size:16px}
+}
 }

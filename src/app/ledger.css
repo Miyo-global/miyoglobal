@@ -1,0 +1,246 @@
+/* "The delivery ledger" design system (Northwall structure, MIYO skin).
+   Layer order: the old page CSS sits in `legacy`, below Tailwind, so ledger
+   utilities win where they are used and inner pages keep their look.
+   No Tailwind preflight: inner pages and the blog keep their own reset. */
+@layer legacy, theme, base, components, utilities;
+
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities) source(none);
+
+@source "../ledger";
+@source "../views/home";
+@source "../components/site-header.tsx";
+@source "../components/site-footer.tsx";
+@source "../components/contact-form.tsx";
+
+/* TIER 1: primitives. The only place a literal colour, size or time lives. */
+:root {
+  --raw-navy: #0b192f;
+  --raw-navy-2: #10233f;
+  --raw-paper: #f7f8fb;
+  --raw-white: #ffffff;
+  --raw-gold: #e0b458;
+  --raw-gold-deep: #8f6b14;
+  --raw-error: #b42318;
+  --raw-navy-a68: rgba(11, 25, 47, 0.68);
+  /* 0.58 measured 4.34:1 on white; 0.64 clears 4.5:1 on white and paper. */
+  --raw-navy-a64: rgba(11, 25, 47, 0.64);
+  --raw-navy-a30: rgba(11, 25, 47, 0.3);
+  --raw-navy-a72: rgba(11, 25, 47, 0.72);
+  --raw-navy-a0: rgba(11, 25, 47, 0);
+  --raw-white-a62: rgba(255, 255, 255, 0.62);
+  --raw-white-a55: rgba(255, 255, 255, 0.55);
+  --raw-white-a30: rgba(255, 255, 255, 0.3);
+  --raw-duration-fast: 150ms;
+  --raw-duration-normal: 250ms;
+  --raw-header: 4.0625rem;
+  --raw-blur-inactive: 5px;
+  --raw-radius-control: 0.125rem;
+}
+
+/* TIER 2: semantic roles. */
+:root {
+  --ground-dark: var(--raw-navy);
+  --ground-light: var(--raw-paper);
+  --surface-raised-light: var(--raw-white);
+  --surface-raised-dark: var(--raw-navy-2);
+  --ink: var(--raw-navy);
+  --ink-muted: var(--raw-navy-a68);
+  --ink-meta: var(--raw-navy-a64);
+  --on-dark: var(--raw-white);
+  --on-dark-muted: var(--raw-white-a62);
+  --on-dark-meta: var(--raw-white-a55);
+  --rule-light: var(--raw-navy-a30);
+  --rule-dark: var(--raw-white-a30);
+  --accent: var(--raw-gold);
+  --accent-deep: var(--raw-gold-deep);
+  --danger: var(--raw-error);
+  --scrim: linear-gradient(180deg, var(--raw-navy-a0) 0%, var(--raw-navy-a72) 100%);
+  --duration-fast: var(--raw-duration-fast);
+  --duration-normal: var(--raw-duration-normal);
+  --header-height: var(--raw-header);
+  --inactive-blur: var(--raw-blur-inactive);
+  --control-radius: var(--raw-radius-control);
+
+  /* Northwall's PageGround reads these two to blend the fixed surface. */
+  --surface-inverse: var(--ground-dark);
+  --surface-muted: var(--ground-light);
+}
+
+/* TIER 3: Tailwind bindings. `inline` keeps them live. */
+@theme inline {
+  --color-ground-dark: var(--ground-dark);
+  --color-ground-light: var(--ground-light);
+  --color-raised-light: var(--surface-raised-light);
+  --color-raised-dark: var(--surface-raised-dark);
+  --color-ink: var(--ink);
+  --color-ink-muted: var(--ink-muted);
+  --color-ink-meta: var(--ink-meta);
+  --color-on-dark: var(--on-dark);
+  --color-on-dark-muted: var(--on-dark-muted);
+  --color-on-dark-meta: var(--on-dark-meta);
+  --color-rule-light: var(--rule-light);
+  --color-rule-dark: var(--rule-dark);
+  --color-accent: var(--accent);
+  --color-accent-deep: var(--accent-deep);
+  --color-danger: var(--danger);
+
+  --font-display: "Fraunces", Georgia, serif;
+  --font-sans: "Outfit", system-ui, sans-serif;
+
+  /* §3 type scale (1440 frame, rem-scaled). Nothing outside these steps. */
+  --text-display: 5.5rem;
+  --text-display--line-height: 0.95;
+  --text-display--letter-spacing: -0.02em;
+  --text-h2: 3.5rem;
+  --text-h2--line-height: 1;
+  --text-h2--letter-spacing: -0.015em;
+  --text-h3: 1.75rem;
+  --text-h3--line-height: 1.15;
+  --text-h3--letter-spacing: -0.01em;
+  --text-figure: 4.5rem;
+  --text-figure--line-height: 0.95;
+  --text-figure--letter-spacing: -0.03em;
+  --text-lead: 1.25rem;
+  --text-lead--line-height: 1.45;
+  --text-body: 1.0625rem;
+  --text-body--line-height: 1.5;
+  --text-eyebrow: 0.8125rem;
+  --text-eyebrow--line-height: 1.2;
+  --text-eyebrow--letter-spacing: 0.08em;
+  --text-label: 0.875rem;
+  --text-label--line-height: 1.2;
+  --text-label--letter-spacing: 0.04em;
+
+  --spacing-header: var(--header-height);
+  --blur-inactive: var(--inactive-blur);
+  --radius-control: var(--control-radius);
+  --ease-entrance: cubic-bezier(0.2, 0, 0, 1);
+  --breakpoint-xl: 90rem;
+}
+
+/* Northwall's adaptive rem grid, on the home page only, so inner pages and
+   the blog keep their 16px root. */
+@layer base {
+  @media (max-width: 1023px) {
+    html:has([data-ledger-home]) {
+      font-size: 2.083333vw;
+    }
+  }
+  @media (max-width: 767px) {
+    html:has([data-ledger-home]) {
+      font-size: 4.102564vw;
+    }
+  }
+
+  /* The ledger chrome and home page reset the few things the legacy CSS
+     doesn't, without a global preflight. */
+  .ld *,
+  .ld ::before,
+  .ld ::after {
+    border-width: 0;
+    border-style: solid;
+  }
+  /* Preflight's rule: a `hidden` element stays hidden even with a display utility. */
+  .ld [hidden]:where(:not([hidden="until-found"])) {
+    display: none !important;
+  }
+  .ld input,
+  .ld textarea,
+  .ld select {
+    font: inherit;
+    color: inherit;
+  }
+  .ld button {
+    font: inherit;
+    color: inherit;
+    background: none;
+    border: 0;
+    cursor: pointer;
+  }
+  .ld ul,
+  .ld ol {
+    list-style: none;
+  }
+  .ld h1,
+  .ld h2,
+  .ld h3 {
+    color: inherit;
+    font-weight: inherit;
+    letter-spacing: inherit;
+    line-height: inherit;
+  }
+  .ld img {
+    display: block;
+  }
+  [data-ledger-home] {
+    font-family: var(--font-sans);
+  }
+  /* Each section paints its own ground until PageGround is live (no JS, or
+     before hydration); then they go clear and the fixed layer blends. */
+  [data-ledger-home] [data-ground="dark"] {
+    background: var(--ground-dark);
+  }
+  [data-ledger-home] [data-ground="light"] {
+    background: var(--ground-light);
+  }
+  html[data-ground-live] [data-ledger-home] [data-ground] {
+    background: transparent;
+  }
+  .ld :focus-visible {
+    outline: 2px solid var(--accent-deep);
+    outline-offset: 2px;
+    border-radius: 0;
+  }
+  .ld [data-ground="dark"] :focus-visible,
+  .ld.ld-dark :focus-visible,
+  .ld .ld-dark :focus-visible {
+    outline-color: var(--accent);
+  }
+}
+
+@layer components {
+  /* One grade for every photograph: navy shadows, paper highlights. */
+  .ld-duotone {
+    position: relative;
+    isolation: isolate;
+  }
+  .ld-duotone img {
+    filter: grayscale(1) contrast(1.06);
+  }
+  .ld-duotone::before,
+  .ld-duotone::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+  }
+  .ld-duotone::before {
+    background: var(--ground-dark);
+    mix-blend-mode: lighten;
+  }
+  .ld-duotone::after {
+    background: var(--ground-dark);
+    mix-blend-mode: multiply;
+    opacity: 0.55;
+  }
+  .ld-scrim {
+    background: var(--scrim);
+  }
+  /* Underline drawn left to right on hover. */
+  .ld-draw {
+    background-image: linear-gradient(currentColor, currentColor);
+    background-size: 0% 1px;
+    background-position: 0 100%;
+    background-repeat: no-repeat;
+    transition: background-size var(--duration-normal) var(--ease-entrance);
+  }
+  .ld-draw:hover,
+  .ld-draw:focus-visible {
+    background-size: 100% 1px;
+  }
+  .ld-tabs::-webkit-scrollbar {
+    display: none;
+  }
+}
