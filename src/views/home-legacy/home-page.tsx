@@ -1,3 +1,7 @@
+/**
+ * The previous homepage, kept unrouted for reference (MASTER_PROMPT guardrail 5).
+ * `/` now renders `src/views/home`. Not imported anywhere.
+ */
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
