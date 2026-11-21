@@ -5,7 +5,6 @@ import { SiteEffects } from "@/components/site-effects";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { SITE_NAME, SITE_URL } from "@/lib/seo";
-import "../ledger.css";
 import "./site-pages.css";
 
 export const metadata: Metadata = {
