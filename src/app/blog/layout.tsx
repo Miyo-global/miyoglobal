@@ -4,6 +4,7 @@ import { GoogleTag } from "@/components/google-tag";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { SITE_URL } from "@/lib/seo";
+import "../ledger.css";
 import "./site.css";
 import "./blog.css";
 

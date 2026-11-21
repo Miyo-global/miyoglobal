@@ -1,50 +1,98 @@
-import Link from "next/link";
+import Image from "next/image";
 
+import { ArrowLink } from "@/ledger/components/ui/arrow-link";
+import { CornerMarkers } from "@/ledger/components/ui/corner-markers";
+import { RollLink } from "@/ledger/components/ui/roll-link";
+
+const ARROW = "/images/ledger/arrow.svg";
+
+const RAIL = [
+  ["/staffing-solutions", "Staffing Solutions"],
+  ["/digital-solutions", "Digital Solutions"],
+  ["/case-studies", "Case studies"],
+  ["/referrals", "Referrals"],
+  ["/blog", "Blog"],
+  ["/about", "About us"],
+  ["/contact", "Contact"],
+] as const;
+
+const LEGAL = [
+  ["/editorial-policy", "Editorial policy"],
+  ["/privacy-policy", "Privacy & Cookies"],
+  ["/terms", "Terms"],
+  ["/disclosure", "Disclosure"],
+] as const;
+
+const EYEBROW = "text-eyebrow font-medium uppercase text-on-dark-meta";
+
+/**
+ * Site-wide footer: Northwall's navy contact rail (arrow rows, dashed rules,
+ * corner markers). The header steps aside over it on the home page.
+ */
 export function SiteFooter() {
   return (
-    <footer>
-      <div className="wrap">
-        <div className="fcols">
+    <footer data-header-theme="hidden" className="ld ld-dark relative bg-ground-dark font-sans text-on-dark">
+      <div className="mx-auto grid max-w-[90rem] grid-cols-1 gap-12 px-5 pb-10 pt-20 md:grid-cols-12 md:gap-x-5 md:px-10">
+        <div className="md:col-span-4">
+          <Image src="/images/logo-web.png" alt="MIYO Global" width={89} height={48} />
+          <p className="mt-6 max-w-[34ch] text-body text-on-dark-muted">
+            Enterprise staffing and digital delivery from India and the UAE. GCC build-outs, technology talent, and managed digital services, under your brand.
+          </p>
+          <address className="mt-8 flex flex-col gap-2 text-body not-italic">
+            <a className="ld-draw self-start py-1" href="mailto:staffing@miyoglobal.com">staffing@miyoglobal.com</a>
+            <span className="text-on-dark-muted">Hyderabad, India</span>
+            <span className="text-on-dark-muted">Ras Al Khaimah, UAE</span>
+          </address>
+        </div>
+
+        <nav aria-label="Footer" className="md:col-span-4">
+          <p className={EYEBROW}>Company</p>
+          <ul className="mt-4">
+            {RAIL.map(([href, label]) => (
+              <li key={href} className="border-t border-dashed border-rule-dark last:border-b">
+                <ArrowLink href={href} label={label} iconSrc={ARROW} className="flex min-h-12 items-center justify-between py-3.5 text-label font-medium uppercase" />
+              </li>
+            ))}
+          </ul>
+        </nav>
+
+        <div className="flex flex-col gap-10 md:col-span-4">
           <div>
-            <div className="fbrand">MIYO <span className="g">GLOBAL</span></div>
-            <p className="fdesc">Enterprise staffing and digital delivery from India and the UAE. GCC build-outs, technology talent, and managed digital services, under your brand.</p>
-            <div className="fsoc">
-              <a href="https://www.linkedin.com/company/prime-learning-ae" target="_blank" rel="noopener" aria-label="LinkedIn">
-                <svg viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="3" /><path d="M7 10v7M7 7v.01M11 17v-4a2 2 0 0 1 4 0v4M11 17v-7" /></svg>
-              </a>
-              <a href="mailto:staffing@miyoglobal.com" aria-label="Email">
-                <svg viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2" /><path d="m3 6 9 7 9-7" /></svg>
-              </a>
-            </div>
+            <p className={EYEBROW}>Prime Learning</p>
+            <ul className="mt-4">
+              <li className="border-t border-dashed border-rule-dark">
+                <ArrowLink href="https://primelearning.ae" label="Prime Learning" iconSrc={ARROW} className="flex min-h-12 items-center justify-between py-3.5 text-label font-medium uppercase" />
+              </li>
+              <li className="border-y border-dashed border-rule-dark">
+                <ArrowLink href="https://primelearning.ae/staffing" label="PL Staff Augmentation" iconSrc={ARROW} className="flex min-h-12 items-center justify-between py-3.5 text-label font-medium uppercase" />
+              </li>
+            </ul>
           </div>
-          <div className="fcol">
-            <h5>Company</h5>
-            <Link href="/staffing-solutions">Staffing Solutions</Link>
-            <Link href="/digital-solutions">Digital Solutions</Link>
-            <Link href="/case-studies">Case studies</Link>
-            <a href="/referrals">Referrals</a>
-            <Link href="/blog">Blog</Link>
-            <Link href="/about">About us</Link>
-            <Link href="/contact">Contact</Link>
-            <Link href="/editorial-policy">Editorial policy</Link>
-            <Link href="/privacy-policy">Privacy &amp; Cookies</Link>
-            <Link href="/terms">Terms</Link>
-            <Link href="/disclosure">Disclosure</Link>
-          </div>
-          <div className="fcol">
-            <h5>Get in touch</h5>
-            <a href="mailto:staffing@miyoglobal.com">staffing@miyoglobal.com</a>
-            <a href="https://primelearning.ae" target="_blank" rel="noopener">Prime Learning</a>
-            <a href="https://primelearning.ae/staffing" target="_blank" rel="noopener">PL Staff Augmentation</a>
-            <p>Hyderabad, India</p>
-            <p>Ras Al Khaimah, UAE</p>
+          <div>
+            <p className={EYEBROW}>Legal</p>
+            <ul className="mt-4 flex flex-wrap gap-x-5 gap-y-1">
+              {LEGAL.map(([href, label]) => (
+                <li key={href}>
+                  <RollLink href={href} label={label} className="block py-2.5 text-label font-medium uppercase" />
+                </li>
+              ))}
+            </ul>
+            {/* ponytail: existing LinkedIn link kept as-is; confirm the official MIYO Global profile before changing it. */}
+            <a className="ld-draw mt-3 inline-block py-2 text-label font-medium uppercase" href="https://www.linkedin.com/company/prime-learning-ae" target="_blank" rel="noopener">
+              LinkedIn
+            </a>
           </div>
         </div>
-        <div className="fnote"><b>Recruitment notice:</b> MIYO Global never asks candidates for money, original documents, or cheques at any stage of hiring. If anyone requests these in our name, report it to staffing@miyoglobal.com.</div>
-        <div className="fbot">
+
+        <p className="relative border border-dashed border-rule-dark p-5 text-body text-on-dark-muted md:col-span-12">
+          <CornerMarkers className="bg-on-dark" />
+          <b className="font-medium text-on-dark">Recruitment notice:</b> MIYO Global never asks candidates for money, original documents, or cheques at any stage of hiring. If anyone requests these in our name, report it to staffing@miyoglobal.com.
+        </p>
+
+        <p className="flex flex-col gap-2 border-t border-dashed border-rule-dark pt-6 text-eyebrow text-on-dark-meta md:col-span-12 md:flex-row md:justify-between">
           <span>© {new Date().getFullYear()} MIYO Global. All rights reserved.</span>
-          <span className="ent">Miyo Global Private Limited (India) · Prime Assets Education &amp; Training Ltd. (UAE), operating as Prime Learning.</span>
-        </div>
+          <span className="max-w-[60ch]">Miyo Global Private Limited (India) · Prime Assets Education &amp; Training Ltd. (UAE), operating as Prime Learning.</span>
+        </p>
       </div>
     </footer>
   );
