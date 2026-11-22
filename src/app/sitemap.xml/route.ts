@@ -1,11 +1,11 @@
-import { SITE_URL, xml } from "@/lib/seo";
+import { SITE_URL, contentLastmod, xml } from "@/lib/seo";
 import { sitemapEntries } from "@/server/services/public";
 
 export const dynamic = "force-dynamic";
 
 export async function GET() {
   const { posts } = await sitemapEntries();
-  const last = posts[0]?.updatedAt.toISOString();
+  const last = posts[0] ? contentLastmod(posts[0].updatedAt, posts[0].publishedAt).toISOString() : undefined;
   const lastmod = last ? `<lastmod>${last}</lastmod>` : "";
   const children = posts.length ? ["pages", "posts"] : ["pages"];
   return xml(

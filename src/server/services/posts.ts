@@ -185,7 +185,7 @@ export async function savePost(id: number, userId: string, role: string, input: 
     if (!changed) return;
     await tx
       .update(posts)
-      .set({ ...next, status, publishedAt, scheduledAt, ...(contentChanged ? { updatedAt: new Date() } : {}) })
+      .set({ ...next, status, publishedAt, scheduledAt, ...(contentChanged || (intent === "publish" && !existing.publishedAt) ? { updatedAt: new Date() } : {}) })
       .where(eq(posts.id, id));
     await tx.delete(postTags).where(eq(postTags.postId, id));
     if (input.tagIds.length) await tx.insert(postTags).values(input.tagIds.map((tagId) => ({ postId: id, tagId })));

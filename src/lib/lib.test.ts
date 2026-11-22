@@ -5,7 +5,7 @@ import { checkHealth } from "./health";
 import { planRedirect } from "./redirects";
 import { fromIstInput, toIstInput } from "./ist";
 import { normalizeHost } from "./hosts";
-import { BLOG_NAME, BLOG_TITLE, jsonLdScript, parseCustomJsonLd, titleFor } from "./seo";
+import { BLOG_NAME, BLOG_TITLE, contentLastmod, jsonLdScript, parseCustomJsonLd, titleFor } from "./seo";
 import { isValidSlug, slugify } from "./slug";
 
 const p = (text: string) => ({ type: "paragraph", content: [{ type: "text", text }] });
@@ -182,6 +182,19 @@ describe("hosts and titles", () => {
     expect(titleFor("", "x".repeat(90)).length).toBeLessThanOrEqual(60);
     expect(titleFor("Short", "")).toBe("Short | MIYO Global");
     expect(titleFor("Own | Brand", "")).toBe("Own | Brand");
+  });
+});
+
+describe("contentLastmod", () => {
+  it("uses publishedAt when it is later than updatedAt", () => {
+    const updatedAt = new Date("2026-11-16T13:51:26.558Z");
+    const publishedAt = new Date("2026-11-16T13:54:19.497Z");
+    expect(contentLastmod(updatedAt, publishedAt).toISOString()).toBe(publishedAt.toISOString());
+  });
+  it("keeps updatedAt when it is later or publishedAt is missing", () => {
+    const updatedAt = new Date("2026-11-17T10:00:00.000Z");
+    expect(contentLastmod(updatedAt, new Date("2026-11-16T10:00:00.000Z")).toISOString()).toBe(updatedAt.toISOString());
+    expect(contentLastmod(updatedAt, null).toISOString()).toBe(updatedAt.toISOString());
   });
 });
 

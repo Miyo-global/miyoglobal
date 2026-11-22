@@ -3,7 +3,7 @@ import Link from "next/link";
 import { PostCard, fmtDate } from "@/components/post-card";
 import { isPublished } from "@/lib/content";
 import { headingIds, renderHtml, wordCount, type Doc } from "@/lib/content";
-import { absolute, jsonLdScript, parseCustomJsonLd, SITE_NAME, SITE_URL } from "@/lib/seo";
+import { absolute, contentLastmod, jsonLdScript, parseCustomJsonLd, SITE_NAME, SITE_URL } from "@/lib/seo";
 import { related, type PostData } from "@/server/services/public";
 
 /** `preview`: rendered on the admin host, so site links point at NEXT_PUBLIC_SITE_URL instead of relative paths. */
@@ -27,7 +27,7 @@ export async function PostView({ data, preview = false }: { data: PostData; prev
     description: post.metaDescription || post.excerpt || undefined,
     image: cover ? [cover.ogUrl ? absolute(cover.ogUrl) : absolute(cover.url)] : [absolute(`/blog/${post.slug}/og`)],
     datePublished: published.toISOString(),
-    dateModified: post.updatedAt.toISOString(),
+    dateModified: contentLastmod(post.updatedAt, published).toISOString(),
     wordCount: html.replace(/<[^>]+>/g, " ").split(/\s+/).filter(Boolean).length,
     articleSection: categoryName ?? undefined,
     keywords: post.focusKeyword || undefined,
