@@ -65,3 +65,21 @@ curl -s https://www.miyoglobal.com/pages-sitemap.xml | grep -o '<loc>[^<]*' | cu
 ## Icons and manifest
 
 `public/apple-touch-icon.png` (180), `public/icon-192.png` and `public/icon-512.png` are centre crops of `public/images/logo.png`. The icon links are declared once in `src/app/layout.tsx`; the manifest is `src/app/manifest.ts` (`/manifest.webmanifest`). A layout that sets its own `icons` replaces the root ones.
+
+## Staging and beta (non-production environments)
+
+| Host | Branch | Vercel project | `NEXT_PUBLIC_ENV` | Indexed |
+|---|---|---|---|---|
+| www.miyoglobal.com | `main` | `miyoglobal` | unset (`production`) | yes |
+| staging.miyoglobal.com | `staging` | `miyoglobal-staging` | `staging` | no |
+| beta.miyoglobal.com | `beta` | `miyoglobal-beta` | `beta` | no |
+
+Any `NEXT_PUBLIC_ENV` other than `production` sets `NOINDEX` (`src/lib/seo.ts`). Then `/robots.txt` serves `Disallow: /`, the three sitemaps return 404, every page carries `<meta name="robots" content="noindex, nofollow">`, and Google Tag Manager is not loaded. Independently, `src/proxy.ts` sends `X-Robots-Tag: noindex, nofollow` on every host except `www.miyoglobal.com`. Canonicals come from `NEXT_PUBLIC_SITE_URL`, so these hosts are self-canonical.
+
+Both projects have no `CRON_SECRET` (the publish cron returns 401) and no `INDEXNOW_KEY`, and their `vercel.json` registers no cron.
+
+```bash
+curl -sI https://beta.miyoglobal.com | grep -i x-robots-tag
+curl -s https://beta.miyoglobal.com/robots.txt
+curl -s -o /dev/null -w "%{http_code}\n" https://beta.miyoglobal.com/sitemap.xml   # 404
+```
