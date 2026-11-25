@@ -27,6 +27,7 @@ const columns = [
     ["/about#leadership", "Leadership"],
     ["/case-studies", "Case studies"],
     ["/blog", "Blog"],
+    ["/jobs", "Open jobs"],
     ["/referrals", "Referrals"],
     ["/contact", "Contact"],
     ["https://primelearning.ae", "Prime Learning"],
@@ -64,9 +65,6 @@ export function SiteFooter() {
               {links.map(([href, label]) =>
                 href.startsWith("http") ? (
                   <a key={label} href={href} target="_blank" rel="noopener">{label}</a>
-                ) : href === "/referrals" ? (
-                  // /referrals is still a static HTML file, so it needs a full page load.
-                  <a key={label} href={href}>{label}</a>
                 ) : (
                   <Link key={label} href={href}>{label}</Link>
                 ),

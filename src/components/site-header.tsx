@@ -10,6 +10,7 @@ const links = [
   ["/staffing-solutions", "Staffing Solutions"],
   ["/digital-solutions", "Digital Solutions"],
   ["/case-studies", "Case Studies"],
+  ["/jobs", "Jobs"],
   ["/referrals", "Referrals"],
   ["/about", "About"],
   ["/blog", "Blog"],
@@ -42,12 +43,12 @@ export function SiteHeader({ active }: { active?: string }) {
         </Link>
         <nav className={`nav-links${open ? " open" : ""}`} id="menu" aria-label="Primary">
           {links.map(([href, label]) => {
-            // /referrals is still a static HTML file, so it needs a full page load.
-            const Tag = href === "/referrals" ? "a" : Link;
+            // A job page keeps "Jobs" highlighted.
+            const on = current === href || (href !== "/" && current.startsWith(`${href}/`));
             return (
-              <Tag key={href} href={href} className={current === href ? "active" : undefined} aria-current={current === href ? "page" : undefined} onClick={() => setOpen(false)}>
+              <Link key={href} href={href} className={on ? "active" : undefined} aria-current={current === href ? "page" : undefined} onClick={() => setOpen(false)}>
                 {label}
-              </Tag>
+              </Link>
             );
           })}
           <Link className="btn btn-gold" href="/contact" onClick={() => setOpen(false)}>Let&apos;s Talk</Link>

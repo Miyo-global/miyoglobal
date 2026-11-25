@@ -25,7 +25,7 @@ export function pageMetadata({ path, title, description, image, imageAlt }: Site
 export const blogListingMetadata = (path: string, title: string, description: string) =>
   pageMetadata({ path, title, description, image: "/images/og/blog.webp", imageAlt: "MIYO Global team collaborating on an enterprise staffing and delivery plan" });
 
-const PAGE_TYPES: Record<string, string> = { "/about": "AboutPage", "/contact": "ContactPage", "/case-studies": "CollectionPage" };
+const PAGE_TYPES: Record<string, string> = { "/about": "AboutPage", "/contact": "ContactPage", "/case-studies": "CollectionPage", "/jobs": "CollectionPage" };
 
 /**
  * WebSite + Organization + the page itself, plus a BreadcrumbList on inner pages (those with a crumb) and, on a page that has
