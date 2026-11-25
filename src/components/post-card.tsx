@@ -32,9 +32,10 @@ export function PostCard({ post, variant = "row", base = "" }: { post: CardPost;
     <Link href={href} tabIndex={-1} aria-hidden="true" className={cx("order-first col-span-4 block md:order-none", lead ? "md:col-span-7" : "md:col-span-3")}>
       <Image
         src={post.coverUrl}
-        alt=""
+        alt={post.coverAlt || post.title}
         width={post.coverWidth ?? 1200}
         height={post.coverHeight ?? 800}
+        priority={lead}
         sizes={lead ? "(min-width: 1280px) 720px, (min-width: 768px) 58vw, 100vw" : "(min-width: 1280px) 300px, (min-width: 768px) 25vw, 100vw"}
         placeholder={post.coverBlur ? "blur" : "empty"}
         blurDataURL={post.coverBlur ?? undefined}
