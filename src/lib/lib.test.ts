@@ -180,8 +180,8 @@ describe("hosts and titles", () => {
   it("ignores port, trailing dot and case", () => {
     expect(normalizeHost("ADM.miyoglobal.com.:443")).toBe("adm.miyoglobal.com");
   });
-  it("keeps titles within 60 chars with brand", () => {
-    expect(titleFor("", "x".repeat(90)).length).toBeLessThanOrEqual(60);
+  it("brands titles only when they fit, and never truncates", () => {
+    expect(titleFor("", "x".repeat(90))).toBe("x".repeat(90));
     expect(titleFor("Short", "")).toBe("Short | MIYO Global");
     expect(titleFor("Own | Brand", "")).toBe("Own | Brand");
   });
