@@ -83,3 +83,13 @@ curl -sI https://beta.miyoglobal.com | grep -i x-robots-tag
 curl -s https://beta.miyoglobal.com/robots.txt
 curl -s -o /dev/null -w "%{http_code}\n" https://beta.miyoglobal.com/sitemap.xml   # 404
 ```
+
+## Redesign notes (staging-premium)
+
+- **Titles** come from `titleFor` (`src/lib/seo.ts`): the brand suffix " | MIYO Global" is added only when the result fits in 60 characters, and a title is never cut mid-word. Every page's title and description are checked for length and uniqueness by `scripts/qa-screens.mts`.
+- **Structured data:** every `@id` and `url` derives from `NEXT_PUBLIC_SITE_URL`, so staging graphs point at staging and production graphs at www. The Organization node carries both offices (Hyderabad and Ras Al Khaimah) as `PostalAddress`es and `sameAs` LinkedIn. Pages add: FAQPage (home, solutions, referrals), Service (solutions), Person (about), Place (contact), ItemList (case studies, jobs), JobPosting (each role), BlogPosting (posts), CollectionPage + BreadcrumbList (journal categories and tags).
+- **Share images:** every page has its own 1200×630 card. Static cards in `public/images/og/` are rendered by `pnpm og:images` (`scripts/og-images.tsx`) from the brand tokens; posts, journal categories and tags, and each job have a generated `opengraph-image.tsx`.
+- **robots.txt (production):** `/api/`, `/studio`, `/blog/search` and URLs carrying tracking parameters (utm_*, gclid, fbclid, msclkid) are disallowed. There is no blanket `/*?*` rule, so `/_next/image?url=…` stays crawlable. Staging and beta serve `Disallow: /`.
+- **Verification tags** (`GOOGLE_SITE_VERIFICATION`, `BING_SITE_VERIFICATION`) render on production only.
+- **Jobs:** `/jobs` and every `/jobs/<slug>` are in the pages sitemap and revalidate every 10 minutes. `JobPosting` includes `datePosted`, `employmentType`, `baseSalary` and `validThrough` only when the sheet provides them; see `CONTENT_NEEDED.md`.
+- **QA:** `pnpm exec tsx scripts/qa-screens.mts` (with `BASE` and `OUT`) screenshots every main route at 375, 768 and 1440 px and reports title, description, canonical, og:image, h1 count, heading skips, JSON-LD types, images without alt and horizontal overflow. `lighthouserc.json` holds the budgets (all categories ≥ 95, LCP < 2 s, CLS ≤ 0.05, TBT < 150 ms).
