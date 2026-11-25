@@ -1,0 +1,43 @@
+/* Design tokens for the editorial pages (/jobs, /jobs/[slug], /referrals). Brand colours are fixed; fonts come from next/font (src/lib/fonts.ts). */
+.ed {
+  --ink: #0b192f;
+  --navy: #10233f;
+  --navy-line: #24395a;
+  --gold: #e0b458;
+  --gold-text: #8f6b14;
+  --paper: #f7f8fb;
+  --sheet: #ffffff;
+  --rule: #dce1ea;
+  --rule-strong: #b9c2d1;
+  --muted: #5b6b82;
+  --ok: #1f6b4a;
+  --err: #a3261b;
+
+  --f-display: var(--font-fraunces), Georgia, "Times New Roman", serif;
+  --f-body: var(--font-work), system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono: var(--font-plex-mono), ui-monospace, "SFMono-Regular", Menlo, monospace;
+
+  /* Type scale: 1.25 minor third from a 17px body. */
+  --t-xs: 0.8125rem;
+  --t-sm: 0.9375rem;
+  --t-md: 1.0625rem;
+  --t-lg: 1.3125rem;
+  --t-xl: 1.625rem;
+  --t-2xl: clamp(1.875rem, 1.3rem + 2.2vw, 2.5rem);
+  --t-3xl: clamp(2.375rem, 1.4rem + 4.2vw, 4rem);
+
+  --s-1: 4px;
+  --s-2: 8px;
+  --s-3: 12px;
+  --s-4: 16px;
+  --s-5: 24px;
+  --s-6: 32px;
+  --s-7: 48px;
+  --s-8: 72px;
+  --s-9: 104px;
+
+  --measure: 68ch;
+  --maxw: 1200px;
+  --r-sm: 4px;
+  --r-md: 10px;
+}

@@ -10,7 +10,7 @@ const policy = (google: boolean) => {
   return [
     "default-src 'self'",
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-    "font-src https://fonts.gstatic.com",
+    "font-src 'self' https://fonts.gstatic.com",
     `script-src 'self' 'unsafe-inline'${gtm}`,
     `img-src 'self' data:${mediaUrl ? ` ${mediaUrl.origin}` : ""}${gtm}${google ? " https://*.google-analytics.com" : ""}`,
     `connect-src 'self'${gtm}${ga}`,
