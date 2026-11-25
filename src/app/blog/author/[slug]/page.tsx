@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { notFoundMetadata } from "@/components/not-found-view";
 import { PostCard } from "@/components/post-card";
-import { absolute, jsonLdScript } from "@/lib/seo";
+import { blogListingMetadata } from "@/lib/page-meta";
+import { absolute, jsonLdScript, siteGraph } from "@/lib/seo";
 import { byAuthorId, getAuthor } from "@/server/services/public";
 
 export const revalidate = 300;
@@ -11,9 +12,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const a = await getAuthor((await params).slug);
   if (!a) return notFoundMetadata;
   return {
-    title: `${a.name}, author | MIYO Global`,
-    description: a.bio.slice(0, 160) || `Articles by ${a.name} on the MIYO Global blog.`,
-    alternates: { canonical: `/blog/author/${a.slug}` },
+    ...blogListingMetadata(`/blog/author/${a.slug}`, `${a.name}, author | MIYO Global`, a.bio.slice(0, 160) || `Articles by ${a.name} on the MIYO Global blog.`),
     ...((await byAuthorId(a.id, 1)).length ? {} : { robots: { index: false, follow: true } }),
   };
 }
@@ -22,19 +21,35 @@ export default async function AuthorPage({ params }: { params: Promise<{ slug: s
   const a = await getAuthor((await params).slug);
   if (!a) notFound();
   const posts = await byAuthorId(a.id);
-  const person = {
+  const url = absolute(`/blog/author/${a.slug}`);
+  const [site, org] = siteGraph();
+  // The Person carries an @id so a BlogPosting can reference its author, and works for the shared Organization node.
+  const profile = {
     "@context": "https://schema.org",
-    "@type": "Person",
-    name: a.name,
-    url: absolute(`/blog/author/${a.slug}`),
-    description: a.bio || undefined,
-    jobTitle: a.credentials || undefined,
-    sameAs: a.sameAs.length ? a.sameAs : undefined,
-    worksFor: { "@type": "Organization", name: "MIYO Global", url: absolute("/") },
+    "@graph": [
+      site,
+      org,
+      {
+        "@type": "ProfilePage",
+        url,
+        isPartOf: { "@id": site["@id"] },
+        inLanguage: "en",
+        mainEntity: {
+          "@type": "Person",
+          "@id": `${url}#person`,
+          name: a.name,
+          url,
+          description: a.bio || undefined,
+          jobTitle: a.credentials || undefined,
+          sameAs: a.sameAs.length ? a.sameAs : undefined,
+          worksFor: { "@id": org["@id"] },
+        },
+      },
+    ],
   };
   return (
     <div className="b-wrap">
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdScript(person) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdScript(profile) }} />
       <section className="b-hero" style={{ padding: "48px 0 16px", background: "none" }}>
         <span className="eyebrow">Author</span>
         <h1>{a.name}</h1>

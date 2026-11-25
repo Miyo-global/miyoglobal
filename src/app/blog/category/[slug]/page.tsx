@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { notFoundMetadata } from "@/components/not-found-view";
 import { PostCard } from "@/components/post-card";
+import { blogListingMetadata } from "@/lib/page-meta";
 import { byCategoryId, countByCategory, getCategory } from "@/server/services/public";
 
 export const revalidate = 300;
@@ -10,9 +11,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const c = await getCategory((await params).slug);
   if (!c) return notFoundMetadata;
   return {
-    title: `${c.name} articles | MIYO Global`,
-    description: c.description || `Articles about ${c.name.toLowerCase()} from MIYO Global.`,
-    alternates: { canonical: `/blog/category/${c.slug}` },
+    ...blogListingMetadata(`/blog/category/${c.slug}`, `${c.name} articles | MIYO Global`, c.description || `Articles about ${c.name.toLowerCase()} from MIYO Global.`),
     ...((await countByCategory(c.id)) ? {} : { robots: { index: false, follow: true } }),
   };
 }

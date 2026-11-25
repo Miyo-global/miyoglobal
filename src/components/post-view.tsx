@@ -3,7 +3,7 @@ import Link from "next/link";
 import { PostCard, fmtDate } from "@/components/post-card";
 import { isPublished } from "@/lib/content";
 import { headingIds, renderHtml, wordCount, type Doc } from "@/lib/content";
-import { absolute, jsonLdScript, parseCustomJsonLd, SITE_NAME, SITE_URL } from "@/lib/seo";
+import { absolute, jsonLdScript, ORG_ID, parseCustomJsonLd, siteGraph, SITE_URL } from "@/lib/seo";
 import { related, type PostData } from "@/server/services/public";
 
 /** `preview`: rendered on the admin host, so site links point at NEXT_PUBLIC_SITE_URL instead of relative paths. */
@@ -31,9 +31,14 @@ export async function PostView({ data, preview = false }: { data: PostData; prev
     wordCount: html.replace(/<[^>]+>/g, " ").split(/\s+/).filter(Boolean).length,
     articleSection: categoryName ?? undefined,
     keywords: post.focusKeyword || undefined,
-    author: author ? { "@type": "Person", name: author.name, url: absolute(`/blog/author/${author.slug}`), sameAs: author.sameAs.length ? author.sameAs : undefined } : { "@type": "Organization", name: SITE_NAME },
+    inLanguage: "en",
+    isPartOf: { "@id": `${SITE_URL}/blog#blog` },
+    // Same @id the author page gives its Person, so both pages describe one entity.
+    author: author
+      ? { "@type": "Person", "@id": `${absolute(`/blog/author/${author.slug}`)}#person`, name: author.name, url: absolute(`/blog/author/${author.slug}`), sameAs: author.sameAs.length ? author.sameAs : undefined }
+      : { "@id": ORG_ID },
     reviewedBy: reviewer ? { "@type": "Person", name: reviewer.name, url: absolute(`/blog/author/${reviewer.slug}`) } : undefined,
-    publisher: { "@type": "Organization", name: SITE_NAME, url: absolute("/"), logo: { "@type": "ImageObject", url: absolute("/images/logo.png") } },
+    publisher: { "@id": ORG_ID },
   };
   const crumbs = {
     "@context": "https://schema.org",
@@ -53,7 +58,8 @@ export async function PostView({ data, preview = false }: { data: PostData; prev
       }
     : null;
   const custom = post.customJsonLd ? parseCustomJsonLd(post.customJsonLd) : null;
-  const schemas = [article, crumbs, faq, custom?.ok ? custom.value : null].filter(Boolean);
+  // The shared WebSite and Organization nodes are emitted too, so the publisher @id resolves on this page.
+  const schemas = [article, crumbs, faq, custom?.ok ? custom.value : null, { "@context": "https://schema.org", "@graph": siteGraph() }].filter(Boolean);
   const share = encodeURIComponent(url);
   const shareTitle = encodeURIComponent(post.title);
 

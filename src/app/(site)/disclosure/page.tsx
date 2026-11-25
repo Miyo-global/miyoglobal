@@ -5,8 +5,8 @@ import { jsonLdScript } from "@/lib/seo";
 
 const page: SitePage = {
   path: "/disclosure",
-  title: "Disclosure — MIYO Global",
-  description: "How MIYO Global handles commercial relationships in the content it publishes.",
+  title: "Disclosure of Commercial Relationships | MIYO Global",
+  description: "How MIYO Global handles commercial relationships in its content: articles may mention our own staffing and digital services, and we take no paid placements.",
   image: "/images/og/policy.webp",
   imageAlt: "Editorial team reviewing and fact-checking an article before publication",
   crumb: "Disclosure",
@@ -20,7 +20,7 @@ export default function DisclosurePage() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdScript(pageJsonLd(page)) }} />
       <section className="phero"><span className="rbg"></span><span className="rbg two"></span>
             <div className="wrap"><div className="crumb"><Link href="/">Home</Link> / Disclosure</div>
-            <span className="eyebrow" style={{ marginTop: "10px" }}># Legal</span>
+            <span className="eyebrow" style={{ marginTop: "10px" }}>Legal</span>
             <h1>Our <span className="g">Disclosure</span></h1><p>How commercial relationships affect what we publish. Last updated: November 2026.</p></div></section>
       <section className="sec"><div className="wrap" style={{ maxWidth: "860px" }}>
         <div className="legal">

@@ -5,8 +5,8 @@ import { jsonLdScript } from "@/lib/seo";
 
 const page: SitePage = {
   path: "/editorial-policy",
-  title: "Editorial Policy — MIYO Global",
-  description: "How MIYO Global researches, writes, reviews, updates and corrects the articles published on its blog.",
+  title: "Editorial Policy: How Articles Are Reviewed | MIYO Global",
+  description: "How MIYO Global researches, writes, reviews, updates and corrects its blog articles: named authors, cited sources, no paid placements and prompt corrections.",
   image: "/images/og/policy.webp",
   imageAlt: "Editorial team reviewing and fact-checking an article before publication",
   crumb: "Editorial Policy",
@@ -20,7 +20,7 @@ export default function EditorialPolicyPage() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdScript(pageJsonLd(page)) }} />
       <section className="phero"><span className="rbg"></span><span className="rbg two"></span>
             <div className="wrap"><div className="crumb"><Link href="/">Home</Link> / Editorial Policy</div>
-            <span className="eyebrow" style={{ marginTop: "10px" }}># Legal</span>
+            <span className="eyebrow" style={{ marginTop: "10px" }}>Legal</span>
             <h1>Editorial <span className="g">Policy</span></h1><p>How the MIYO Global blog is researched, written, reviewed and corrected. Last updated: November 2026.</p></div></section>
       <section className="sec"><div className="wrap" style={{ maxWidth: "860px" }}>
         <div className="legal">

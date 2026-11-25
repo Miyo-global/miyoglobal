@@ -6,8 +6,8 @@ export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Search the blog | MIYO Global",
+  // No canonical: pointing a noindex page at /blog sends two opposite signals. robots.txt keeps crawlers out of the ?q= space.
   robots: { index: false, follow: true },
-  alternates: { canonical: "/blog" },
 };
 
 export default async function SearchPage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
