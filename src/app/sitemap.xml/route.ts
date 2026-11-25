@@ -1,9 +1,10 @@
-import { SITE_URL, xml } from "@/lib/seo";
+import { NOINDEX, SITE_URL, xml } from "@/lib/seo";
 import { sitemapEntries } from "@/server/services/public";
 
 export const dynamic = "force-dynamic";
 
 export async function GET() {
+  if (NOINDEX) return new Response(null, { status: 404 });
   const { posts } = await sitemapEntries();
   const last = posts[0]?.updatedAt.toISOString();
   const lastmod = last ? `<lastmod>${last}</lastmod>` : "";

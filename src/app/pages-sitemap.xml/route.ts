@@ -1,10 +1,11 @@
 import { STATIC_PAGES, staticLastmods } from "@/lib/pages";
-import { SITE_URL, xml, xmlEscape } from "@/lib/seo";
+import { NOINDEX, SITE_URL, xml, xmlEscape } from "@/lib/seo";
 import { sitemapEntries } from "@/server/services/public";
 
 export const dynamic = "force-dynamic";
 
 export async function GET() {
+  if (NOINDEX) return new Response(null, { status: 404 });
   const { posts, categories, tags, authors } = await sitemapEntries();
   const mtimes = staticLastmods();
   const newestPage = Object.values(mtimes).sort().at(-1);
