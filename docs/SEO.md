@@ -66,6 +66,16 @@ curl -s https://www.miyoglobal.com/pages-sitemap.xml | grep -o '<loc>[^<]*' | cu
 
 `public/apple-touch-icon.png` (180), `public/icon-192.png` and `public/icon-512.png` are centre crops of `public/images/logo.png`. The icon links are declared once in `src/app/layout.tsx`; the manifest is `src/app/manifest.ts` (`/manifest.webmanifest`). A layout that sets its own `icons` replaces the root ones.
 
+## Jobs and referrals
+
+- `/jobs` lists every open role from the referral sheet; `/jobs/[slug]` is one page per role, slug `<title>-<ref>` (e.g. `/jobs/oracle-banking-functional-consultant-dm065`). Pages are prerendered and revalidate every 5 minutes (ISR), so a new row in the sheet goes live without a deploy, and a closed row drops out of the board, the sitemap and the role pages.
+- Titles are `<Role>, <City> (<ref>) | MIYO Global`, shortened to 60 characters. The ref keeps the seven Workday Integration Consultant roles unique. Descriptions combine ref, city, experience and the first sentence of the brief.
+- Each role page emits one JSON-LD graph: WebSite, Organization, `JobPosting`, WebPage and BreadcrumbList. `JobPosting` carries only what the sheet states: `datePosted` only when the sheet's `createdDate` is filled, `baseSalary` only for an "X LPA - Y LPA" budget, and `employmentType` only when the brief names it. **Fill `createdDate` in the sheet**: Google requires `datePosted` for job rich results.
+- `/jobs` is a CollectionPage with an ItemList of every role, and `/referrals` adds a FAQPage built from the policy.
+- Each role has a generated 1200×630 share image (`opengraph-image.tsx`) with the ref, title and facts.
+- Every role URL is in `/pages-sitemap.xml`.
+- The parser (`src/lib/jobs.ts`, tests in `jobs.test.ts`) reads "Key: value" lines (Experience, Location, CTC Budget, Notice Period, Employment Type) from the free-text description and drops client-identifying lines (VMS ID, Client, Grade, Reporting to). Recruiters get the best page by writing those keys at the top of each description.
+
 ## Staging and beta (non-production environments)
 
 | Host | Branch | Vercel project | `NEXT_PUBLIC_ENV` | Indexed |
