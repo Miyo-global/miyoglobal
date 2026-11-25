@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { fontVariables } from "@/lib/fonts";
 import { NOINDEX } from "@/lib/seo";
 
 const bing = process.env.BING_SITE_VERIFICATION;
@@ -18,15 +19,9 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" data-scroll-behavior="smooth">
+    <html lang="en" data-scroll-behavior="smooth" className={fontVariables}>
       <head>
         {NOINDEX && <meta name="robots" content="noindex, nofollow" />}
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
-        <link
-          rel="stylesheet"
-          href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap"
-        />
       </head>
       <body>{children}</body>
     </html>
