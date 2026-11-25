@@ -25,6 +25,40 @@ export function pageMetadata({ path, title, description, image, imageAlt }: Site
 export const blogListingMetadata = (path: string, title: string, description: string) =>
   pageMetadata({ path, title, description, image: "/images/og/blog.webp", imageAlt: "MIYO Global team collaborating on an enterprise staffing and delivery plan" });
 
+/**
+ * Journal listing pages (category, tag): the same metadata without explicit share images, so the route's generated
+ * opengraph-image.tsx is used and every listing has its own card.
+ */
+export function listingMetadata(path: string, title: string, description: string): Metadata {
+  const m = blogListingMetadata(path, title, description);
+  const { images: _og, ...openGraph } = m.openGraph ?? {};
+  const { images: _tw, ...twitter } = (m.twitter ?? {}) as Record<string, unknown>;
+  return { ...m, openGraph, twitter };
+}
+
+/** JSON-LD for a journal listing: WebSite, Organization, the CollectionPage and Home > Insights > listing breadcrumbs. */
+export function listingJsonLd(path: string, name: string, description: string) {
+  const url = `${SITE_URL}${path}`;
+  const [site, org] = siteGraph();
+  return {
+    "@context": "https://schema.org",
+    "@graph": [
+      site,
+      org,
+      { "@type": "CollectionPage", "@id": `${url}#webpage`, url, name, description, isPartOf: { "@id": site["@id"] }, inLanguage: "en", breadcrumb: { "@id": `${url}#breadcrumb` } },
+      {
+        "@type": "BreadcrumbList",
+        "@id": `${url}#breadcrumb`,
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: "Home", item: `${SITE_URL}/` },
+          { "@type": "ListItem", position: 2, name: "Insights", item: `${SITE_URL}/blog` },
+          { "@type": "ListItem", position: 3, name, item: url },
+        ],
+      },
+    ],
+  };
+}
+
 const PAGE_TYPES: Record<string, string> = { "/about": "AboutPage", "/contact": "ContactPage", "/case-studies": "CollectionPage" };
 
 /**

@@ -6,11 +6,11 @@ import { countLive } from "@/server/services/public";
 
 export const revalidate = 300;
 
-const description = "Practical guides on GCC build-outs, technology staffing and digital delivery from the MIYO Global team.";
+const description = "Practical guides on GCC build-outs, technology staffing, executive search and digital delivery in India and the UAE, from the MIYO Global team.";
 
 export async function generateMetadata(): Promise<Metadata> {
   // With nothing published the page is an empty shell: keep it out of the index until the first post (publishing revalidates /blog).
-  return { ...blogListingMetadata("/blog", BLOG_TITLE, description), ...((await countLive()) ? {} : { robots: { index: false, follow: true } }) };
+  return { ...blogListingMetadata("/blog", `${BLOG_NAME}: Staffing & GCC Insights | MIYO Global`, description), ...((await countLive()) ? {} : { robots: { index: false, follow: true } }) };
 }
 
 const jsonLd = {
