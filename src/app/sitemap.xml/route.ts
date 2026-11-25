@@ -1,10 +1,11 @@
-import { SITE_URL, xml } from "@/lib/seo";
+import { NOINDEX, SITE_URL, xml } from "@/lib/seo";
 import { sitemapEntries } from "@/server/services/public";
 import { newest, sitemapUrls } from "./urls";
 
 export const dynamic = "force-dynamic";
 
 export async function GET() {
+  if (NOINDEX) return new Response(null, { status: 404 });
   const sets = sitemapUrls(await sitemapEntries());
   // A child sitemap is listed only when it has URLs (posts-sitemap.xml is empty until the first post is published).
   const children = (["pages", "posts"] as const).filter((name) => sets[name].length);
