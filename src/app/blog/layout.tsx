@@ -1,22 +1,25 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { CookieBar } from "@/components/cookie-bar";
 import { GoogleTag } from "@/components/google-tag";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
-import { SITE_URL } from "@/lib/seo";
-import "./site.css";
-import "./blog.css";
+import { SITE_NAME, SITE_URL } from "@/lib/seo";
+import { raw } from "@/styles/tokens";
+import "@/styles/site.css";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
-  applicationName: "MIYO Global",
-  icons: { icon: "/favicon.svg" },
+  applicationName: SITE_NAME,
 };
+
+export const viewport: Viewport = { themeColor: raw.paper };
 
 export default function BlogLayout({ children }: { children: React.ReactNode }) {
   return (
     <>
-      <a className="skip" href="#main">Skip to content</a>
+      <a className="skip" href="#main">
+        Skip to content
+      </a>
       <SiteHeader active="/blog" />
       <main id="main">{children}</main>
       <SiteFooter />

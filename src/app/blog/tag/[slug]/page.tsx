@@ -1,20 +1,23 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { notFoundMetadata } from "@/components/not-found-view";
-import { PostCard } from "@/components/post-card";
-import { byTagId, getTag } from "@/server/services/public";
+import { listingJsonLd, listingMetadata } from "@/lib/page-meta";
+import { jsonLdScript } from "@/lib/seo";
+import { byTagId, getTag, TAG_MIN_POSTS } from "@/server/services/public";
+import { blogCrumbs, countLabel, ListingPage, PostList } from "@/views/blog/parts";
 
 export const revalidate = 300;
+
+const describe = (name: string) => `Every MIYO Journal article tagged ${name}: practical notes on hiring, GCC build-outs and delivery in India and the UAE from MIYO Global.`;
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const t = await getTag((await params).slug);
   if (!t) return notFoundMetadata;
-  const empty = !(await byTagId(t.id, 1)).length;
+  // A tag with a single article is a title and one card: followed for discovery, not indexed, and left out of the sitemap.
+  const thin = (await byTagId(t.id, TAG_MIN_POSTS)).length < TAG_MIN_POSTS;
   return {
-    title: `${t.name} | MIYO Global blog`,
-    description: `Articles tagged ${t.name} from MIYO Global.`,
-    alternates: { canonical: `/blog/tag/${t.slug}` },
-    ...(empty ? { robots: { index: false, follow: true } } : {}),
+    ...listingMetadata(`/blog/tag/${t.slug}`, `${t.name} Articles | MIYO Journal`, describe(t.name)),
+    ...(thin ? { robots: { index: false, follow: true } } : {}),
   };
 }
 
@@ -23,14 +26,11 @@ export default async function TagPage({ params }: { params: Promise<{ slug: stri
   if (!t) notFound();
   const posts = await byTagId(t.id);
   return (
-    <div className="b-wrap">
-      <section className="b-hero" style={{ padding: "48px 0 16px", background: "none" }}>
-        <span className="eyebrow">Tag</span>
-        <h1>{t.name}</h1>
-      </section>
-      <section className="b-sec">
-        {posts.length ? <div className="b-grid">{posts.map((p) => <PostCard key={p.id} post={p} />)}</div> : <p className="b-empty">No articles yet.</p>}
-      </section>
-    </div>
+    <>
+    <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdScript(listingJsonLd(`/blog/tag/${t.slug}`, `${t.name} articles`, describe(t.name))) }} />
+    <ListingPage crumbs={blogCrumbs({ label: t.name })} eyebrow="Tag" title={t.name} description={describe(t.name)}>
+      <PostList posts={posts} label={countLabel(posts.length)} />
+    </ListingPage>
+    </>
   );
 }

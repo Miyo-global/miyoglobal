@@ -286,6 +286,8 @@ test.describe.serial("studio to public flow", () => {
     expect(await (await request.get("/llms.txt")).text()).toContain("GCC staffing guide for 2026");
     const robots = await (await request.get("/robots.txt")).text();
     expect(robots).toContain("Disallow: /blog/search");
+    // A blanket query-string rule would block /_next/image?url=... from image crawlers.
+    expect(robots).not.toContain("/*?*");
     expect(robots).toContain("GPTBot");
     expect(robots).toContain("Sitemap: http://localhost:3111/sitemap.xml");
     expect(robots).not.toContain("posts-sitemap.xml");
@@ -592,6 +594,9 @@ test("static pages keep their URLs", async ({ request }) => {
   }
   const old = await request.get("/about.html", { maxRedirects: 0 });
   expect(old.status()).toBe(308);
+  const cased = await request.get("/About", { maxRedirects: 0 });
+  expect(cased.status()).toBe(308);
+  expect(cased.headers().location).toMatch(/\/about$/);
   const missing = await request.get("/nope");
   expect(missing.status()).toBe(404);
   expect(await missing.text()).toContain("Page not found");
@@ -631,6 +636,7 @@ test("static pages use clean canonicals without redirects", async ({ request }) 
   for (const p of ["about", "terms", "disclosure", "editorial-policy"]) {
     const html = await (await request.get(`/${p}`)).text();
     expect(html).toContain(`<link rel="canonical" href="http://localhost:3111/${p}"`);
+    expect(html, p).toContain(" | MIYO Global</title>");
     expect(html).not.toContain(".html\"");
   }
   const referrals = await (await request.get("/referrals")).text();

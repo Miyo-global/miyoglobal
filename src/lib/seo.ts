@@ -8,18 +8,29 @@ export const BLOG_TITLE = `${BLOG_NAME} | ${SITE_NAME}`;
 
 export const FEED_CACHE = "public, s-maxage=60, must-revalidate";
 
-const ORG_ID = "https://www.miyoglobal.com/#organization";
+/** Every @id and url derives from NEXT_PUBLIC_SITE_URL, so staging and beta graphs are self-consistent and production keeps www. */
+export const ORG_ID = `${SITE_URL}/#organization`;
+export const WEBSITE_ID = `${SITE_URL}/#website`;
+
+const ADDRESSES = [
+  { "@type": "PostalAddress", streetAddress: "MIYO Global Office (Trendz Trinity), Plot No. 21, Madhapur, Gafoornagar", addressLocality: "Hyderabad", addressRegion: "Telangana", postalCode: "500081", addressCountry: "IN" },
+  { "@type": "PostalAddress", streetAddress: "Office A, RAK DAO Business Centre, Al Riffa, Sheikh Mohammed Bin Zayed Road", addressLocality: "Ras Al Khaimah", addressCountry: "AE" },
+];
 
 /** Shared WebSite + Organization nodes; reference the org elsewhere via { "@id": ORG_ID }. */
 export function siteGraph() {
   return [
-    { "@type": "WebSite", "@id": "https://www.miyoglobal.com/#website", url: "https://www.miyoglobal.com/", name: SITE_NAME, publisher: { "@id": ORG_ID } },
+    { "@type": "WebSite", "@id": WEBSITE_ID, url: `${SITE_URL}/`, name: SITE_NAME, publisher: { "@id": ORG_ID } },
     {
       "@type": "Organization",
       "@id": ORG_ID,
       name: SITE_NAME,
-      url: "https://www.miyoglobal.com/",
-      logo: "https://www.miyoglobal.com/images/logo-web.png",
+      legalName: "Miyo Global Private Limited",
+      url: `${SITE_URL}/`,
+      // Real pixel size of public/images/logo-web.png.
+      logo: { "@type": "ImageObject", url: `${SITE_URL}/images/logo-web.png`, width: 356, height: 192 },
+      sameAs: ["https://www.linkedin.com/company/miyo-global"],
+      address: ADDRESSES,
       contactPoint: { "@type": "ContactPoint", contactType: "sales", email: "staffing@miyoglobal.com", areaServed: ["IN", "AE"], availableLanguage: "en" },
     },
   ];
@@ -30,11 +41,11 @@ export function absolute(path: string): string {
 }
 
 export function titleFor(metaTitle: string, title: string): string {
+  // Never cut a title mid-word: add the brand only when it fits in 60 characters, otherwise use the title as written.
   const base = (metaTitle || title).trim();
-  const clamp = (t: string, max: number) => (t.length > max ? `${t.slice(0, max - 3).trimEnd()}...` : t);
-  if (base.includes("|")) return clamp(base, 60);
-  const suffix = ` | ${SITE_NAME}`;
-  return clamp(base, 60 - suffix.length) + suffix;
+  if (base.includes("|")) return base;
+  const branded = `${base} | ${SITE_NAME}`;
+  return branded.length <= 60 ? branded : base;
 }
 
 export function jsonLdScript(data: unknown): string {

@@ -2,7 +2,11 @@ import { NOINDEX, SITE_URL } from "@/lib/seo";
 
 const AI_CRAWLERS = ["GPTBot", "OAI-SearchBot", "ChatGPT-User", "ClaudeBot", "Claude-SearchBot", "PerplexityBot", "Google-Extended", "Applebot-Extended", "CCBot"];
 
-const BLOCKED = ["/api/", "/blog/search", "/studio", "/*?*"];
+// No blanket query-string rule: /_next/image?url=... must stay crawlable and canonicals already fold ?utm variants.
+// /blog/search is an unbounded ?q= space, so robots.txt is its one crawl signal (the page's noindex is only a backstop).
+// Tracking parameters only: these never change the content, so their URL variants are not worth crawling.
+const TRACKING = ["utm_source", "utm_medium", "utm_campaign", "utm_term", "utm_content", "gclid", "fbclid", "msclkid"];
+const BLOCKED = ["/api/", "/blog/search", "/studio", ...TRACKING.flatMap((p) => [`/*?${p}=`, `/*&${p}=`])];
 
 export function GET() {
   if (NOINDEX) return new Response("User-agent: *\nDisallow: /\n", { headers: { "Content-Type": "text/plain; charset=utf-8", "Cache-Control": "no-store" } });

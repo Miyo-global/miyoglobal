@@ -25,8 +25,6 @@ export function afterPublish(slug: string, previousSlug: string) {
           `${SITE_URL}/blog/${slug}`,
           ...(previousSlug && previousSlug !== slug ? [`${SITE_URL}/blog/${previousSlug}`] : []),
           `${SITE_URL}/blog`,
-          `${SITE_URL}/pages-sitemap.xml`,
-          `${SITE_URL}/posts-sitemap.xml`,
         ],
       }),
       signal: AbortSignal.timeout(5000),

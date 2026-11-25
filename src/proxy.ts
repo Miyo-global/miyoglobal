@@ -2,16 +2,20 @@ import { eq } from "drizzle-orm";
 import { NextResponse, type NextRequest } from "next/server";
 import { parseBlogPath } from "@/lib/blog-path";
 import { ADMIN_HOST, normalizeHost } from "@/lib/hosts";
+import { STATIC_PAGES } from "@/lib/pages";
 import { db } from "@/server/db";
 import { redirects } from "@/server/db/schema";
 import { blogTargetExists } from "@/server/services/public";
 
 const adminOnly = /^\/(studio|api\/auth)(\/|$)/;
-const shared = /^\/(_next|media\/|images\/|favicon\.(svg|ico))/;
+const shared = /^\/(_next|media\/|images\/|favicon\.(svg|ico)|apple-touch-icon\.png|icon-\d+\.png|manifest\.webmanifest)/;
 const postPath = /^\/blog\/(?!search$)[a-z0-9-]+$/;
 
 const PUBLIC_HOST = "www.miyoglobal.com";
-const NOT_FOUND_PATH = "/_not-found";
+// A path nothing can match (underscore folders are never routes), so the platform's own 404 handling answers it.
+// Not "/_not-found": on Vercel that is a real prerendered page served with status 200, which made every unknown blog URL a soft 404.
+const NOT_FOUND_PATH = "/_blog-404";
+const pagePaths = new Set(STATIC_PAGES.map((p) => p.path));
 
 function notFound() {
   return new NextResponse(null, { status: 404 });
@@ -35,16 +39,25 @@ export async function proxy(req: NextRequest) {
     // Previews (*.vercel.app) and any other alias must never be indexed.
     const tag = <T extends NextResponse>(res: T) => (host === PUBLIC_HOST ? res : noindex(res));
     if (adminOnly.test(pathname)) return tag(notFound());
+    // Every public page and blog URL is lower-case: send wrong-case links (/About, /Blog/Post) to the real URL instead of a 404.
+    const lower = pathname.toLowerCase();
+    if (lower !== pathname && (pagePaths.has(lower) || /^\/blog(\/|$)/.test(lower))) {
+      const url = req.nextUrl.clone();
+      url.pathname = lower;
+      return tag(NextResponse.redirect(url, 308));
+    }
     if (postPath.test(pathname)) {
       const to = await findRedirect(pathname).catch(() => null);
       if (to) return tag(NextResponse.redirect(new URL(to, req.url), 301));
     }
-    // Unknown blog URLs get the branded 404 (real <title>, status 404). Next 16 serves an empty error
-    // shell when a dynamic page calls notFound(), so the check runs here: rewriting to a path no route
-    // matches renders src/app/not-found.tsx.
+    // Unknown blog URLs get the branded 404 (real <title>, status 404). Next 16 serves an empty error shell when a dynamic page calls
+    // notFound(), so the check runs here: rewriting to a path no route matches renders src/app/not-found.tsx with a 404 status.
     const target = parseBlogPath(pathname);
     if (target && !(await blogTargetExists(target).catch(() => true))) {
-      return tag(NextResponse.rewrite(new URL(NOT_FOUND_PATH, req.url)));
+      const res = noindex(NextResponse.rewrite(new URL(NOT_FOUND_PATH, req.url)));
+      // Replace the 5-minute edge cache next.config.ts puts on blog URLs: a cached 404 would hide a post published at this URL.
+      res.headers.set("Cache-Control", "public, max-age=0, must-revalidate");
+      return res;
     }
     return tag(NextResponse.next());
   }

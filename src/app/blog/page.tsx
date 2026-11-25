@@ -1,16 +1,17 @@
 import type { Metadata } from "next";
 import { BlogIndex } from "@/components/blog-index";
-import { BLOG_NAME, BLOG_TITLE, jsonLdScript, siteGraph, SITE_NAME, SITE_URL } from "@/lib/seo";
+import { blogListingMetadata } from "@/lib/page-meta";
+import { BLOG_NAME, BLOG_TITLE, jsonLdScript, ORG_ID, siteGraph, SITE_URL, WEBSITE_ID } from "@/lib/seo";
+import { countLive } from "@/server/services/public";
 
 export const revalidate = 300;
 
-export const metadata: Metadata = {
-  title: { absolute: BLOG_TITLE },
-  description: "Practical guides on GCC build-outs, technology staffing and digital delivery from the MIYO Global team.",
-  alternates: { canonical: "/blog", types: { "application/rss+xml": "/feed.xml" } },
-  openGraph: { title: BLOG_TITLE, description: "Practical guides on GCC build-outs, technology staffing and digital delivery.", type: "website", url: "/blog", siteName: SITE_NAME, images: [{ url: "/images/og/blog.webp", width: 1200, height: 630, alt: "MIYO Global team collaborating on an enterprise staffing and delivery plan" }] },
-  twitter: { card: "summary_large_image" },
-};
+const description = "Practical guides on GCC build-outs, technology staffing, executive search and digital delivery in India and the UAE, from the MIYO Global team.";
+
+export async function generateMetadata(): Promise<Metadata> {
+  // With nothing published the page is an empty shell: keep it out of the index until the first post (publishing revalidates /blog).
+  return { ...blogListingMetadata("/blog", `${BLOG_NAME}: Staffing & GCC Insights | MIYO Global`, description), ...((await countLive()) ? {} : { robots: { index: false, follow: true } }) };
+}
 
 const jsonLd = {
   "@context": "https://schema.org",
@@ -21,15 +22,15 @@ const jsonLd = {
       "@id": `${SITE_URL}/blog#blog`,
       url: `${SITE_URL}/blog`,
       name: BLOG_NAME,
-      description: "Practical guides on GCC build-outs, technology staffing and digital delivery from the MIYO Global team.",
-      isPartOf: { "@id": "https://www.miyoglobal.com/#website" },
-      publisher: { "@id": "https://www.miyoglobal.com/#organization" },
+      description,
+      isPartOf: { "@id": WEBSITE_ID },
+      publisher: { "@id": ORG_ID },
       inLanguage: "en",
     },
     {
       "@type": "BreadcrumbList",
       itemListElement: [
-        { "@type": "ListItem", position: 1, name: "Home", item: "https://www.miyoglobal.com/" },
+        { "@type": "ListItem", position: 1, name: "Home", item: `${SITE_URL}/` },
         { "@type": "ListItem", position: 2, name: "Blog", item: `${SITE_URL}/blog` },
       ],
     },

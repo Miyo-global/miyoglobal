@@ -1,0 +1,43 @@
+/* Post bodies: the rendered rich-text pieces the shared .prose (site.css) does not cover. Tokens only. */
+.prose .b-table {
+  overflow-x: auto;
+}
+.prose .b-table th,
+.prose .b-table td {
+  min-width: 120px;
+}
+.prose .b-table p + p {
+  margin-top: var(--raw-space-2);
+}
+.prose pre {
+  overflow-x: auto;
+  background: var(--ink);
+  color: var(--on-ink);
+  padding: var(--raw-space-4);
+  font-size: var(--size-small);
+  line-height: 1.6;
+}
+.prose pre code {
+  font-size: inherit;
+}
+.prose :not(pre) > code {
+  background: var(--ground-cool);
+  border: 1px solid var(--rule);
+  padding: 0 var(--raw-space-1);
+}
+.prose figure {
+  margin-block: var(--raw-space-8);
+}
+.prose h4 {
+  font-size: var(--size-body);
+  font-weight: 600;
+  margin-top: var(--raw-space-8);
+}
+.prose h5,
+.prose h6 {
+  font-family: var(--face-mono);
+  font-size: var(--size-meta);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-top: var(--raw-space-8);
+}

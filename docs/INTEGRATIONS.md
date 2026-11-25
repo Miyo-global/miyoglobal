@@ -43,4 +43,4 @@ Set `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY` and `R2_PUBLIC_B
 
 ## IndexNow
 
-Set `INDEXNOW_KEY` to any 8-128 character alphanumeric string. The key is served at `/indexnow-key.txt` and pinged on publish.
+Set `INDEXNOW_KEY` to any 8-128 character alphanumeric string. The key is served at `/indexnow-key.txt`, and the post URL and `/blog` are submitted on publish. To submit the marketing pages, see `docs/SEO.md`.

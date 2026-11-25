@@ -9,3 +9,6 @@ playwright-report
 .vercel
 .omc/
 .pnpm-store/
+
+# QA screenshots and Lighthouse reports (local only)
+qa-artifacts/
