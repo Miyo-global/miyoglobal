@@ -1,5 +1,5 @@
 /**
- * Marketing pages. All are App Router pages under src/app/(site) except /referrals, which is still served from public/referrals.html.
+ * Marketing pages, all App Router pages under src/app/(site). Individual job pages (/jobs/[slug]) come from the jobs sheet and are added to the sitemap separately.
  *
  * `updated` (YYYY-MM-DD) is the sitemap lastmod and the WebPage dateModified. Bump it by hand when a page's visible content changes.
  * It is committed rather than read from git at build time: Vercel builds from a shallow clone, where git dates and file mtimes are
@@ -20,7 +20,8 @@ export const STATIC_PAGES: { path: string; label: string; summary: string; updat
     updated: "2026-11-16",
   },
   { path: "/case-studies", label: "Case Studies", summary: "Specialist teams deployed fast and held to measurable quality across healthcare, radiology, and AI data.", updated: "2026-11-16" },
-  { path: "/referrals", label: "Referrals", summary: "Refer a candidate for an open MIYO Global mandate.", updated: "2026-11-03" },
+  { path: "/jobs", label: "Jobs", summary: "Every open MIYO Global mandate, with search and filters by function, location, level and work mode.", updated: "2026-11-25" },
+  { path: "/referrals", label: "Referrals", summary: "Refer a candidate for an open MIYO Global role and earn ₹15,000 when they join.", updated: "2026-11-25" },
   { path: "/about", label: "About", summary: "Enterprise staffing and digital delivery led by veteran operators with a compliance-backed engagement model.", updated: "2026-11-16" },
   { path: "/contact", label: "Contact", summary: "Talk to MIYO Global about staffing solutions, GCC build-outs, or managed digital delivery.", updated: "2026-11-16" },
   { path: "/privacy-policy", label: "Privacy & Cookie Policy", summary: "How this website collects, uses, and protects information, including cookie practices.", updated: "2026-11-16", legal: true },
@@ -45,9 +46,6 @@ export const SERVICES: [page: string, id: string, name: string, line: string][] 
   ["/digital-solutions", "healthcare-ai", "Healthcare AI & Trust & Safety", "Licensed clinicians review AI health output; trained analysts run trust and safety operations across languages."],
   ["/digital-solutions", "training", "Corporate Training", "Expert-led cohort programmes in AI, data, cloud, and leadership, delivered by Prime Learning."],
 ];
-
-/** Pages still served as static HTML through a clean-URL rewrite in next.config.ts. */
-export const REWRITTEN_PAGES = ["referrals"];
 
 /** Every page name that ever had a public .html URL: /<name>.html redirects to /<name>. */
 export const HTML_PAGE_NAMES = STATIC_PAGES.map((p) => p.path.slice(1)).filter(Boolean);

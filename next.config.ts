@@ -1,6 +1,6 @@
 import type { NextConfig } from "next";
 import { ADMIN_HOST, ADMIN_URL } from "./src/lib/hosts";
-import { HTML_PAGE_NAMES, REWRITTEN_PAGES } from "./src/lib/pages";
+import { HTML_PAGE_NAMES } from "./src/lib/pages";
 
 const mediaUrl = process.env.NEXT_PUBLIC_MEDIA_URL ? new URL(process.env.NEXT_PUBLIC_MEDIA_URL) : null;
 
@@ -77,13 +77,6 @@ const config: NextConfig = {
       { source: "/blogs/:path*", destination: "/blog/:path*", permanent: true },
       { source: `/:page(${HTML_PAGE_NAMES.join("|")}).html`, destination: "/:page", permanent: true },
     ];
-  },
-  async rewrites() {
-    return {
-      beforeFiles: [{ source: `/:page(${REWRITTEN_PAGES.join("|")})`, destination: "/:page.html" }],
-      afterFiles: [],
-      fallback: [],
-    };
   },
 };
 
