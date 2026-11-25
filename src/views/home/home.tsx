@@ -228,11 +228,11 @@ function Proof() {
             <Card key={d.sector} as="article" variant="plain" className="col-span-4 md:col-span-6">
               <Eyebrow>{d.sector}</Eyebrow>
               <p className="mt-4 max-w-measure text-lead">{d.text}</p>
-              <dl className="mt-8 grid grid-cols-3 gap-4">
+              <div className="mt-8 grid grid-cols-3 gap-4">
                 {d.figures.map((f) => (
                   <Stat key={f.label} value={f.value} label={f.label} size="h3" />
                 ))}
-              </dl>
+              </div>
             </Card>
           ))}
         </div>
