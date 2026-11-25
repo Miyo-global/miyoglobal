@@ -1,4 +1,6 @@
 export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.miyoglobal.com").replace(/\/$/, "");
+// Staging/beta set NEXT_PUBLIC_ENV; anything but "production" (or unset) keeps the site out of search engines.
+export const NOINDEX = (process.env.NEXT_PUBLIC_ENV ?? "production") !== "production";
 export const SITE_NAME = "MIYO Global";
 /** The blog's one name: <title>, og:title, JSON-LD and the RSS channel all use it. */
 export const BLOG_NAME = "MIYO Journal";
