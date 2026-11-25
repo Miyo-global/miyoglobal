@@ -1,0 +1,209 @@
+/*
+ * MIYO Global design tokens: the one source of truth for colour, type, space, radius, elevation and motion.
+ * Tier 1 (raw) is the palette and scales. Tier 2 (semantic) names what each value is for; components use only these.
+ * Tier 3 (@theme inline) exposes the semantic tier to Tailwind v4 and removes Tailwind's defaults, so a utility that
+ * is not in this file does not exist. No hex value may appear outside this file and its mirror src/styles/tokens.ts
+ * (checked by scripts/check-tokens.mjs).
+ */
+
+/* ---------- Tier 1: raw ---------- */
+:root {
+  --raw-navy: #0b192f;
+  --raw-navy-2: #10233f;
+  --raw-gold: #e0b458;
+  --raw-gold-deep: #8f6b14;
+  --raw-paper: #faf8f4;
+  --raw-paper-cool: #f7f8fb;
+  --raw-white: #ffffff;
+  --raw-rule: #e4e8f0;
+  --raw-rule-strong: #d8dee9;
+  --raw-ink-muted: rgba(11, 25, 47, 0.68);
+  --raw-error: #b42318;
+  --raw-on-navy-muted: rgba(255, 255, 255, 0.72);
+  --raw-on-navy-rule: rgba(255, 255, 255, 0.16);
+  --raw-ok: #1d6b47;
+
+  /* Fluid type, 375px to 1440px viewports. */
+  --raw-size-display: clamp(3rem, 2.12rem + 3.76vw, 5.5rem); /* 48 to 88 */
+  --raw-size-h1: clamp(2.5rem, 1.97rem + 2.25vw, 4rem); /* 40 to 64 */
+  --raw-size-h2: clamp(2rem, 1.65rem + 1.5vw, 3rem); /* 32 to 48 */
+  --raw-size-h3: clamp(1.375rem, 1.24rem + 0.56vw, 1.75rem); /* 22 to 28 */
+  --raw-size-lead: clamp(1.125rem, 1.08rem + 0.19vw, 1.25rem); /* 18 to 20 */
+  --raw-size-body: 1rem; /* 16 */
+  --raw-size-small: 0.875rem; /* 14 */
+  --raw-size-meta: 0.75rem; /* 12 */
+
+  /* 4px base. */
+  --raw-space-1: 4px;
+  --raw-space-2: 8px;
+  --raw-space-3: 12px;
+  --raw-space-4: 16px;
+  --raw-space-6: 24px;
+  --raw-space-8: 32px;
+  --raw-space-12: 48px;
+  --raw-space-16: 64px;
+  --raw-space-24: 96px;
+  --raw-space-32: 128px;
+  --raw-space-40: 160px;
+
+  --raw-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+/* ---------- Tier 2: semantic ---------- */
+:root {
+  --ink: var(--raw-navy);
+  --ink-2: var(--raw-navy-2);
+  --muted: var(--raw-ink-muted);
+  --accent: var(--raw-gold);
+  --accent-text: var(--raw-gold-deep);
+  --ground: var(--raw-paper);
+  --ground-cool: var(--raw-paper-cool);
+  --surface: var(--raw-white);
+  --rule: var(--raw-rule);
+  --rule-strong: var(--raw-rule-strong);
+  --error: var(--raw-error);
+  --ok: var(--raw-ok);
+  --on-ink: var(--raw-white);
+  --on-ink-muted: var(--raw-on-navy-muted);
+  --on-ink-rule: var(--raw-on-navy-rule);
+
+  --face-display: var(--font-caslon), "Libre Caslon Display", Georgia, "Times New Roman", serif;
+  --face-sans: var(--font-work), "Work Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --face-mono: var(--font-plex), "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+
+  --size-display: var(--raw-size-display);
+  --size-h1: var(--raw-size-h1);
+  --size-h2: var(--raw-size-h2);
+  --size-h3: var(--raw-size-h3);
+  --size-lead: var(--raw-size-lead);
+  --size-body: var(--raw-size-body);
+  --size-small: var(--raw-size-small);
+  --size-meta: var(--raw-size-meta);
+
+  --measure: 68ch;
+  --measure-reading: 680px;
+  --frame: 1440px;
+  --content: 1280px;
+  --gutter: 24px;
+  --margin: 20px;
+  --section: var(--raw-space-16);
+
+  --r-control: 2px;
+  --r-card: 4px;
+  --elev-overlay: 0 24px 48px -12px rgba(11, 25, 47, 0.24);
+
+  --ease: var(--raw-ease);
+  --dur-fast: 150ms;
+  --dur-base: 250ms;
+  --dur-slow: 600ms;
+
+  --header-h: 72px;
+}
+
+@media (min-width: 768px) {
+  :root {
+    --gutter: 32px;
+    --margin: 40px;
+  }
+}
+
+@media (min-width: 1280px) {
+  :root {
+    --margin: 80px;
+    --section: var(--raw-space-24);
+  }
+}
+
+/* ---------- Tier 3: Tailwind v4 theme ---------- */
+@theme inline {
+  --*: initial;
+
+  --breakpoint-sm: 40rem;
+  --breakpoint-md: 48rem;
+  --breakpoint-lg: 64rem;
+  --breakpoint-xl: 80rem;
+
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-accent-text: var(--accent-text);
+  --color-ground: var(--ground);
+  --color-ground-cool: var(--ground-cool);
+  --color-surface: var(--surface);
+  --color-rule: var(--rule);
+  --color-rule-strong: var(--rule-strong);
+  --color-error: var(--error);
+  --color-ok: var(--ok);
+  --color-on-ink: var(--on-ink);
+  --color-on-ink-muted: var(--on-ink-muted);
+  --color-on-ink-rule: var(--on-ink-rule);
+  --color-transparent: transparent;
+  --color-current: currentColor;
+
+  --font-display: var(--face-display);
+  --font-sans: var(--face-sans);
+  --font-mono: var(--face-mono);
+
+  --text-display: var(--size-display);
+  --text-display--line-height: 1;
+  --text-h1: var(--size-h1);
+  --text-h1--line-height: 1.05;
+  --text-h2: var(--size-h2);
+  --text-h2--line-height: 1.1;
+  --text-h3: var(--size-h3);
+  --text-h3--line-height: 1.2;
+  --text-lead: var(--size-lead);
+  --text-lead--line-height: 1.5;
+  --text-body: var(--size-body);
+  --text-body--line-height: 1.6;
+  --text-small: var(--size-small);
+  --text-small--line-height: 1.5;
+  --text-meta: var(--size-meta);
+  --text-meta--line-height: 1.4;
+
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+
+  --tracking-display: -0.02em;
+  --tracking-meta: 0.12em;
+  --tracking-normal: 0;
+
+  --leading-none: 1;
+  --leading-tight: 1.2;
+  --leading-normal: 1.6;
+
+  --spacing-0: 0;
+  --spacing-px: 1px;
+  --spacing-1: var(--raw-space-1);
+  --spacing-2: var(--raw-space-2);
+  --spacing-3: var(--raw-space-3);
+  --spacing-4: var(--raw-space-4);
+  --spacing-6: var(--raw-space-6);
+  --spacing-8: var(--raw-space-8);
+  --spacing-12: var(--raw-space-12);
+  --spacing-16: var(--raw-space-16);
+  --spacing-24: var(--raw-space-24);
+  --spacing-32: var(--raw-space-32);
+  --spacing-40: var(--raw-space-40);
+  --spacing-section: var(--section);
+  --spacing-gutter: var(--gutter);
+  --spacing-margin: var(--margin);
+  --spacing-header: var(--header-h);
+
+  --container-heading: 20ch;
+  --container-measure: var(--measure);
+  --container-reading: var(--measure-reading);
+  --container-content: var(--content);
+  --container-frame: var(--frame);
+
+  --radius-none: 0;
+  --radius-control: var(--r-control);
+  --radius-card: var(--r-card);
+  --radius-full: 9999px;
+
+  --shadow-overlay: var(--elev-overlay);
+
+  --ease-brand: var(--ease);
+}
