@@ -12,7 +12,8 @@
     "db:seed": "tsx scripts/seed-admin.mts",
     "test": "vitest run",
     "e2e": "rm -f /tmp/miyo-e2e-mock-calls.log && tsx scripts/e2e-reset.mts && playwright test",
-    "check:tokens": "node scripts/check-tokens.mjs"
+    "check:tokens": "node scripts/check-tokens.mjs",
+    "og:images": "tsx scripts/og-images.tsx"
   },
   "dependencies": {
     "@tiptap/extension-image": "^3.32.2",

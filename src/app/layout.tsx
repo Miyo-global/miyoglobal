@@ -13,8 +13,8 @@ export const metadata: Metadata = {
     ],
     apple: "/apple-touch-icon.png",
   },
-  // Google Search Console and Bing Webmaster ownership tags; nothing is emitted for an unset variable.
-  verification: { google: process.env.GOOGLE_SITE_VERIFICATION, ...(bing ? { other: { "msvalidate.01": bing } } : {}) },
+  // Google Search Console and Bing Webmaster ownership tags, production only; nothing is emitted for an unset variable.
+  ...(NOINDEX ? {} : { verification: { google: process.env.GOOGLE_SITE_VERIFICATION, ...(bing ? { other: { "msvalidate.01": bing } } : {}) } }),
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
