@@ -1,8 +1,12 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { ContactForm } from "@/components/contact-form";
+import { Breadcrumbs } from "@/components/ui/breadcrumbs";
+import { Card } from "@/components/ui/card";
+import { Eyebrow } from "@/components/ui/eyebrow";
 import { pageJsonLd, pageMetadata, type SitePage } from "@/lib/page-meta";
-import { jsonLdScript } from "@/lib/seo";
+import { jsonLdScript, SITE_URL } from "@/lib/seo";
+import { OfficeCard } from "@/views/contact/office-card";
+import { OFFICES, officePlaces } from "@/views/contact/offices";
 
 const page: SitePage = {
   path: "/contact",
@@ -15,22 +19,48 @@ const page: SitePage = {
 
 export const metadata: Metadata = pageMetadata(page);
 
+const jsonLd = pageJsonLd(page, officePlaces(`${SITE_URL}${page.path}`));
+
 export default function ContactPage() {
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdScript(pageJsonLd(page)) }} />
-      <section className="phero"><span className="rbg"></span><span className="rbg two"></span>
-            <div className="wrap"><div className="crumb"><Link href="/">Home</Link> / Contact</div>
-            <span className="eyebrow" style={{ marginTop: "10px" }}>Get in touch</span>
-            <h1>Let’s build your <span className="g">team</span></h1><p>Tell us what you need, a role, a pod, a GCC, or a digital program, and we will come back with a plan and ramp-up timelines.</p></div></section>
-      <section className="sec"><div className="wrap contact-2">
-        <ContactForm />
-        <div className="cinfo reveal">
-          <div className="office"><div className="loc"><span className="ic"><svg viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2" /><path d="m3 6 9 7 9-7" /></svg></span><div><div className="region">Email</div><div className="city" style={{ fontSize: "1.02rem" }}><a href="mailto:staffing@miyoglobal.com" className="g">staffing@miyoglobal.com</a></div></div></div></div>
-          <div className="office"><div className="loc"><span className="ic"><svg viewBox="0 0 24 24"><path d="M12 21s-7-6-7-11a7 7 0 0 1 14 0c0 5-7 11-7 11z" /><circle cx="12" cy="10" r="2.5" /></svg></span><div><div className="region">India · Operations HQ</div><div className="city">Hyderabad</div></div></div><address>MIYO Global Office (Trendz Trinity), Plot No. 21, Madhapur, Gafoornagar, Hyderabad, Telangana 500081</address></div>
-          <div className="office"><div className="loc"><span className="ic"><svg viewBox="0 0 24 24"><path d="M12 21s-7-6-7-11a7 7 0 0 1 14 0c0 5-7 11-7 11z" /><circle cx="12" cy="10" r="2.5" /></svg></span><div><div className="region">UAE</div><div className="city">Ras Al Khaimah</div></div></div><address>Prime Assets Education &amp; Training Ltd., Office A, RAK DAO Business Centre, Al Riffa, Sheikh Mohammed Bin Zayed Road</address></div>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdScript(jsonLd) }} />
+      <section className="pt-section">
+        <div className="frame">
+          <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Contact" }]} />
+          <div className="grid-12 mt-12 gap-y-6">
+            <Eyebrow className="col-span-4 md:col-span-12">Get in touch</Eyebrow>
+            <h1 className="col-span-4 max-w-heading md:col-span-8">Let’s build your team</h1>
+            <p className="lead col-span-4 md:col-span-7">
+              Tell us what you need, a role, a pod, a GCC, or a digital program, and we will come back with a plan and ramp-up timelines.
+            </p>
+          </div>
         </div>
-      </div></section>
+      </section>
+
+      <section aria-label="Enquiry form and offices" className="py-section">
+        <div className="frame grid-12 gap-y-16">
+          <div className="col-span-4 md:col-span-7">
+            <ContactForm />
+          </div>
+          <aside aria-labelledby="offices-title" className="col-span-4 grid content-start gap-12 md:col-span-5">
+            <h2 id="offices-title" className="text-h3">
+              Write to us or visit
+            </h2>
+            <Card as="article" variant="plain">
+              <p className="meta text-muted">Email</p>
+              <h3 className="mt-3">
+                <a href="mailto:staffing@miyoglobal.com" className="link inline-flex min-h-12 items-center break-all">
+                  staffing@miyoglobal.com
+                </a>
+              </h3>
+            </Card>
+            {OFFICES.map((o) => (
+              <OfficeCard key={o.id} office={o} />
+            ))}
+          </aside>
+        </div>
+      </section>
     </>
   );
 }
