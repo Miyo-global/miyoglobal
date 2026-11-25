@@ -11,7 +11,8 @@
     "db:migrate": "drizzle-kit migrate",
     "db:seed": "tsx scripts/seed-admin.mts",
     "test": "vitest run",
-    "e2e": "rm -f /tmp/miyo-e2e-mock-calls.log && tsx scripts/e2e-reset.mts && playwright test"
+    "e2e": "rm -f /tmp/miyo-e2e-mock-calls.log && tsx scripts/e2e-reset.mts && playwright test",
+    "check:tokens": "node scripts/check-tokens.mjs"
   },
   "dependencies": {
     "@tiptap/extension-image": "^3.32.2",
@@ -19,6 +20,7 @@
     "@tiptap/pm": "^3.32.2",
     "@tiptap/react": "^3.32.2",
     "@tiptap/starter-kit": "^3.32.2",
+    "animejs": "^4.5.0",
     "aws4fetch": "^1.0.20",
     "better-auth": "^1.7.15",
     "drizzle-orm": "^0.45.4",
@@ -28,17 +30,21 @@
     "react-dom": "^19.3.1",
     "server-only": "^0.0.1",
     "sharp": "^0.35.5",
+    "three": "^0.187.0",
     "zod": "^4.6.7"
   },
   "devDependencies": {
     "@playwright/test": "^1.64.1",
+    "@tailwindcss/postcss": "^4.3.5",
     "@types/node": "^26.6.6",
     "@types/pg": "^8.23.1",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
+    "@types/three": "^0.187.0",
     "drizzle-kit": "^0.31.11",
     "eslint": "^10.14.0",
     "eslint-config-next": "^16.4.4",
+    "tailwindcss": "^4.3.5",
     "tsx": "^4.23.15",
     "typescript": "^5.9.3",
     "vitest": "^5.1.0"
