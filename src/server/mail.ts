@@ -1,8 +1,9 @@
 import "server-only";
 
-type Mail = { to: string; subject: string; text: string; replyTo?: { address: string; name?: string } };
+type Attachment = { name: string; mimeType: string; content: string };
+type Mail = { to: string; subject: string; text: string; replyTo?: { address: string; name?: string }; attachments?: Attachment[] };
 
-export async function sendMail({ to, subject, text, replyTo }: Mail): Promise<boolean> {
+export async function sendMail({ to, subject, text, replyTo, attachments }: Mail): Promise<boolean> {
   const { ZEPTOMAIL_API_URL: url, ZEPTOMAIL_API_TOKEN: token, EMAIL_FROM_ADDRESS: from, EMAIL_REPLY_TO: fallback } = process.env;
   if (!url || !token || !from) {
     console.error("mail: ZeptoMail is not configured");
@@ -19,8 +20,9 @@ export async function sendMail({ to, subject, text, replyTo }: Mail): Promise<bo
       ...(reply ? { reply_to: [reply] } : {}),
       subject,
       textbody: text,
+      ...(attachments?.length ? { attachments: attachments.map((a) => ({ name: a.name, mime_type: a.mimeType, content: a.content })) } : {}),
     }),
-    signal: AbortSignal.timeout(10000),
+    signal: AbortSignal.timeout(attachments?.length ? 20000 : 10000),
   }).catch(() => null);
   if (!res?.ok) console.error("mail: ZeptoMail rejected the message", res?.status);
   return !!res?.ok;
