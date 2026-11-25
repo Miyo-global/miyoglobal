@@ -10,7 +10,6 @@ import "./site-pages.css";
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   applicationName: SITE_NAME,
-  icons: { icon: "/favicon.svg" },
 };
 
 export const viewport: Viewport = { themeColor: "#FFFFFF" };

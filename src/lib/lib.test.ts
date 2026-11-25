@@ -5,7 +5,9 @@ import { checkHealth } from "./health";
 import { planRedirect } from "./redirects";
 import { fromIstInput, toIstInput } from "./ist";
 import { normalizeHost } from "./hosts";
-import { BLOG_NAME, BLOG_TITLE, jsonLdScript, parseCustomJsonLd, titleFor } from "./seo";
+import { pageJsonLd } from "./page-meta";
+import { SERVICES } from "./pages";
+import { BLOG_NAME, BLOG_TITLE, jsonLdScript, ORG_ID, parseCustomJsonLd, titleFor } from "./seo";
 import { isValidSlug, slugify } from "./slug";
 
 const p = (text: string) => ({ type: "paragraph", content: [{ type: "text", text }] });
@@ -194,6 +196,24 @@ describe("json-ld", () => {
     expect(parseCustomJsonLd('{"@type":"Product"}').ok).toBe(false);
     expect(parseCustomJsonLd("5").ok).toBe(false);
     expect(parseCustomJsonLd('{"@type":"Organization"}').ok).toBe(true);
+  });
+  it("gives a service page a Service with one offer per printed line, and resolves every @id it references", () => {
+    const page = { path: "/staffing-solutions", title: "t", description: "d", image: "/i.webp", imageAlt: "a", crumb: "Staffing Solutions" };
+    const extra = { "@type": "ItemList", "@id": "x" };
+    // Round-tripped as the page emits it: plain JSON, undefined keys dropped.
+    const graph = JSON.parse(JSON.stringify(pageJsonLd(page, [extra])["@graph"]));
+    const service = graph.find((n: { "@type": string }) => n["@type"] === "Service");
+    expect(service.provider).toEqual({ "@id": ORG_ID });
+    expect(service.areaServed).toEqual(["IN", "AE"]);
+    const names = SERVICES.filter(([path]) => path === page.path).map(([, , name]) => name);
+    expect(names).toHaveLength(6);
+    expect(service.hasOfferCatalog.itemListElement.map((o: { itemOffered: { name: string } }) => o.itemOffered.name)).toEqual(names);
+    expect(graph.at(-1)).toEqual(extra);
+    const ids = graph.map((n: { "@id"?: string }) => n["@id"]);
+    const refs = [...JSON.stringify(graph).matchAll(/\{"@id":"([^"]+)"\}/g)].map((m) => m[1]);
+    expect(refs.length).toBeGreaterThan(4);
+    for (const ref of refs) expect(ids).toContain(ref);
+    expect(JSON.stringify(pageJsonLd({ ...page, path: "/terms" }))).not.toContain('"Service"');
   });
 });
 

@@ -40,7 +40,7 @@ export function SiteHeader({ active }: { active?: string }) {
         <Link className="brand" href="/">
           <Image src="/images/logo-web.png" alt="MIYO Global" width={89} height={48} style={{ display: "block" }} priority />
         </Link>
-        <nav className={`nav-links${open ? " open" : ""}`} id="menu">
+        <nav className={`nav-links${open ? " open" : ""}`} id="menu" aria-label="Primary">
           {links.map(([href, label]) => {
             // /referrals is still a static HTML file, so it needs a full page load.
             const Tag = href === "/referrals" ? "a" : Link;

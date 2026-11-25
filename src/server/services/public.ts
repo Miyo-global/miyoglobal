@@ -1,5 +1,5 @@
 import "server-only";
-import { and, desc, eq, ilike, inArray, ne, or, sql } from "drizzle-orm";
+import { and, desc, eq, ilike, inArray, max, ne, or, sql } from "drizzle-orm";
 import type { BlogTarget } from "@/lib/blog-path";
 import { db } from "../db";
 import { authors, categories, media, postTags, posts, tags } from "../db/schema";
@@ -132,16 +132,29 @@ export async function related(postId: number, categoryId: number | null, tagIds:
   return rows.length >= limit ? rows : [...rows, ...(await cards(ne(posts.id, postId), limit + rows.length)).filter((r) => !rows.some((x) => x.id === r.id))].slice(0, limit);
 }
 
+/** A tag page needs this many published posts to be indexable; with fewer it is one card and no copy. */
+export const TAG_MIN_POSTS = 2;
+
+/** Indexable content for the sitemaps, feed and llms.txt: published posts that are not noindex, and the listings that contain them. */
 export async function sitemapEntries() {
+  const indexable = and(live(), eq(posts.noindex, false));
+  const listing = { updatedAt: max(posts.updatedAt) };
   const [postRows, cats, tgs, auths] = await Promise.all([
     db
-      .select({ slug: posts.slug, updatedAt: posts.updatedAt, publishedAt: posts.publishedAt, title: posts.title, excerpt: posts.excerpt })
+      .select({ slug: posts.slug, updatedAt: posts.updatedAt, publishedAt: posts.publishedAt, title: posts.title, excerpt: posts.excerpt, coverUrl: media.url })
       .from(posts)
-      .where(and(live(), eq(posts.noindex, false)))
+      .leftJoin(media, eq(posts.coverMediaId, media.id))
+      .where(indexable)
       .orderBy(desc(posts.publishedAt)),
-    categoriesWithPosts(),
-    db.select({ slug: tags.slug }).from(tags).where(sql`exists (select 1 from ${postTags} join ${posts} on ${posts.id} = ${postTags.postId} where ${postTags.tagId} = ${tags.id} and ${posts.status} = 'published')`),
-    db.select({ slug: authors.slug }).from(authors).where(sql`exists (select 1 from ${posts} where ${posts.authorId} = ${authors.id} and ${posts.status} = 'published')`),
+    db.select({ slug: categories.slug, ...listing }).from(categories).innerJoin(posts, and(eq(posts.categoryId, categories.id), indexable)).groupBy(categories.slug),
+    db
+      .select({ slug: tags.slug, ...listing })
+      .from(tags)
+      .innerJoin(postTags, eq(postTags.tagId, tags.id))
+      .innerJoin(posts, and(eq(posts.id, postTags.postId), indexable))
+      .groupBy(tags.slug)
+      .having(sql`count(*) >= ${TAG_MIN_POSTS}`),
+    db.select({ slug: authors.slug, ...listing }).from(authors).innerJoin(posts, and(eq(posts.authorId, authors.id), indexable)).groupBy(authors.slug),
   ]);
   return { posts: postRows, categories: cats, tags: tgs, authors: auths };
 }

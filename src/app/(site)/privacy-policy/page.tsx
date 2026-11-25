@@ -5,8 +5,8 @@ import { jsonLdScript } from "@/lib/seo";
 
 const page: SitePage = {
   path: "/privacy-policy",
-  title: "Privacy & Cookie Policy — MIYO Global",
-  description: "How MIYO Global collects, uses, and protects information on this website, including our cookie practices.",
+  title: "Privacy & Cookie Policy for miyoglobal.com | MIYO Global",
+  description: "How MIYO Global collects, uses and protects what you submit through this website's contact form, how cookies and local storage are used, and your data rights.",
   image: "/images/og/policy.webp",
   imageAlt: "Healthcare and compliance professionals reviewing data protection documents",
   crumb: "Privacy & Cookies",
@@ -20,7 +20,7 @@ export default function PrivacyPolicyPage() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdScript(pageJsonLd(page)) }} />
       <section className="phero"><span className="rbg"></span><span className="rbg two"></span>
             <div className="wrap"><div className="crumb"><Link href="/">Home</Link> / Privacy &amp; Cookies</div>
-            <span className="eyebrow" style={{ marginTop: "10px" }}># Legal</span>
+            <span className="eyebrow" style={{ marginTop: "10px" }}>Legal</span>
             <h1>Privacy &amp; <span className="g">Cookie Policy</span></h1><p>How MIYO Global collects, uses, and protects information on this website. Last updated: July 2026.</p></div></section>
       <section className="sec"><div className="wrap" style={{ maxWidth: "860px" }}>
         <div className="legal">

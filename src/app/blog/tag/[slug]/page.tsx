@@ -2,19 +2,19 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { notFoundMetadata } from "@/components/not-found-view";
 import { PostCard } from "@/components/post-card";
-import { byTagId, getTag } from "@/server/services/public";
+import { blogListingMetadata } from "@/lib/page-meta";
+import { byTagId, getTag, TAG_MIN_POSTS } from "@/server/services/public";
 
 export const revalidate = 300;
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const t = await getTag((await params).slug);
   if (!t) return notFoundMetadata;
-  const empty = !(await byTagId(t.id, 1)).length;
+  // A tag with a single article is a title and one card: followed for discovery, not indexed, and left out of the sitemap.
+  const thin = (await byTagId(t.id, TAG_MIN_POSTS)).length < TAG_MIN_POSTS;
   return {
-    title: `${t.name} | MIYO Global blog`,
-    description: `Articles tagged ${t.name} from MIYO Global.`,
-    alternates: { canonical: `/blog/tag/${t.slug}` },
-    ...(empty ? { robots: { index: false, follow: true } } : {}),
+    ...blogListingMetadata(`/blog/tag/${t.slug}`, `${t.name} | MIYO Global blog`, `Articles tagged ${t.name} from MIYO Global.`),
+    ...(thin ? { robots: { index: false, follow: true } } : {}),
   };
 }
 

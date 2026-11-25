@@ -6,8 +6,8 @@ import { jsonLdScript } from "@/lib/seo";
 
 const page: SitePage = {
   path: "/digital-solutions",
-  title: "Digital Solutions — MIYO Global",
-  description: "Managed digital delivery: AI data services, localization in 120+ languages, trust and safety operations, and enterprise training.",
+  title: "AI Data, Localization & Trust and Safety | MIYO Global",
+  description: "Managed digital delivery from India and the UAE: AI data services, localization in 120+ languages, healthcare AI review, trust and safety, and training.",
   image: "/images/og/digital.webp",
   imageAlt: "Data and AI delivery team reviewing a managed digital solution",
   crumb: "Digital Solutions",
@@ -21,11 +21,11 @@ export default function DigitalSolutionsPage() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdScript(pageJsonLd(page)) }} />
       <section className="phero"><span className="rbg"></span><span className="rbg two"></span>
             <div className="wrap"><div className="crumb"><Link href="/">Home</Link> / Digital Solutions</div>
-            <span className="eyebrow" style={{ marginTop: "10px" }}># Digital Solutions</span>
+            <span className="eyebrow" style={{ marginTop: "10px" }}>Digital Solutions</span>
             <h1>Managed delivery for your <span className="g">digital operations</span></h1><p>Beyond seats, we deliver the work: AI data operations, multilingual localization, trust &amp; safety, and enterprise training, run as managed services with measurable quality.</p></div></section>
       <section className="sec"><div className="wrap">
-        <div className="frow reveal">
-          <div className="fx gfx"><Image src="/images/ai-data.jpg" alt="AI data operations" fill sizes="(max-width: 980px) 100vw, 50vw" /><span className="ring a"></span><span className="ring b"></span>
+        <div className="frow reveal" id="ai-data">
+          <div className="fx gfx"><Image src="/images/ai-data.jpg" alt="Man in a suit and glasses facing a glowing wireframe humanoid figure" fill sizes="(max-width: 980px) 100vw, 50vw" /><span className="ring a"></span><span className="ring b"></span>
             <div className="glyph"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2" /><path d="M9 9h6v6H9z" /></svg></div>
             <span className="cap">Model-ready data</span></div>
           <div><div className="tag">AI Data Services</div>
@@ -33,8 +33,8 @@ export default function DigitalSolutionsPage() {
             <p>Native speakers and trained annotators collect, label, and validate multilingual training data inside your platform, held to strict accuracy with daily checks.</p>
             <ul className="roles"><li>Data labeling &amp; annotation</li><li>Multilingual data collection</li><li>Prompt &amp; response evaluation</li><li>RLHF / preference rating</li><li>Red-teaming &amp; safety review</li><li>Data operations leads</li></ul></div>
         </div>
-        <div className="frow rev reveal">
-          <div className="fx gfx"><Image src="/images/localization.jpg" alt="Localization delivery" fill sizes="(max-width: 980px) 100vw, 50vw" /><span className="ring a"></span><span className="ring b"></span>
+        <div className="frow rev reveal" id="localization">
+          <div className="fx gfx"><Image src="/images/localization.jpg" alt="Glass globe showing the continents, resting on a wet reflective surface" fill sizes="(max-width: 980px) 100vw, 50vw" /><span className="ring a"></span><span className="ring b"></span>
             <div className="glyph"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /><path d="M2 12h20M12 2a15 15 0 0 1 0 20 15 15 0 0 1 0-20" /></svg></div>
             <span className="cap">120+ languages</span></div>
           <div><div className="tag">Localization &amp; Multilingual</div>
@@ -42,8 +42,8 @@ export default function DigitalSolutionsPage() {
             <p>Full localization pipelines across 120+ languages, translation, review, LQA, terminology, and subtitling, with human review at every step and consistency built in.</p>
             <ul className="roles"><li>Translation &amp; transcreation</li><li>Review &amp; proofreading</li><li>Localization QA (LQA)</li><li>Terminology management</li><li>Subtitling &amp; OST / OCR</li><li>Localization program management</li></ul></div>
         </div>
-        <div className="frow reveal">
-          <div className="fx gfx"><Image src="/images/healthcare.jpg" alt="Clinical review" fill sizes="(max-width: 980px) 100vw, 50vw" /><span className="ring a"></span><span className="ring b"></span>
+        <div className="frow reveal" id="healthcare-ai">
+          <div className="fx gfx"><Image src="/images/healthcare.jpg" alt="Clinician in a surgical cap, mask and gloves using a tablet behind a translucent diagnostic display" fill sizes="(max-width: 980px) 100vw, 50vw" /><span className="ring a"></span><span className="ring b"></span>
             <div className="glyph"><svg viewBox="0 0 24 24"><path d="M3 12h4l2 5 4-10 2 5h6" /></svg></div>
             <span className="cap">Clinician-led</span></div>
           <div><div className="tag">Healthcare AI &amp; Trust &amp; Safety</div>
@@ -52,7 +52,7 @@ export default function DigitalSolutionsPage() {
             <ul className="roles"><li>Medical AI review &amp; safety checks</li><li>Health data structuring &amp; QA</li><li>Policy &amp; content moderation</li><li>Escalation workflows &amp; reporting</li></ul></div>
         </div>
       </div></section>
-      <section className="sec alt"><div className="wrap reveal">
+      <section className="sec alt" id="training"><div className="wrap reveal">
         <div className="navy-band"><span className="ring"></span><div className="row">
           <div><span className="eyebrow" style={{ color: "#F2D184" }}>Corporate Training · Prime Learning</span>
             <h2 style={{ marginTop: "8px" }}>Upskill the teams behind the work</h2>

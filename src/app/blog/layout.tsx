@@ -10,7 +10,6 @@ import "./blog.css";
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   applicationName: "MIYO Global",
-  icons: { icon: "/favicon.svg" },
 };
 
 export default function BlogLayout({ children }: { children: React.ReactNode }) {

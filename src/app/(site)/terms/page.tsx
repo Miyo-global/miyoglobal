@@ -5,8 +5,8 @@ import { jsonLdScript } from "@/lib/seo";
 
 const page: SitePage = {
   path: "/terms",
-  title: "Terms of Use — MIYO Global",
-  description: "The terms that apply when you use the MIYO Global website.",
+  title: "Website Terms of Use for miyoglobal.com | MIYO Global",
+  description: "The terms that apply when you use the MIYO Global website: information-only content, intellectual property, acceptable use and external links.",
   image: "/images/og/policy.webp",
   imageAlt: "Editorial team reviewing and fact-checking an article before publication",
   crumb: "Terms of Use",
@@ -20,7 +20,7 @@ export default function TermsPage() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdScript(pageJsonLd(page)) }} />
       <section className="phero"><span className="rbg"></span><span className="rbg two"></span>
             <div className="wrap"><div className="crumb"><Link href="/">Home</Link> / Terms of Use</div>
-            <span className="eyebrow" style={{ marginTop: "10px" }}># Legal</span>
+            <span className="eyebrow" style={{ marginTop: "10px" }}>Legal</span>
             <h1>Terms of <span className="g">Use</span></h1><p>The terms that apply when you use this website. Last updated: November 2026.</p></div></section>
       <section className="sec"><div className="wrap" style={{ maxWidth: "860px" }}>
         <div className="legal">

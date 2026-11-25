@@ -4,7 +4,7 @@ import SiteLayout, { metadata as siteMetadata } from "./(site)/layout";
 
 export const metadata: Metadata = {
   ...siteMetadata,
-  title: { absolute: "Page not found — MIYO Global" },
+  title: { absolute: "Page not found | MIYO Global" },
   description: "Page not found.",
   robots: { index: false, follow: false },
 };
@@ -18,7 +18,7 @@ export default function NotFound() {
         <span className="rbg two"></span>
         <div className="wrap">
           <div className="crumb"><Link href="/">Home</Link> / Not found</div>
-          <span className="eyebrow" style={{ marginTop: "10px" }}># 404</span>
+          <span className="eyebrow" style={{ marginTop: "10px" }}>404</span>
           <h1>Page not <span className="g">found</span></h1>
           <p>The page you were looking for does not exist or has moved.</p>
         </div>

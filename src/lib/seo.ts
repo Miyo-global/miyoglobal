@@ -6,18 +6,22 @@ export const BLOG_TITLE = `${BLOG_NAME} | ${SITE_NAME}`;
 
 export const FEED_CACHE = "public, s-maxage=60, must-revalidate";
 
-const ORG_ID = "https://www.miyoglobal.com/#organization";
+export const ORG_ID = "https://www.miyoglobal.com/#organization";
+export const WEBSITE_ID = "https://www.miyoglobal.com/#website";
 
 /** Shared WebSite + Organization nodes; reference the org elsewhere via { "@id": ORG_ID }. */
 export function siteGraph() {
   return [
-    { "@type": "WebSite", "@id": "https://www.miyoglobal.com/#website", url: "https://www.miyoglobal.com/", name: SITE_NAME, publisher: { "@id": ORG_ID } },
+    { "@type": "WebSite", "@id": WEBSITE_ID, url: "https://www.miyoglobal.com/", name: SITE_NAME, publisher: { "@id": ORG_ID } },
     {
       "@type": "Organization",
       "@id": ORG_ID,
       name: SITE_NAME,
       url: "https://www.miyoglobal.com/",
-      logo: "https://www.miyoglobal.com/images/logo-web.png",
+      // Real pixel size of public/images/logo-web.png.
+      logo: { "@type": "ImageObject", url: "https://www.miyoglobal.com/images/logo-web.png", width: 356, height: 192 },
+      sameAs: ["https://www.linkedin.com/company/miyo-global"],
+      address: { "@type": "PostalAddress", streetAddress: "MIYO Global Office (Trendz Trinity), Plot No. 21, Madhapur, Gafoornagar", addressLocality: "Hyderabad", addressRegion: "Telangana", postalCode: "500081", addressCountry: "IN" },
       contactPoint: { "@type": "ContactPoint", contactType: "sales", email: "staffing@miyoglobal.com", areaServed: ["IN", "AE"], availableLanguage: "en" },
     },
   ];

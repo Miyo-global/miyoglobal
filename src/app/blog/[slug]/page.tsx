@@ -3,6 +3,7 @@ import { cache } from "react";
 import { notFound } from "next/navigation";
 import { notFoundMetadata } from "@/components/not-found-view";
 import { PostView } from "@/components/post-view";
+import { FEED_ALTERNATE, OG_LOCALE } from "@/lib/page-meta";
 import { absolute, SITE_NAME, titleFor } from "@/lib/seo";
 import { getPostBySlug } from "@/server/services/public";
 
@@ -25,13 +26,14 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   return {
     title: { absolute: titleFor(post.metaTitle, post.title) },
     description,
-    alternates: { canonical: url },
+    alternates: { canonical: url, types: FEED_ALTERNATE },
     robots: { index: !post.noindex, follow: !post.nofollow },
     authors: data.author ? [{ name: data.author.name, url: absolute(`/blog/author/${data.author.slug}`) }] : undefined,
     openGraph: {
       type: "article",
       url,
       siteName: SITE_NAME,
+      locale: OG_LOCALE,
       title: post.ogTitle || post.title,
       description: post.ogDescription || description,
       publishedTime: post.publishedAt?.toISOString(),

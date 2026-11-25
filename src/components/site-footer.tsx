@@ -1,5 +1,45 @@
 import Link from "next/link";
 
+const S = "/staffing-solutions";
+const D = "/digital-solutions";
+
+const columns = [
+  ["Staffing", [
+    [S, "Staffing Solutions"],
+    [`${S}#gcc`, "GCC & captive centres"],
+    [`${S}#technology`, "IT & technology staffing"],
+    [`${S}#executive-search`, "Executive search"],
+    [`${S}#high-volume`, "High-volume hiring"],
+    [`${S}#healthcare`, "Healthcare & clinical"],
+    [`${S}#surge`, "Surge & contract"],
+    [`${S}#models`, "Engagement models"],
+  ]],
+  ["Digital", [
+    [D, "Digital Solutions"],
+    [`${D}#ai-data`, "AI data services"],
+    [`${D}#localization`, "Localization"],
+    [`${D}#healthcare-ai`, "Healthcare AI review"],
+    [`${D}#healthcare-ai`, "Trust & safety"],
+    [`${D}#training`, "Corporate training"],
+  ]],
+  ["Company", [
+    ["/about", "About us"],
+    ["/about#leadership", "Leadership"],
+    ["/case-studies", "Case studies"],
+    ["/blog", "Blog"],
+    ["/referrals", "Referrals"],
+    ["/contact", "Contact"],
+    ["https://primelearning.ae", "Prime Learning"],
+    ["https://primelearning.ae/staffing", "PL Staff Augmentation"],
+  ]],
+  ["Legal", [
+    ["/privacy-policy", "Privacy & Cookies"],
+    ["/terms", "Terms"],
+    ["/disclosure", "Disclosure"],
+    ["/editorial-policy", "Editorial policy"],
+  ]],
+] as const;
+
 export function SiteFooter() {
   return (
     <footer>
@@ -8,8 +48,9 @@ export function SiteFooter() {
           <div>
             <div className="fbrand">MIYO <span className="g">GLOBAL</span></div>
             <p className="fdesc">Enterprise staffing and digital delivery from India and the UAE. GCC build-outs, technology talent, and managed digital services, under your brand.</p>
+            <p className="fcontact"><a href="mailto:staffing@miyoglobal.com">staffing@miyoglobal.com</a><br />Hyderabad, India<br />Ras Al Khaimah, UAE</p>
             <div className="fsoc">
-              <a href="https://www.linkedin.com/company/prime-learning-ae" target="_blank" rel="noopener" aria-label="LinkedIn">
+              <a href="https://www.linkedin.com/company/miyo-global" target="_blank" rel="noopener" aria-label="LinkedIn">
                 <svg viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="3" /><path d="M7 10v7M7 7v.01M11 17v-4a2 2 0 0 1 4 0v4M11 17v-7" /></svg>
               </a>
               <a href="mailto:staffing@miyoglobal.com" aria-label="Email">
@@ -17,28 +58,21 @@ export function SiteFooter() {
               </a>
             </div>
           </div>
-          <div className="fcol">
-            <h5>Company</h5>
-            <Link href="/staffing-solutions">Staffing Solutions</Link>
-            <Link href="/digital-solutions">Digital Solutions</Link>
-            <Link href="/case-studies">Case studies</Link>
-            <a href="/referrals">Referrals</a>
-            <Link href="/blog">Blog</Link>
-            <Link href="/about">About us</Link>
-            <Link href="/contact">Contact</Link>
-            <Link href="/editorial-policy">Editorial policy</Link>
-            <Link href="/privacy-policy">Privacy &amp; Cookies</Link>
-            <Link href="/terms">Terms</Link>
-            <Link href="/disclosure">Disclosure</Link>
-          </div>
-          <div className="fcol">
-            <h5>Get in touch</h5>
-            <a href="mailto:staffing@miyoglobal.com">staffing@miyoglobal.com</a>
-            <a href="https://primelearning.ae" target="_blank" rel="noopener">Prime Learning</a>
-            <a href="https://primelearning.ae/staffing" target="_blank" rel="noopener">PL Staff Augmentation</a>
-            <p>Hyderabad, India</p>
-            <p>Ras Al Khaimah, UAE</p>
-          </div>
+          {columns.map(([title, links]) => (
+            <div className="fcol" key={title}>
+              <h2 className="fh">{title}</h2>
+              {links.map(([href, label]) =>
+                href.startsWith("http") ? (
+                  <a key={label} href={href} target="_blank" rel="noopener">{label}</a>
+                ) : href === "/referrals" ? (
+                  // /referrals is still a static HTML file, so it needs a full page load.
+                  <a key={label} href={href}>{label}</a>
+                ) : (
+                  <Link key={label} href={href}>{label}</Link>
+                ),
+              )}
+            </div>
+          ))}
         </div>
         <div className="fnote"><b>Recruitment notice:</b> MIYO Global never asks candidates for money, original documents, or cheques at any stage of hiring. If anyone requests these in our name, report it to staffing@miyoglobal.com.</div>
         <div className="fbot">

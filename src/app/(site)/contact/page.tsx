@@ -6,8 +6,8 @@ import { jsonLdScript } from "@/lib/seo";
 
 const page: SitePage = {
   path: "/contact",
-  title: "Contact — MIYO Global",
-  description: "Talk to MIYO Global about staffing solutions, GCC build-outs, or managed digital delivery. Offices in Hyderabad and Ras Al Khaimah.",
+  title: "Contact Us: Staffing Enquiries, India & UAE | MIYO Global",
+  description: "Talk to MIYO Global about a role, a pod, a GCC or a digital programme. Email staffing@miyoglobal.com or reach our Hyderabad and Ras Al Khaimah offices.",
   image: "/images/og/contact.webp",
   imageAlt: "Colleagues across India and the UAE discussing a staffing enquiry",
   crumb: "Contact",
@@ -21,7 +21,7 @@ export default function ContactPage() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdScript(pageJsonLd(page)) }} />
       <section className="phero"><span className="rbg"></span><span className="rbg two"></span>
             <div className="wrap"><div className="crumb"><Link href="/">Home</Link> / Contact</div>
-            <span className="eyebrow" style={{ marginTop: "10px" }}># Get in touch</span>
+            <span className="eyebrow" style={{ marginTop: "10px" }}>Get in touch</span>
             <h1>Let’s build your <span className="g">team</span></h1><p>Tell us what you need, a role, a pod, a GCC, or a digital program, and we will come back with a plan and ramp-up timelines.</p></div></section>
       <section className="sec"><div className="wrap contact-2">
         <ContactForm />
