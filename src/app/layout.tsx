@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { CONSENT_SCRIPT } from "@/lib/consent";
 import { fontVariables } from "@/lib/fonts";
 import { NOINDEX } from "@/lib/seo";
 
@@ -19,9 +20,10 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" data-scroll-behavior="smooth" className={fontVariables}>
+    <html lang="en" data-scroll-behavior="smooth" className={fontVariables} suppressHydrationWarning>
       <head>
         {NOINDEX && <meta name="robots" content="noindex, nofollow" />}
+        <script dangerouslySetInnerHTML={{ __html: CONSENT_SCRIPT }} />
       </head>
       <body>{children}</body>
     </html>
