@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { FooterCta } from "./footer-cta";
 import { ButtonLink } from "./ui/button";
 
 const S = "/staffing-solutions";
@@ -43,20 +44,22 @@ const COLUMNS = [
 export function SiteFooter() {
   return (
     <footer className="on-ink bg-ink text-on-ink">
+      <FooterCta>
       <div className="frame grid-12 gap-y-8 border-b border-on-ink-rule py-16 md:py-24">
-        <h2 className="col-span-4 text-h2 md:col-span-7">Building a team in India or the UAE?</h2>
-        <div className="col-span-4 flex flex-col gap-4 md:col-span-4 md:col-start-9 md:justify-end">
-          <p className="text-on-ink-muted">Tell us the role, the pod or the centre. We come back with a plan and ramp-up timelines.</p>
-          <div className="flex flex-wrap gap-4">
-            <ButtonLink href="/contact" variant="accent">
-              Hire talent
-            </ButtonLink>
-            <ButtonLink href="mailto:staffing@miyoglobal.com" variant="ghost" className="text-on-ink">
-              staffing@miyoglobal.com
-            </ButtonLink>
+          <h2 className="col-span-4 text-h2 md:col-span-7">Building a team in India or the UAE?</h2>
+          <div className="col-span-4 flex flex-col gap-4 md:col-span-4 md:col-start-9 md:justify-end">
+            <p className="text-on-ink-muted">Tell us the role, the pod or the centre. We come back with a plan and ramp-up timelines.</p>
+            <div className="flex flex-wrap gap-4">
+              <ButtonLink href="/contact" variant="accent">
+                Hire talent
+              </ButtonLink>
+              <ButtonLink href="mailto:staffing@miyoglobal.com" variant="ghost" className="text-on-ink">
+                staffing@miyoglobal.com
+              </ButtonLink>
+            </div>
           </div>
         </div>
-      </div>
+      </FooterCta>
 
       <div className="frame grid-12 gap-y-12 py-16">
         <div className="col-span-4 md:col-span-4">
