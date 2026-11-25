@@ -8,8 +8,8 @@ import { DUR, EASE, onFirstView } from "./motion";
  * Word Rise: a heading's words rise and settle once as it scrolls into view. Server HTML is the final state, so headings
  * on screen at load (the hero) never move and never start hidden.
  */
-export function WordRise({ text, as: Tag = "h2", className, id }: { text: string; as?: "h1" | "h2" | "p"; className?: string; id?: string }) {
-  const ref = useRef<HTMLHeadingElement>(null);
+export function WordRise({ text, as: Tag = "h2", className, id }: { text: string; as?: "h1" | "h2" | "p" | "span"; className?: string; id?: string }) {
+  const ref = useRef<HTMLElement>(null);
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
@@ -22,7 +22,7 @@ export function WordRise({ text, as: Tag = "h2", className, id }: { text: string
   }, []);
   const words = text.split(" ");
   return (
-    <Tag ref={ref} id={id} className={className}>
+    <Tag ref={ref as React.RefObject<HTMLHeadingElement>} id={id} className={className}>
       {words.map((w, i) => (
         <span key={i}>
           <span data-w="" className="inline-block will-change-transform">

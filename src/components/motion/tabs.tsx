@@ -1,18 +1,27 @@
 "use client";
 
 import { animate } from "animejs";
-import { useId, useRef, useState } from "react";
+import { useId, useRef, useState, useSyncExternalStore } from "react";
 import { cx } from "../ui/cx";
 import { DUR, EASE, prefersReducedMotion } from "./motion";
 
-export type TabItem = { id: string; label: string; content: React.ReactNode };
+/** `anchors`: URL hashes (without #) that should open this tab, e.g. ["gcc"] so /staffing-solutions#gcc lands on its panel. */
+export type TabItem = { id: string; label: string; content: React.ReactNode; anchors?: string[] };
+
+const onHash = (cb: () => void) => {
+  window.addEventListener("hashchange", cb);
+  return () => window.removeEventListener("hashchange", cb);
+};
 
 /**
  * Accessible tabs (WAI-ARIA tablist, arrow keys, Home/End). The panel fades and settles in 250ms when the tab changes.
  * Every panel is server-rendered (inactive ones `hidden`), so all copy is in the HTML for search engines.
  */
 export function Tabs({ items, label, onInk, className }: { items: TabItem[]; label: string; onInk?: boolean; className?: string }) {
-  const [active, setActive] = useState(0);
+  const [picked, setActive] = useState<number | null>(null);
+  const hash = useSyncExternalStore(onHash, () => window.location.hash.slice(1), () => "");
+  const fromHash = items.findIndex((t) => t.id === hash || t.anchors?.includes(hash));
+  const active = picked ?? (fromHash >= 0 ? fromHash : 0);
   const base = useId();
   const tabs = useRef<(HTMLButtonElement | null)[]>([]);
   const panels = useRef<(HTMLDivElement | null)[]>([]);
