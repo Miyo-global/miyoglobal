@@ -33,9 +33,9 @@ export function PricingPlans() {
                 {p.featured && <span className="chip chip-gold">Most chosen</span>}
               </div>
               <p className="muted small">{p.blurb}</p>
-              <p>
+              <p className="price-line">
                 <span className="price">{v === null ? "Custom" : fmt(cur, v)}</span>
-                {v !== null && <span className="muted small"> / month</span>}
+                {v !== null && <span className="muted small">/ month</span>}
               </p>
               <ul className="feature-list">
                 <li><Icon name="check" size={16} /> {p.unlocks}</li>

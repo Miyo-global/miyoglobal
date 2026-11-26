@@ -25,7 +25,7 @@ export function PublicHeader() {
           <Link href="/auth/log-in" className="btn btn-ghost hide-sm">
             Sign in
           </Link>
-          <RoleChoiceModal />
+          <RoleChoiceModal label="Join" />
         </div>
       </div>
       <nav className="mnav hide-lg" aria-label="Mobile">

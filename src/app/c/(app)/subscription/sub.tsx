@@ -26,7 +26,7 @@ export function SubscriptionPanel() {
         </article>
         <article className="card card-top stack">
           <div className="row between"><h3>Candidate Plus</h3>{plan !== "free" && <span className="chip chip-gold">{plan === "cancelling" ? "Ends 26 Dec 2026" : "Current"}</span>}</div>
-          <p><span className="price">{price}</span> <span className="muted small">/ month</span></p>
+          <p className="price-line"><span className="price">{price}</span> <span className="muted small">/ month</span></p>
           <ul className="feature-list">
             <li><Icon name="check" size={16} /> See which companies viewed your pitch</li>
             <li><Icon name="check" size={16} /> Pitch coaching notes from our desk</li>

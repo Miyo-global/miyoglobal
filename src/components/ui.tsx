@@ -152,7 +152,7 @@ export function Verified({ children }: { children: ReactNode }) {
 }
 
 export function Sample() {
-  return <p className="sample">SAMPLE DATA · FICTIONAL PEOPLE AND COMPANIES</p>;
+  return <p className="sample">Sample data. Fictional people and companies.</p>;
 }
 
 export function Empty({ icon, title, body, children }: { icon: IconName; title: string; body: string; children?: ReactNode }) {

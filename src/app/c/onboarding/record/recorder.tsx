@@ -102,7 +102,7 @@ export function Recorder({ forceDenied }: { forceDenied: boolean }) {
           <button className={rec ? "rec-btn on" : "rec-btn"} aria-label={rec ? "Stop recording" : "Start recording"} onClick={() => (rec ? router.push("/c/onboarding/preview") : (setSec(0), setRec(true)))}>
             <svg width="72" height="72" viewBox="0 0 72 72" aria-hidden="true">
               <circle cx="36" cy="36" r={r} fill="none" stroke="rgba(255,255,255,.24)" strokeWidth="3" />
-              <circle cx="36" cy="36" r={r} fill="none" stroke="#e0b458" strokeWidth="3" strokeDasharray={c} strokeDashoffset={c * (1 - sec / 60)} style={{ transition: "stroke-dashoffset 1s linear" }} />
+              <circle cx="36" cy="36" r={r} fill="none" stroke="#c41230" strokeWidth="3" strokeDasharray={c} strokeDashoffset={c * (1 - sec / 60)} style={{ transition: "stroke-dashoffset 1s linear" }} />
             </svg>
             <i />
           </button>

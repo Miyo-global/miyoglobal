@@ -33,10 +33,8 @@ export default function Landing() {
     <>
       <section className="wrap hero">
         <div className="stack" style={{ ["--gap" as string]: "24px" }}>
-          <p className="eyebrow">Beta · India and UAE · Video-first hiring</p>
-          <h1>
-            Hiring, <em className="gold">shown</em> not told.
-          </h1>
+          <p className="eyebrow">Video-first hiring for India and the UAE</p>
+          <h1>Hiring, shown not told.</h1>
           <p className="lede">
             Candidates record a 60-second pitch. Companies swipe blind cards with a fit score and a pay band. Identities reveal only when both sides say yes.
           </p>
@@ -61,11 +59,11 @@ export default function Landing() {
               <img src={c.img} alt={`Blind pitch still of ${c.blind}, ${c.title}`} width={286} height={512} fetchPriority={c.id === "c-ananya" ? "high" : undefined} />
               <div className="video-top">
                 <span className="chip">0:60</span>
-                <span className="chip chip-gold">{c.fit} FIT</span>
+                <span className="chip chip-gold">{c.fit} fit</span>
               </div>
               <div className="video-bottom">
                 <div>
-                  <p className="display" style={{ fontSize: 28 }}>{c.blind}</p>
+                  <p className="display">{c.blind}</p>
                   <p className="small" style={{ opacity: 0.8 }}>{c.title} · {c.city}</p>
                 </div>
                 <BandChip band={c.band} />
@@ -81,11 +79,11 @@ export default function Landing() {
             <p className="eyebrow">How it works</p>
             <h2>Record. Match. Meet.</h2>
           </div>
-          <ol className="cols-3 list" style={{ ["--gap" as string]: "48px" }}>
+          <ol className="process list">
             {steps.map(([n, title, body, icon]) => (
-              <li key={n} className="stack" style={{ borderTop: "2px solid var(--gold)", paddingTop: 24 }}>
+              <li key={n}>
                 <div className="row between">
-                  <span className="mono gold">{n}</span>
+                  <span className="step-no">{n}</span>
                   <Icon name={icon} />
                 </div>
                 <h3>{title}</h3>
@@ -105,12 +103,14 @@ export default function Landing() {
             </div>
             <Link href="/pricing" className="btn">See pricing</Link>
           </div>
-          <div className="cols-3">
+          <div className="feature-board">
             {features.map(([title, body, icon]) => (
-              <article key={title} className="card stack">
-                <span className="gold"><Icon name={icon} /></span>
-                <h3>{title}</h3>
-                <p className="muted">{body}</p>
+              <article key={title}>
+                <span className="ico" aria-hidden="true"><Icon name={icon} size={18} /></span>
+                <div className="stack" style={{ ["--gap" as string]: "6px" }}>
+                  <h3>{title}</h3>
+                  <p className="muted">{body}</p>
+                </div>
               </article>
             ))}
           </div>
