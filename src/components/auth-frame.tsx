@@ -1,0 +1,21 @@
+import Link from "next/link";
+import { Logo } from "./ui";
+
+export function AuthFrame({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="auth">
+      <header className="auth-top">
+        <Logo />
+      </header>
+      <main id="main" className="auth-main">
+        <div className="auth-card">{children}</div>
+      </main>
+      <footer className="auth-foot">
+        <span>© 2026 MIYO Global · Beta</span>
+        <Link href="/legal/privacy">Privacy</Link>
+        <Link href="/legal/terms">Terms</Link>
+        <Link href="/legal/recruitment">Recruitment notice</Link>
+      </footer>
+    </div>
+  );
+}
